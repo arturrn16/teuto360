@@ -12,35 +12,32 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 // Create the typed client
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
-// Type augmentation for missing tables
-export type SolicitacaoAbonoPonto = {
+// Base types for custom tables not in the Database type
+export interface BaseSolicitacao {
   id: number;
   solicitante_id: number;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  tipo?: string; // Add tipo property to make things easier for MinhasSolicitacoes
+}
+
+export interface SolicitacaoAbonoPonto extends BaseSolicitacao {
   cidade: string;
   turno: string;
   rota: string;
   descricao: string;
-  status: string;
-  created_at: string;
-  updated_at: string;
-  data_ocorrencia?: string; // Added for interface compatibility
-  motivo?: string; // Added for interface compatibility
-};
+  data_ocorrencia: string;
+  motivo: string;
+}
 
-export type SolicitacaoAdesaoCancelamento = {
-  id: number;
-  solicitante_id: number;
+export interface SolicitacaoAdesaoCancelamento extends BaseSolicitacao {
   tipo_solicitacao: string;
   email: string;
   motivo: string;
-  status: string;
-  created_at: string;
-  updated_at: string;
-};
+}
 
-export type SolicitacaoAlteracaoEndereco = {
-  id: number;
-  solicitante_id: number;
+export interface SolicitacaoAlteracaoEndereco extends BaseSolicitacao {
   telefone: string;
   cep: string;
   endereco: string;
@@ -51,17 +48,12 @@ export type SolicitacaoAlteracaoEndereco = {
   rota_atual: string;
   alterar_rota: boolean;
   nova_rota?: string;
-  status: string;
-  created_at: string;
-  updated_at: string;
-  endereco_atual?: string; // Added for interface compatibility
-  endereco_novo?: string; // Added for interface compatibility
-  data_alteracao?: string; // Added for interface compatibility
-};
+  endereco_atual: string;
+  endereco_novo: string;
+  data_alteracao: string;
+}
 
-export type SolicitacaoMudancaTurno = {
-  id: number;
-  solicitante_id: number;
+export interface SolicitacaoMudancaTurno extends BaseSolicitacao {
   telefone: string;
   cep: string;
   endereco: string;
@@ -69,19 +61,49 @@ export type SolicitacaoMudancaTurno = {
   cidade: string;
   turno_atual: string;
   novo_turno: string;
+  turno_novo: string;
   nova_rota: string;
   nome_gestor: string;
   motivo: string;
-  status: string;
-  created_at: string;
-  updated_at: string;
-  turno_novo?: string; // Added for interface compatibility
-  data_alteracao?: string; // Added for interface compatibility
-};
+  data_alteracao: string;
+}
 
-// Add type-safe access to the tables not yet in the Database type
+// Function to handle data type conversion
+function transformData<T>(data: any[] | null): T[] {
+  if (!data) return [];
+  return data as T[];
+}
+
+// Add a more type-safe access to the tables not yet in the Database type
 export const customSupabase = {
   from: (table: string) => {
-    return supabase.from(table as any);
+    return {
+      ...supabase.from(table as any),
+      select: (columns?: string) => {
+        return {
+          ...supabase.from(table as any).select(columns),
+          eq: (column: string, value: any) => {
+            return {
+              ...supabase.from(table as any).select(columns).eq(column, value),
+              order: (column: string, options?: { ascending?: boolean }) => {
+                const query = supabase.from(table as any).select(columns).eq(column, value).order(column, options);
+                return {
+                  ...query,
+                  then: (onfulfilled: (value: any) => any) => {
+                    return query.then((result) => {
+                      // Handle the result and transform it to the expected type
+                      return onfulfilled({
+                        data: result.data ? result.data : [],
+                        error: result.error
+                      });
+                    });
+                  }
+                };
+              }
+            };
+          }
+        };
+      }
+    };
   }
 };

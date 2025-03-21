@@ -1,6 +1,14 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { supabase, customSupabase, SolicitacaoAbonoPonto, SolicitacaoAdesaoCancelamento, SolicitacaoAlteracaoEndereco, SolicitacaoMudancaTurno } from "@/integrations/supabase/client";
+import { 
+  supabase, 
+  customSupabase,
+  BaseSolicitacao,
+  SolicitacaoAbonoPonto as AbonoPontoType,
+  SolicitacaoAdesaoCancelamento as AdesaoCancelamentoType,
+  SolicitacaoAlteracaoEndereco as AlteracaoEnderecoType,
+  SolicitacaoMudancaTurno as MudancaTurnoType
+} from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
@@ -80,6 +88,7 @@ interface SolicitacaoRefeicao extends Solicitacao {
   data_refeicao: string;
 }
 
+// Using our imported types with different names to avoid conflict
 interface SolicitacaoAbonosPonto extends Solicitacao {
   data_ocorrencia: string;
   turno: string;
@@ -109,7 +118,7 @@ const Admin = () => {
   const [solicitacoesRota, setSolicitacoesRota] = useState<SolicitacaoTransporteRota[]>([]);
   const [solicitacoes12x36, setSolicitacoes12x36] = useState<SolicitacaoTransporte12x36[]>([]);
   const [solicitacoesRefeicao, setSolicitacoesRefeicao] = useState<SolicitacaoRefeicao[]>([]);
-  const [solicitacoesAbonoPonto, setSolicitacoesAbonoPonto] = useState<SolicitacaoAbonoPonto[]>([]);
+  const [solicitacoesAbonoPonto, setSolicitacoesAbonoPonto] = useState<SolicitacaoAbonosPonto[]>([]);
   const [solicitacoesAdesaoCancelamento, setSolicitacoesAdesaoCancelamento] = useState<SolicitacaoAdesaoCancelamento[]>([]);
   const [solicitacoesAlteracaoEndereco, setSolicitacoesAlteracaoEndereco] = useState<SolicitacaoAlteracaoEndereco[]>([]);
   const [solicitacoesMudancaTurno, setSolicitacoesMudancaTurno] = useState<SolicitacaoMudancaTurno[]>([]);
@@ -158,63 +167,123 @@ const Admin = () => {
           setSolicitacoesRefeicao(dataRefeicao || []);
         }
 
-        const { data: dataAbonoPonto, error: errorAbonoPonto } = await customSupabase
-          .from("solicitacoes_abono_ponto")
-          .select("*")
-          .order("created_at", { ascending: false });
-          
-        if (errorAbonoPonto) {
-          console.error("Erro ao buscar solicitações de abono de ponto:", errorAbonoPonto);
-        } else {
-          setSolicitacoesAbonoPonto(dataAbonoPonto || []);
+        // Update these sections to manually cast data
+        try {
+          const { data: dataAbonoPonto, error: errorAbonoPonto } = await supabase
+            .from("solicitacoes_abono_ponto")
+            .select("*")
+            .order("created_at", { ascending: false });
+            
+          if (errorAbonoPonto) {
+            console.error("Erro ao buscar solicitações de abono de ponto:", errorAbonoPonto);
+          } else if (dataAbonoPonto) {
+            const formattedData: SolicitacaoAbonosPonto[] = dataAbonoPonto.map((item: any) => ({
+              id: item.id,
+              solicitante_id: item.solicitante_id,
+              status: item.status,
+              created_at: item.created_at,
+              updated_at: item.updated_at,
+              data_ocorrencia: item.data_ocorrencia || '',
+              turno: item.turno || '',
+              motivo: item.motivo || ''
+            }));
+            setSolicitacoesAbonoPonto(formattedData);
+          }
+        } catch (err) {
+          console.error("Erro ao processar solicitações de abono de ponto:", err);
         }
 
-        const { data: dataAdesaoCancelamento, error: errorAdesaoCancelamento } = await customSupabase
-          .from("solicitacoes_adesao_cancelamento")
-          .select("*")
-          .order("created_at", { ascending: false });
-          
-        if (errorAdesaoCancelamento) {
-          console.error("Erro ao buscar solicitações de adesão/cancelamento:", errorAdesaoCancelamento);
-        } else {
-          setSolicitacoesAdesaoCancelamento(dataAdesaoCancelamento || []);
+        try {
+          const { data: dataAdesaoCancelamento, error: errorAdesaoCancelamento } = await supabase
+            .from("solicitacoes_adesao_cancelamento")
+            .select("*")
+            .order("created_at", { ascending: false });
+            
+          if (errorAdesaoCancelamento) {
+            console.error("Erro ao buscar solicitações de adesão/cancelamento:", errorAdesaoCancelamento);
+          } else if (dataAdesaoCancelamento) {
+            const formattedData: SolicitacaoAdesaoCancelamento[] = dataAdesaoCancelamento.map((item: any) => ({
+              id: item.id,
+              solicitante_id: item.solicitante_id,
+              status: item.status,
+              created_at: item.created_at,
+              updated_at: item.updated_at,
+              tipo_solicitacao: item.tipo_solicitacao || '',
+              motivo: item.motivo || ''
+            }));
+            setSolicitacoesAdesaoCancelamento(formattedData);
+          }
+        } catch (err) {
+          console.error("Erro ao processar solicitações de adesão/cancelamento:", err);
         }
 
-        const { data: dataAlteracaoEndereco, error: errorAlteracaoEndereco } = await customSupabase
-          .from("solicitacoes_alteracao_endereco")
-          .select("*")
-          .order("created_at", { ascending: false });
-          
-        if (errorAlteracaoEndereco) {
-          console.error("Erro ao buscar solicitações de alteração de endereço:", errorAlteracaoEndereco);
-        } else {
-          setSolicitacoesAlteracaoEndereco(dataAlteracaoEndereco || []);
+        try {
+          const { data: dataAlteracaoEndereco, error: errorAlteracaoEndereco } = await supabase
+            .from("solicitacoes_alteracao_endereco")
+            .select("*")
+            .order("created_at", { ascending: false });
+            
+          if (errorAlteracaoEndereco) {
+            console.error("Erro ao buscar solicitações de alteração de endereço:", errorAlteracaoEndereco);
+          } else if (dataAlteracaoEndereco) {
+            const formattedData: SolicitacaoAlteracaoEndereco[] = dataAlteracaoEndereco.map((item: any) => ({
+              id: item.id,
+              solicitante_id: item.solicitante_id,
+              status: item.status,
+              created_at: item.created_at,
+              updated_at: item.updated_at,
+              endereco_atual: item.endereco || '',
+              endereco_novo: item.nova_rota ? `${item.endereco} (nova rota: ${item.nova_rota})` : (item.endereco || ''),
+              data_alteracao: item.created_at
+            }));
+            setSolicitacoesAlteracaoEndereco(formattedData);
+          }
+        } catch (err) {
+          console.error("Erro ao processar solicitações de alteração de endereço:", err);
         }
 
-        const { data: dataMudancaTurno, error: errorMudancaTurno } = await customSupabase
-          .from("solicitacoes_mudanca_turno")
-          .select("*")
-          .order("created_at", { ascending: false });
-          
-        if (errorMudancaTurno) {
-          console.error("Erro ao buscar solicitações de mudança de turno:", errorMudancaTurno);
-        } else {
-          setSolicitacoesMudancaTurno(dataMudancaTurno || []);
+        try {
+          const { data: dataMudancaTurno, error: errorMudancaTurno } = await supabase
+            .from("solicitacoes_mudanca_turno")
+            .select("*")
+            .order("created_at", { ascending: false });
+            
+          if (errorMudancaTurno) {
+            console.error("Erro ao buscar solicitações de mudança de turno:", errorMudancaTurno);
+          } else if (dataMudancaTurno) {
+            const formattedData: SolicitacaoMudancaTurno[] = dataMudancaTurno.map((item: any) => ({
+              id: item.id,
+              solicitante_id: item.solicitante_id,
+              status: item.status,
+              created_at: item.created_at,
+              updated_at: item.updated_at,
+              turno_atual: item.turno_atual || '',
+              turno_novo: item.novo_turno || '',
+              data_alteracao: item.created_at,
+              motivo: item.motivo || ''
+            }));
+            setSolicitacoesMudancaTurno(formattedData);
+          }
+        } catch (err) {
+          console.error("Erro ao processar solicitações de mudança de turno:", err);
         }
         
+        // Collect solicitante_ids properly
         const solicitanteIds = new Set<number>();
         
         [
           ...(dataRota || []), 
           ...(data12x36 || []), 
-          ...(dataRefeicao || []),
-          ...(dataAbonoPonto || []),
-          ...(dataAdesaoCancelamento || []),
-          ...(dataAlteracaoEndereco || []),
-          ...(dataMudancaTurno || [])
+          ...(dataRefeicao || [])
         ].forEach(s => {
           if (s.solicitante_id) solicitanteIds.add(s.solicitante_id);
         });
+        
+        // Add solicitante_ids from the new types
+        solicitacoesAbonoPonto.forEach(s => { if (s.solicitante_id) solicitanteIds.add(s.solicitante_id); });
+        solicitacoesAdesaoCancelamento.forEach(s => { if (s.solicitante_id) solicitanteIds.add(s.solicitante_id); });
+        solicitacoesAlteracaoEndereco.forEach(s => { if (s.solicitante_id) solicitanteIds.add(s.solicitante_id); });
+        solicitacoesMudancaTurno.forEach(s => { if (s.solicitante_id) solicitanteIds.add(s.solicitante_id); });
           
         if (solicitanteIds.size > 0) {
           const { data: solicitantesData, error: solicitantesError } = await supabase
@@ -384,9 +453,10 @@ const Admin = () => {
     }
   };
 
+  // Update the generic status update function
   const atualizarStatusGenerico = async (tabela: string, id: number, status: 'aprovada' | 'rejeitada', atualizarEstado: Function) => {
     try {
-      const { error } = await customSupabase
+      const { error } = await supabase
         .from(tabela)
         .update({ status })
         .eq('id', id);

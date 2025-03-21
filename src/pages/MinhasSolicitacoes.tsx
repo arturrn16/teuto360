@@ -1,6 +1,14 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { supabase, customSupabase, SolicitacaoAbonoPonto, SolicitacaoAdesaoCancelamento, SolicitacaoAlteracaoEndereco, SolicitacaoMudancaTurno } from "@/integrations/supabase/client";
+import { 
+  supabase, 
+  customSupabase, 
+  BaseSolicitacao, 
+  SolicitacaoAbonoPonto, 
+  SolicitacaoAdesaoCancelamento, 
+  SolicitacaoAlteracaoEndereco,
+  SolicitacaoMudancaTurno
+} from "@/integrations/supabase/client";
 import {
   Card,
   CardContent,
@@ -23,20 +31,14 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-interface SolicitacaoRefeicao {
-  id: number;
-  created_at: string;
-  status: string;
+interface SolicitacaoRefeicao extends BaseSolicitacao {
   tipo: string;
   tipo_refeicao: string;
   data_refeicao: string;
   colaboradores: string[];
 }
 
-interface SolicitacaoTransporte {
-  id: number;
-  created_at: string;
-  status: string;
+interface SolicitacaoTransporte extends BaseSolicitacao {
   tipo: string;
   colaborador_nome: string;
   rota: string;
@@ -45,20 +47,18 @@ interface SolicitacaoTransporte {
   periodo_fim?: string;
 }
 
-type SolicitacaoOutros = 
-  | SolicitacaoAbonoPonto 
-  | SolicitacaoAdesaoCancelamento 
-  | SolicitacaoAlteracaoEndereco 
-  | SolicitacaoMudancaTurno;
+type SolicitacaoAbonoPontoWithTipo = SolicitacaoAbonoPonto & { tipo: string };
+type SolicitacaoAdesaoCancelamentoWithTipo = SolicitacaoAdesaoCancelamento & { tipo: string };
+type SolicitacaoAlteracaoEnderecoWithTipo = SolicitacaoAlteracaoEndereco & { tipo: string };
+type SolicitacaoMudancaTurnoWithTipo = SolicitacaoMudancaTurno & { tipo: string };
 
-// Redefine Solicitacao to be a union of all types
 type Solicitacao = 
   | SolicitacaoRefeicao 
   | SolicitacaoTransporte 
-  | SolicitacaoAbonoPonto 
-  | SolicitacaoAdesaoCancelamento 
-  | SolicitacaoAlteracaoEndereco 
-  | SolicitacaoMudancaTurno;
+  | SolicitacaoAbonoPontoWithTipo
+  | SolicitacaoAdesaoCancelamentoWithTipo
+  | SolicitacaoAlteracaoEnderecoWithTipo
+  | SolicitacaoMudancaTurnoWithTipo;
 
 const MinhasSolicitacoes = () => {
   const { user, isAuthenticated } = useAuth();
@@ -77,21 +77,17 @@ const MinhasSolicitacoes = () => {
       setError(null);
 
       try {
-        // Define which tables to query based on user type
         let tables = [];
         
-        // For 'refeicao' users, show only meal requests
         if (user.tipo_usuario === 'refeicao') {
           tables = [{ table: 'solicitacoes_refeicao', tipo: 'Refeição' }];
         } 
-        // For 'selecao' users, show only transport requests
         else if (user.tipo_usuario === 'selecao') {
           tables = [
             { table: 'solicitacoes_transporte_rota', tipo: 'Transporte Rota' },
             { table: 'solicitacoes_transporte_12x36', tipo: 'Transporte 12x36' },
           ];
         }
-        // For other users (colaborador, comum)
         else {
           tables = [
             { table: 'solicitacoes_abono_ponto', tipo: 'Abono de Ponto' },
@@ -103,11 +99,9 @@ const MinhasSolicitacoes = () => {
 
         let allSolicitacoes: Solicitacao[] = [];
 
-        // For collaborator request types
         for (const { table, tipo } of tables) {
           try {
             if (table === 'solicitacoes_refeicao') {
-              // For meal requests, select additional fields
               const { data, error } = await (supabase as any)
                 .from(table)
                 .select('id, created_at, status, tipo_refeicao, data_refeicao, colaboradores')
@@ -128,12 +122,13 @@ const MinhasSolicitacoes = () => {
                   tipo_refeicao: item.tipo_refeicao,
                   data_refeicao: item.data_refeicao,
                   colaboradores: item.colaboradores,
+                  solicitante_id: user.id,
+                  updated_at: item.updated_at || item.created_at,
                 }));
                 allSolicitacoes = [...allSolicitacoes, ...solicitacoesWithType];
               }
             } 
             else if (table === 'solicitacoes_transporte_rota') {
-              // For route transport requests, select relevant fields
               const { data, error } = await (supabase as any)
                 .from(table)
                 .select('id, created_at, status, colaborador_nome, rota, periodo_inicio, periodo_fim')
@@ -155,12 +150,13 @@ const MinhasSolicitacoes = () => {
                   rota: item.rota,
                   periodo_inicio: item.periodo_inicio,
                   periodo_fim: item.periodo_fim,
+                  solicitante_id: user.id,
+                  updated_at: item.updated_at || item.created_at,
                 }));
                 allSolicitacoes = [...allSolicitacoes, ...solicitacoesWithType];
               }
             }
             else if (table === 'solicitacoes_transporte_12x36') {
-              // For 12x36 transport requests, select relevant fields
               const { data, error } = await (supabase as any)
                 .from(table)
                 .select('id, created_at, status, colaborador_nome, rota, data_inicio')
@@ -181,12 +177,14 @@ const MinhasSolicitacoes = () => {
                   colaborador_nome: item.colaborador_nome,
                   rota: item.rota,
                   data_inicio: item.data_inicio,
+                  solicitante_id: user.id,
+                  updated_at: item.updated_at || item.created_at,
                 }));
                 allSolicitacoes = [...allSolicitacoes, ...solicitacoesWithType];
               }
             }
             else if (table === 'solicitacoes_abono_ponto') {
-              const { data, error } = await customSupabase
+              const { data: queryData, error } = await supabase
                 .from(table)
                 .select('*')
                 .eq('solicitante_id', user.id)
@@ -197,16 +195,27 @@ const MinhasSolicitacoes = () => {
                 continue;
               }
 
-              if (data && data.length > 0) {
-                const solicitacoesWithType: SolicitacaoAbonoPonto[] = data.map(item => ({
-                  ...item,
-                  tipo: tipo,
+              if (queryData && queryData.length > 0) {
+                const typedData = queryData as any[];
+                const solicitacoesWithType: SolicitacaoAbonoPontoWithTipo[] = typedData.map(item => ({
+                  id: item.id,
+                  solicitante_id: item.solicitante_id,
+                  cidade: item.cidade || '',
+                  turno: item.turno || '',
+                  rota: item.rota || '',
+                  descricao: item.descricao || '',
+                  status: item.status || 'pendente',
+                  created_at: item.created_at,
+                  updated_at: item.updated_at || item.created_at,
+                  data_ocorrencia: item.data_ocorrencia || '',
+                  motivo: item.motivo || '',
+                  tipo: tipo
                 }));
                 allSolicitacoes = [...allSolicitacoes, ...solicitacoesWithType];
               }
             }
             else if (table === 'solicitacoes_adesao_cancelamento') {
-              const { data, error } = await customSupabase
+              const { data: queryData, error } = await supabase
                 .from(table)
                 .select('*')
                 .eq('solicitante_id', user.id)
@@ -217,16 +226,24 @@ const MinhasSolicitacoes = () => {
                 continue;
               }
 
-              if (data && data.length > 0) {
-                const solicitacoesWithType: SolicitacaoAdesaoCancelamento[] = data.map(item => ({
-                  ...item,
-                  tipo: tipo,
+              if (queryData && queryData.length > 0) {
+                const typedData = queryData as any[];
+                const solicitacoesWithType: SolicitacaoAdesaoCancelamentoWithTipo[] = typedData.map(item => ({
+                  id: item.id,
+                  solicitante_id: item.solicitante_id,
+                  tipo_solicitacao: item.tipo_solicitacao || '',
+                  email: item.email || '',
+                  motivo: item.motivo || '',
+                  status: item.status || 'pendente',
+                  created_at: item.created_at,
+                  updated_at: item.updated_at || item.created_at,
+                  tipo: tipo
                 }));
                 allSolicitacoes = [...allSolicitacoes, ...solicitacoesWithType];
               }
             }
             else if (table === 'solicitacoes_alteracao_endereco') {
-              const { data, error } = await customSupabase
+              const { data: queryData, error } = await supabase
                 .from(table)
                 .select('*')
                 .eq('solicitante_id', user.id)
@@ -237,19 +254,34 @@ const MinhasSolicitacoes = () => {
                 continue;
               }
 
-              if (data && data.length > 0) {
-                const solicitacoesWithType: SolicitacaoAlteracaoEndereco[] = data.map(item => ({
-                  ...item,
-                  tipo: tipo,
-                  endereco_atual: item.endereco,
-                  endereco_novo: item.nova_rota ? `${item.endereco} (nova rota: ${item.nova_rota})` : item.endereco,
-                  data_alteracao: item.created_at,
+              if (queryData && queryData.length > 0) {
+                const typedData = queryData as any[];
+                const solicitacoesWithType: SolicitacaoAlteracaoEnderecoWithTipo[] = typedData.map(item => ({
+                  id: item.id,
+                  solicitante_id: item.solicitante_id,
+                  telefone: item.telefone || '',
+                  cep: item.cep || '',
+                  endereco: item.endereco || '',
+                  bairro: item.bairro || '',
+                  cidade: item.cidade || '',
+                  complemento: item.complemento,
+                  telefone_whatsapp: item.telefone_whatsapp || '',
+                  rota_atual: item.rota_atual || '',
+                  alterar_rota: item.alterar_rota || false,
+                  nova_rota: item.nova_rota,
+                  status: item.status || 'pendente',
+                  created_at: item.created_at,
+                  updated_at: item.updated_at || item.created_at,
+                  endereco_atual: item.endereco || '',
+                  endereco_novo: item.nova_rota ? `${item.endereco} (nova rota: ${item.nova_rota})` : item.endereco || '',
+                  data_alteracao: item.created_at || '',
+                  tipo: tipo
                 }));
                 allSolicitacoes = [...allSolicitacoes, ...solicitacoesWithType];
               }
             }
             else if (table === 'solicitacoes_mudanca_turno') {
-              const { data, error } = await customSupabase
+              const { data: queryData, error } = await supabase
                 .from(table)
                 .select('*')
                 .eq('solicitante_id', user.id)
@@ -260,19 +292,34 @@ const MinhasSolicitacoes = () => {
                 continue;
               }
 
-              if (data && data.length > 0) {
-                const solicitacoesWithType: SolicitacaoMudancaTurno[] = data.map(item => ({
-                  ...item,
-                  tipo: tipo,
-                  turno_novo: item.novo_turno,
-                  data_alteracao: item.created_at,
+              if (queryData && queryData.length > 0) {
+                const typedData = queryData as any[];
+                const solicitacoesWithType: SolicitacaoMudancaTurnoWithTipo[] = typedData.map(item => ({
+                  id: item.id,
+                  solicitante_id: item.solicitante_id,
+                  telefone: item.telefone || '',
+                  cep: item.cep || '',
+                  endereco: item.endereco || '',
+                  bairro: item.bairro || '',
+                  cidade: item.cidade || '',
+                  turno_atual: item.turno_atual || '',
+                  novo_turno: item.novo_turno || '',
+                  turno_novo: item.novo_turno || '',
+                  nova_rota: item.nova_rota || '',
+                  nome_gestor: item.nome_gestor || '',
+                  motivo: item.motivo || '',
+                  status: item.status || 'pendente',
+                  created_at: item.created_at,
+                  updated_at: item.updated_at || item.created_at,
+                  data_alteracao: item.created_at || '',
+                  tipo: tipo
                 }));
                 allSolicitacoes = [...allSolicitacoes, ...solicitacoesWithType];
               }
             }
           } catch (tableError) {
             console.error(`Erro ao processar tabela ${table}:`, tableError);
-            // Continue with other tables even if one fails
+            continue;
           }
         }
 
@@ -294,23 +341,19 @@ const MinhasSolicitacoes = () => {
     }
   };
 
-  // Utility to check if solicitacao is of type SolicitacaoRefeicao
   const isRefeicaoSolicitacao = (solicitacao: Solicitacao): solicitacao is SolicitacaoRefeicao => {
     return solicitacao.tipo === 'Refeição';
   };
 
-  // Utility to check if solicitacao is of type SolicitacaoTransporte
   const isTransporteSolicitacao = (solicitacao: Solicitacao): solicitacao is SolicitacaoTransporte => {
     return solicitacao.tipo === 'Transporte Rota' || solicitacao.tipo === 'Transporte 12x36';
   };
 
-  // Format date to display in the format DD/MM/YYYY
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
     return date.toLocaleDateString('pt-BR');
   };
 
-  // Format datetime to display in the format DD/MM/YYYY às HH:MM
   const formatDateTime = (dateString: string): string => {
     const date = new Date(dateString);
     return `${date.toLocaleDateString('pt-BR')} às ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
@@ -327,7 +370,6 @@ const MinhasSolicitacoes = () => {
   const showButtons = () => {
     if (!user) return null;
     
-    // Only show the Refeição button for refeicao users
     if (user.tipo_usuario === 'refeicao') {
       return (
         <div className="mt-4">
@@ -337,7 +379,6 @@ const MinhasSolicitacoes = () => {
         </div>
       );
     } 
-    // Show transport buttons for selecao users
     else if (user.tipo_usuario === 'selecao') {
       return (
         <div className="mt-4 space-x-2">
@@ -356,7 +397,6 @@ const MinhasSolicitacoes = () => {
       );
     } 
     else {
-      // For other users (colaborador, comum), show all the appropriate buttons
       return (
         <div className="mt-4 space-x-2">
           <Button asChild variant="outline">
@@ -395,41 +435,33 @@ const MinhasSolicitacoes = () => {
             <>
               <div className="overflow-x-auto">
                 {user?.tipo_usuario === 'refeicao' ? (
-                  // Custom table layout for refeicao users
                   <Table>
                     <TableBody>
                       {solicitacoes.map((solicitacao) => {
-                        // Only show for meal requests (should be the only type for refeicao users)
                         if (isRefeicaoSolicitacao(solicitacao)) {
                           return (
                             <TableRow key={solicitacao.id} className="border-b">
-                              {/* Coluna Solicitador */}
                               <TableCell className="align-top">
                                 <div className="font-medium">Solicitador de Refeição</div>
                                 <div className="text-sm text-muted-foreground">Produção</div>
                               </TableCell>
                               
-                              {/* Coluna Colaborador */}
                               <TableCell className="align-top">
                                 <div className="font-medium">{solicitacao.colaboradores[0]}</div>
                               </TableCell>
                               
-                              {/* Coluna Tipo de Refeição */}
                               <TableCell className="align-top">
                                 <div className="font-medium">{solicitacao.tipo_refeicao}</div>
                               </TableCell>
                               
-                              {/* Coluna Data da Refeição */}
                               <TableCell className="align-top">
                                 <div className="font-medium">{formatDate(solicitacao.data_refeicao)}</div>
                               </TableCell>
                               
-                              {/* Coluna Data de Criação */}
                               <TableCell className="align-top">
                                 <div className="font-medium">{formatDateTime(solicitacao.created_at)}</div>
                               </TableCell>
                               
-                              {/* Coluna Status */}
                               <TableCell className="align-top">
                                 <Badge 
                                   variant={solicitacao.status === 'aprovada' ? 'success' : 'secondary'}
@@ -438,7 +470,6 @@ const MinhasSolicitacoes = () => {
                                 </Badge>
                               </TableCell>
                               
-                              {/* Coluna Ações */}
                               <TableCell className="align-top">
                                 {solicitacao.status === 'aprovada' && (
                                   <Button 
@@ -458,7 +489,6 @@ const MinhasSolicitacoes = () => {
                     </TableBody>
                   </Table>
                 ) : user?.tipo_usuario === 'selecao' ? (
-                  // Custom table layout for selecao users
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -516,7 +546,6 @@ const MinhasSolicitacoes = () => {
                     </TableBody>
                   </Table>
                 ) : (
-                  // Standard table for other users (colaborador, comum)
                   <Table>
                     <TableCaption>Suas solicitações de serviços.</TableCaption>
                     <TableHeader>
