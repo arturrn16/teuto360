@@ -58,7 +58,7 @@ const App = () => (
               <Route
                 path="/transporte-rota"
                 element={
-                  <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador"]}>
+                  <ProtectedRoute allowedTypes={["admin", "selecao", "comum"]}>
                     <TransporteRota />
                   </ProtectedRoute>
                 }
@@ -85,7 +85,7 @@ const App = () => (
               <Route
                 path="/minhas-solicitacoes"
                 element={
-                  <ProtectedRoute allowedTypes={["selecao", "refeicao", "colaborador"]}>
+                  <ProtectedRoute allowedTypes={["selecao", "refeicao", "colaborador", "comum"]}>
                     <MinhasSolicitacoes />
                   </ProtectedRoute>
                 }
@@ -100,11 +100,11 @@ const App = () => (
                 }
               />
               
-              {/* New routes for collaborators */}
+              {/* New routes for collaborators and comum users */}
               <Route
                 path="/adesao-cancelamento"
                 element={
-                  <ProtectedRoute allowedTypes={["colaborador"]}>
+                  <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
                     <AdesaoCancelamento />
                   </ProtectedRoute>
                 }
@@ -113,7 +113,7 @@ const App = () => (
               <Route
                 path="/mudanca-turno"
                 element={
-                  <ProtectedRoute allowedTypes={["colaborador"]}>
+                  <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
                     <MudancaTurno />
                   </ProtectedRoute>
                 }
@@ -122,7 +122,7 @@ const App = () => (
               <Route
                 path="/alteracao-endereco"
                 element={
-                  <ProtectedRoute allowedTypes={["colaborador"]}>
+                  <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
                     <AlteracaoEndereco />
                   </ProtectedRoute>
                 }
@@ -131,7 +131,7 @@ const App = () => (
               <Route
                 path="/abono-ponto"
                 element={
-                  <ProtectedRoute allowedTypes={["colaborador"]}>
+                  <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
                     <AbonoPonto />
                   </ProtectedRoute>
                 }
@@ -140,7 +140,7 @@ const App = () => (
               <Route
                 path="/avaliacao"
                 element={
-                  <ProtectedRoute allowedTypes={["colaborador"]}>
+                  <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
                     <Avaliacao />
                   </ProtectedRoute>
                 }
@@ -149,7 +149,7 @@ const App = () => (
               <Route
                 path="/plantao"
                 element={
-                  <ProtectedRoute allowedTypes={["colaborador"]}>
+                  <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
                     <Plantao />
                   </ProtectedRoute>
                 }
@@ -158,7 +158,7 @@ const App = () => (
               <Route
                 path="/mapa-rotas"
                 element={
-                  <ProtectedRoute allowedTypes={["colaborador"]}>
+                  <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
                     <MapaRotas />
                   </ProtectedRoute>
                 }

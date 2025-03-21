@@ -8,7 +8,7 @@ import { Link, useLocation } from "react-router-dom";
 interface NavLink {
   name: string;
   href: string;
-  allowedTypes: ('admin' | 'selecao' | 'refeicao' | 'colaborador')[];
+  allowedTypes: ('admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum')[];
   icon?: React.ReactNode;
   displayNameByType?: Record<string, string>;
 }
@@ -17,15 +17,15 @@ const navLinks: NavLink[] = [
   { 
     name: "Dashboard", 
     href: "/dashboard", 
-    allowedTypes: ["admin", "selecao", "refeicao", "colaborador"],
+    allowedTypes: ["admin", "selecao", "refeicao", "colaborador", "comum"],
     icon: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-layout-dashboard"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
   },
   { 
     name: "Transporte Rota", 
     href: "/transporte-rota", 
-    allowedTypes: ["admin", "selecao", "colaborador"],
+    allowedTypes: ["admin", "selecao", "comum"],
     displayNameByType: {
-      colaborador: "Uso de Rota"
+      comum: "Uso de Rota"
     },
     icon: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-route"><circle cx="6" cy="19" r="3"/><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/><circle cx="18" cy="5" r="3"/></svg> 
   },
@@ -44,7 +44,7 @@ const navLinks: NavLink[] = [
   { 
     name: "Minhas Solicitações", 
     href: "/minhas-solicitacoes", 
-    allowedTypes: ["selecao", "refeicao", "colaborador"],
+    allowedTypes: ["selecao", "refeicao", "colaborador", "comum"],
     icon: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-file-text"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></svg>
   },
   { 
@@ -53,47 +53,47 @@ const navLinks: NavLink[] = [
     allowedTypes: ["admin"],
     icon: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-shield-check"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
   },
-  // Novas páginas para colaboradores
+  // Páginas para colaboradores
   { 
     name: "Adesão/Cancelamento de Rota", 
     href: "/adesao-cancelamento", 
-    allowedTypes: ["colaborador"],
+    allowedTypes: ["colaborador", "comum"],
     icon: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pencil-line"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
   },
   { 
     name: "Mudança de Turno", 
     href: "/mudanca-turno", 
-    allowedTypes: ["colaborador"],
+    allowedTypes: ["colaborador", "comum"],
     icon: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-clock"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
   },
   { 
     name: "Alteração de Endereço", 
     href: "/alteracao-endereco", 
-    allowedTypes: ["colaborador"],
+    allowedTypes: ["colaborador", "comum"],
     icon: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-home"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
   },
   { 
     name: "Abono de Ponto", 
     href: "/abono-ponto", 
-    allowedTypes: ["colaborador"],
+    allowedTypes: ["colaborador", "comum"],
     icon: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check-circle"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
   },
   { 
     name: "Avaliação", 
     href: "/avaliacao", 
-    allowedTypes: ["colaborador"],
+    allowedTypes: ["colaborador", "comum"],
     icon: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
   },
   { 
     name: "Plantão 24hs", 
     href: "/plantao", 
-    allowedTypes: ["colaborador"],
+    allowedTypes: ["colaborador", "comum"],
     icon: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-phone"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
   },
   { 
     name: "Mapa de Rotas", 
     href: "/mapa-rotas", 
-    allowedTypes: ["colaborador"],
+    allowedTypes: ["colaborador", "comum"],
     icon: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-map-pin"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
   },
 ];
@@ -155,7 +155,8 @@ export const Navbar = () => {
                 <span className="text-xs text-gray-500 dark:text-gray-400">
                   {user?.tipo_usuario === 'admin' ? 'Administrador' : 
                    user?.tipo_usuario === 'refeicao' ? 'Refeição' : 
-                   user?.tipo_usuario === 'selecao' ? 'Seleção' : 'Colaborador'}
+                   user?.tipo_usuario === 'selecao' ? 'Seleção' :
+                   user?.tipo_usuario === 'comum' ? 'Colaborador' : 'Colaborador'}
                 </span>
               </div>
               <button
