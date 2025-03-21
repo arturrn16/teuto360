@@ -11,7 +11,7 @@ export interface User {
   setor: string;
   username: string;
   admin: boolean;
-  tipo_usuario: 'admin' | 'comum' | 'refeicao';
+  tipo_usuario: 'admin' | 'selecao' | 'refeicao' | 'colaborador';
   created_at?: string;
   updated_at?: string;
 }
@@ -66,7 +66,7 @@ export const storeUser = (user: User): void => {
 
 export const checkUserPermission = (
   user: User | null,
-  requiredTypes: ('admin' | 'comum' | 'refeicao')[]
+  requiredTypes: ('admin' | 'selecao' | 'refeicao' | 'colaborador')[]
 ): boolean => {
   if (!user) return false;
   

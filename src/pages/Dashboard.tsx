@@ -1,21 +1,32 @@
+
 import { useAuth } from "@/context/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui-components/Card";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
-import { Clock, FileText, Route, Map, Utensils, Shield } from "lucide-react";
+import { Clock, FileText, Route, Map, Utensils, Shield, Home, UserCheck, Phone, Star, MapPin, ClipboardCheck, Replace } from "lucide-react";
+import { useEffect, useState } from "react";
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  // Update the clock every second
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   // Dashboard cards based on user type
   const cards = [
-    // Common user cards
+    // Common user cards (now "selecao")
     {
       title: "Transporte Rota",
       description: "Solicite transporte para rotas regulares",
       icon: <Route className="h-8 w-8 text-blue-500" />,
       to: "/transporte-rota",
-      allowedTypes: ["admin", "comum"],
+      allowedTypes: ["admin", "selecao"],
       color: "from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20",
       textColor: "text-blue-600 dark:text-blue-400"
     },
@@ -24,16 +35,27 @@ const Dashboard = () => {
       description: "Solicite transporte para turnos 12x36",
       icon: <Map className="h-8 w-8 text-indigo-500" />,
       to: "/transporte-12x36",
-      allowedTypes: ["admin", "comum"],
+      allowedTypes: ["admin", "selecao"],
       color: "from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20",
       textColor: "text-indigo-600 dark:text-indigo-400"
     },
+    // "Uso de Rota" card for colaborador users
+    {
+      title: "Uso de Rota",
+      description: "Solicite transporte para rotas regulares",
+      icon: <Route className="h-8 w-8 text-blue-500" />,
+      to: "/transporte-rota",
+      allowedTypes: ["colaborador"],
+      color: "from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20",
+      textColor: "text-blue-600 dark:text-blue-400"
+    },
+    // Shared cards
     {
       title: "Minhas Solicitações",
       description: "Visualize todas as suas solicitações",
       icon: <FileText className="h-8 w-8 text-violet-500" />,
       to: "/minhas-solicitacoes",
-      allowedTypes: ["comum", "refeicao"],
+      allowedTypes: ["selecao", "refeicao", "colaborador"],
       color: "from-violet-50 to-violet-100 dark:from-violet-900/20 dark:to-violet-800/20",
       textColor: "text-violet-600 dark:text-violet-400"
     },
@@ -56,6 +78,70 @@ const Dashboard = () => {
       allowedTypes: ["admin"],
       color: "from-rose-50 to-rose-100 dark:from-rose-900/20 dark:to-rose-800/20",
       textColor: "text-rose-600 dark:text-rose-400"
+    },
+    // New cards for colaborador
+    {
+      title: "Adesão/Cancelamento de Rota",
+      description: "Solicite adesão ou cancelamento do transporte fretado",
+      icon: <ClipboardCheck className="h-8 w-8 text-teal-500" />,
+      to: "/adesao-cancelamento",
+      allowedTypes: ["colaborador"],
+      color: "from-teal-50 to-teal-100 dark:from-teal-900/20 dark:to-teal-800/20",
+      textColor: "text-teal-600 dark:text-teal-400"
+    },
+    {
+      title: "Mudança de Turno",
+      description: "Solicite alteração do seu turno de trabalho",
+      icon: <Replace className="h-8 w-8 text-cyan-500" />,
+      to: "/mudanca-turno",
+      allowedTypes: ["colaborador"],
+      color: "from-cyan-50 to-cyan-100 dark:from-cyan-900/20 dark:to-cyan-800/20",
+      textColor: "text-cyan-600 dark:text-cyan-400"
+    },
+    {
+      title: "Alteração de Endereço",
+      description: "Atualize seu endereço cadastrado",
+      icon: <Home className="h-8 w-8 text-fuchsia-500" />,
+      to: "/alteracao-endereco",
+      allowedTypes: ["colaborador"],
+      color: "from-fuchsia-50 to-fuchsia-100 dark:from-fuchsia-900/20 dark:to-fuchsia-800/20",
+      textColor: "text-fuchsia-600 dark:text-fuchsia-400"
+    },
+    {
+      title: "Abono de Ponto",
+      description: "Solicite abono por problemas no transporte",
+      icon: <UserCheck className="h-8 w-8 text-pink-500" />,
+      to: "/abono-ponto",
+      allowedTypes: ["colaborador"],
+      color: "from-pink-50 to-pink-100 dark:from-pink-900/20 dark:to-pink-800/20",
+      textColor: "text-pink-600 dark:text-pink-400"
+    },
+    {
+      title: "Avaliação",
+      description: "Avalie o serviço de transporte fretado",
+      icon: <Star className="h-8 w-8 text-yellow-500" />,
+      to: "/avaliacao",
+      allowedTypes: ["colaborador"],
+      color: "from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/20",
+      textColor: "text-yellow-600 dark:text-yellow-400"
+    },
+    {
+      title: "Plantão 24hs",
+      description: "Contate o plantão do transporte fretado",
+      icon: <Phone className="h-8 w-8 text-green-500" />,
+      to: "/plantao",
+      allowedTypes: ["colaborador"],
+      color: "from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20",
+      textColor: "text-green-600 dark:text-green-400"
+    },
+    {
+      title: "Mapa de Rotas",
+      description: "Visualize os mapas das rotas disponíveis",
+      icon: <MapPin className="h-8 w-8 text-red-500" />,
+      to: "/mapa-rotas",
+      allowedTypes: ["colaborador"],
+      color: "from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20",
+      textColor: "text-red-600 dark:text-red-400"
     },
   ];
 
@@ -108,7 +194,7 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-xl font-bold text-gray-700 dark:text-gray-200">
-              {new Date().toLocaleDateString('pt-BR', { 
+              {currentTime.toLocaleDateString('pt-BR', { 
                 weekday: 'long', 
                 year: 'numeric', 
                 month: 'long', 
@@ -116,7 +202,7 @@ const Dashboard = () => {
               })}
             </div>
             <div className="text-lg text-gray-600 dark:text-gray-300 mt-1">
-              {new Date().toLocaleTimeString('pt-BR')}
+              {currentTime.toLocaleTimeString('pt-BR')}
             </div>
           </CardContent>
         </Card>

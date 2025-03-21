@@ -25,7 +25,7 @@ export const Layout = () => {
         <Outlet />
       </main>
       <footer className="py-4 px-4 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 text-center text-gray-500 text-sm">
-        <p>© {new Date().getFullYear()} SGR TEUTO - Todos os direitos reservados</p>
+        <p>© {new Date().getFullYear()} Teuto360 - Todos os direitos reservados</p>
       </footer>
     </div>
   );

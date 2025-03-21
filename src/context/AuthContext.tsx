@@ -81,8 +81,8 @@ export const useAuth = (): AuthContextType => {
 // Protected route component
 export const ProtectedRoute: React.FC<{
   children: React.ReactNode;
-  allowedTypes?: ('admin' | 'comum' | 'refeicao')[];
-}> = ({ children, allowedTypes = ["admin", "comum", "refeicao"] }) => {
+  allowedTypes?: ('admin' | 'selecao' | 'refeicao' | 'colaborador')[];
+}> = ({ children, allowedTypes = ["admin", "selecao", "refeicao", "colaborador"] }) => {
   const { user, isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
 

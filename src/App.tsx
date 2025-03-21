@@ -20,6 +20,15 @@ import Refeicao from "./pages/Refeicao";
 import MinhasSolicitacoes from "./pages/MinhasSolicitacoes";
 import Admin from "./pages/Admin";
 
+// Import new pages for collaborators
+import AdesaoCancelamento from "./pages/AdesaoCancelamento";
+import MudancaTurno from "./pages/MudancaTurno";
+import AlteracaoEndereco from "./pages/AlteracaoEndereco";
+import AbonoPonto from "./pages/AbonoPonto";
+import Avaliacao from "./pages/Avaliacao";
+import Plantao from "./pages/Plantao";
+import MapaRotas from "./pages/MapaRotas";
+
 // Create a client
 const queryClient = new QueryClient();
 
@@ -49,7 +58,7 @@ const App = () => (
               <Route
                 path="/transporte-rota"
                 element={
-                  <ProtectedRoute allowedTypes={["admin", "comum"]}>
+                  <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador"]}>
                     <TransporteRota />
                   </ProtectedRoute>
                 }
@@ -58,7 +67,7 @@ const App = () => (
               <Route
                 path="/transporte-12x36"
                 element={
-                  <ProtectedRoute allowedTypes={["admin", "comum"]}>
+                  <ProtectedRoute allowedTypes={["admin", "selecao"]}>
                     <Transporte12x36 />
                   </ProtectedRoute>
                 }
@@ -76,7 +85,7 @@ const App = () => (
               <Route
                 path="/minhas-solicitacoes"
                 element={
-                  <ProtectedRoute allowedTypes={["comum", "refeicao"]}>
+                  <ProtectedRoute allowedTypes={["selecao", "refeicao", "colaborador"]}>
                     <MinhasSolicitacoes />
                   </ProtectedRoute>
                 }
@@ -87,6 +96,70 @@ const App = () => (
                 element={
                   <ProtectedRoute allowedTypes={["admin"]}>
                     <Admin />
+                  </ProtectedRoute>
+                }
+              />
+              
+              {/* New routes for collaborators */}
+              <Route
+                path="/adesao-cancelamento"
+                element={
+                  <ProtectedRoute allowedTypes={["colaborador"]}>
+                    <AdesaoCancelamento />
+                  </ProtectedRoute>
+                }
+              />
+              
+              <Route
+                path="/mudanca-turno"
+                element={
+                  <ProtectedRoute allowedTypes={["colaborador"]}>
+                    <MudancaTurno />
+                  </ProtectedRoute>
+                }
+              />
+              
+              <Route
+                path="/alteracao-endereco"
+                element={
+                  <ProtectedRoute allowedTypes={["colaborador"]}>
+                    <AlteracaoEndereco />
+                  </ProtectedRoute>
+                }
+              />
+              
+              <Route
+                path="/abono-ponto"
+                element={
+                  <ProtectedRoute allowedTypes={["colaborador"]}>
+                    <AbonoPonto />
+                  </ProtectedRoute>
+                }
+              />
+              
+              <Route
+                path="/avaliacao"
+                element={
+                  <ProtectedRoute allowedTypes={["colaborador"]}>
+                    <Avaliacao />
+                  </ProtectedRoute>
+                }
+              />
+              
+              <Route
+                path="/plantao"
+                element={
+                  <ProtectedRoute allowedTypes={["colaborador"]}>
+                    <Plantao />
+                  </ProtectedRoute>
+                }
+              />
+              
+              <Route
+                path="/mapa-rotas"
+                element={
+                  <ProtectedRoute allowedTypes={["colaborador"]}>
+                    <MapaRotas />
                   </ProtectedRoute>
                 }
               />
