@@ -1,3 +1,4 @@
+
 import { useLocation } from "react-router-dom";
 import { SidebarMenu } from "@/components/ui/sidebar";
 import { SidebarNavItem } from "./SidebarNavItem";
@@ -14,8 +15,8 @@ export const SidebarNavigation = ({ items, userType, admin = false }: SidebarNav
 
   // Filter links based on user type
   const filteredLinks = items.filter(link => {
-    // Admin can see all links
-    if (admin) return true;
+    // Admin should only see the Administration link
+    if (admin) return link.name === "Administração";
     
     // Otherwise, check if user type is in the allowed types
     return link.allowedTypes.includes(userType);

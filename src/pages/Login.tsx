@@ -22,7 +22,7 @@ const Login = () => {
           <Building2 className="h-12 w-12 text-primary" />
         </div>
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Teuto360®</h1>
-        <p className="text-gray-600 dark:text-gray-300 mt-2">Sistema de Gerenciamento de Recursos Humanos</p>
+        <p className="text-gray-600 dark:text-gray-300 mt-2">Simplificando Processos, Ampliando Oportunidades</p>
       </div>
       
       <LoginForm />
