@@ -20,7 +20,6 @@ import {
   TableCaption,
   TableCell,
   TableHead,
-  TableFooter,
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
@@ -152,6 +151,18 @@ const MinhasSolicitacoes = () => {
     return solicitacao.tipo === 'Refeição';
   };
 
+  // Format date to display in the format DD/MM/YYYY
+  const formatDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('pt-BR');
+  };
+
+  // Format datetime to display in the format DD/MM/YYYY às HH:MM
+  const formatDateTime = (dateString: string): string => {
+    const date = new Date(dateString);
+    return `${date.toLocaleDateString('pt-BR')} às ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+  };
+
   if (loading) {
     return <div className="flex justify-center items-center h-screen">Carregando suas solicitações...</div>;
   }
@@ -220,65 +231,110 @@ const MinhasSolicitacoes = () => {
           ) : (
             <>
               <div className="overflow-x-auto">
-                <Table>
-                  <TableCaption>Suas solicitações de serviços.</TableCaption>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Tipo</TableHead>
-                      {user?.tipo_usuario === 'refeicao' && (
-                        <>
-                          <TableHead>Colaboradores</TableHead>
-                          <TableHead>Tipo de Refeição</TableHead>
-                          <TableHead>Data da Refeição</TableHead>
-                        </>
-                      )}
-                      <TableHead>Data de Criação</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Ações</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {solicitacoes.map((solicitacao) => (
-                      <TableRow key={solicitacao.id}>
-                        <TableCell>{solicitacao.tipo}</TableCell>
-                        {user?.tipo_usuario === 'refeicao' && isRefeicaoSolicitacao(solicitacao) && (
-                          <>
-                            <TableCell>{solicitacao.colaboradores.join(', ')}</TableCell>
-                            <TableCell>{solicitacao.tipo_refeicao}</TableCell>
-                            <TableCell>{new Date(solicitacao.data_refeicao).toLocaleDateString()}</TableCell>
-                          </>
-                        )}
-                        <TableCell>{new Date(solicitacao.created_at).toLocaleDateString()}</TableCell>
-                        <TableCell>
-                          <Badge 
-                            variant={solicitacao.status === 'aprovada' ? 'success' : 'secondary'}
-                          >
-                            {solicitacao.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {isRefeicaoSolicitacao(solicitacao) && solicitacao.status === 'aprovada' && (
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              onClick={() => handleDownloadTicket(solicitacao)}
-                              title="Baixar Ticket"
-                            >
-                              <Download className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </TableCell>
+                {user?.tipo_usuario === 'refeicao' ? (
+                  // Custom table layout for refeicao users
+                  <Table>
+                    <TableBody>
+                      {solicitacoes.map((solicitacao) => {
+                        // Only show for meal requests (should be the only type for refeicao users)
+                        if (isRefeicaoSolicitacao(solicitacao)) {
+                          return (
+                            <TableRow key={solicitacao.id} className="border-b">
+                              {/* Coluna Solicitador */}
+                              <TableCell className="align-top">
+                                <div className="font-medium">Solicitador de Refeição</div>
+                                <div className="text-sm text-muted-foreground">Produção</div>
+                              </TableCell>
+                              
+                              {/* Coluna Colaborador */}
+                              <TableCell className="align-top">
+                                <div className="font-medium">{solicitacao.colaboradores[0]}</div>
+                              </TableCell>
+                              
+                              {/* Coluna Tipo de Refeição */}
+                              <TableCell className="align-top">
+                                <div className="font-medium">{solicitacao.tipo_refeicao}</div>
+                              </TableCell>
+                              
+                              {/* Coluna Data da Refeição */}
+                              <TableCell className="align-top">
+                                <div className="font-medium">{formatDate(solicitacao.data_refeicao)}</div>
+                              </TableCell>
+                              
+                              {/* Coluna Data de Criação */}
+                              <TableCell className="align-top">
+                                <div className="font-medium">{formatDateTime(solicitacao.created_at)}</div>
+                              </TableCell>
+                              
+                              {/* Coluna Status */}
+                              <TableCell className="align-top">
+                                <Badge 
+                                  variant={solicitacao.status === 'aprovada' ? 'success' : 'secondary'}
+                                >
+                                  {solicitacao.status === 'aprovada' ? 'Aprovada' : solicitacao.status}
+                                </Badge>
+                              </TableCell>
+                              
+                              {/* Coluna Ações */}
+                              <TableCell className="align-top">
+                                {solicitacao.status === 'aprovada' && (
+                                  <Button 
+                                    variant="outline" 
+                                    className="w-full"
+                                    onClick={() => handleDownloadTicket(solicitacao)}
+                                  >
+                                    <Download className="mr-1 h-4 w-4" /> Gerar Tickets
+                                  </Button>
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        }
+                        return null;
+                      })}
+                    </TableBody>
+                  </Table>
+                ) : (
+                  // Standard table for other users
+                  <Table>
+                    <TableCaption>Suas solicitações de serviços.</TableCaption>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Tipo</TableHead>
+                        <TableHead>Data de Criação</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Ações</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                  <TableFooter>
-                    <TableRow>
-                      <TableCell colSpan={user?.tipo_usuario === 'refeicao' ? 7 : 4} className="text-center">
-                        Total de solicitações: {solicitacoes.length}
-                      </TableCell>
-                    </TableRow>
-                  </TableFooter>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {solicitacoes.map((solicitacao) => (
+                        <TableRow key={solicitacao.id}>
+                          <TableCell>{solicitacao.tipo}</TableCell>
+                          <TableCell>{formatDateTime(solicitacao.created_at)}</TableCell>
+                          <TableCell>
+                            <Badge 
+                              variant={solicitacao.status === 'aprovada' ? 'success' : 'secondary'}
+                            >
+                              {solicitacao.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {isRefeicaoSolicitacao(solicitacao) && solicitacao.status === 'aprovada' && (
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={() => handleDownloadTicket(solicitacao)}
+                                title="Baixar Ticket"
+                              >
+                                <Download className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
               </div>
               <div className="mt-4">
                 {showButtons()}
