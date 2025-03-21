@@ -12,6 +12,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { Download } from "lucide-react";
+import { downloadTicket } from "@/services/ticketService";
 import {
   Table,
   TableBody,
@@ -23,12 +25,24 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-interface Solicitacao {
+interface SolicitacaoRefeicao {
+  id: number;
+  created_at: string;
+  status: string;
+  tipo: string;
+  tipo_refeicao: string;
+  data_refeicao: string;
+  colaboradores: string[];
+}
+
+interface SolicitacaoOutros {
   id: number;
   created_at: string;
   status: string;
   tipo: string;
 }
+
+type Solicitacao = SolicitacaoRefeicao | SolicitacaoOutros;
 
 const MinhasSolicitacoes = () => {
   const { user, isAuthenticated } = useAuth();
@@ -61,25 +75,53 @@ const MinhasSolicitacoes = () => {
 
         for (const { table, tipo } of tables) {
           try {
-            const { data, error } = await (supabase as any)
-              .from(table)
-              .select('id, created_at, status')
-              .eq('solicitante_id', user.id)
-              .order('created_at', { ascending: false });
+            if (table === 'solicitacoes_refeicao') {
+              // For meal requests, select additional fields
+              const { data, error } = await (supabase as any)
+                .from(table)
+                .select('id, created_at, status, tipo_refeicao, data_refeicao, colaboradores')
+                .eq('solicitante_id', user.id)
+                .order('created_at', { ascending: false });
 
-            if (error) {
-              console.error(`Erro ao buscar solicitações de ${tipo}:`, error.message);
-              continue; // Skip this table and try the next one
-            }
+              if (error) {
+                console.error(`Erro ao buscar solicitações de ${tipo}:`, error.message);
+                continue; // Skip this table and try the next one
+              }
 
-            if (data && data.length > 0) {
-              const solicitacoesWithType: Solicitacao[] = data.map(item => ({
-                id: item.id,
-                created_at: item.created_at,
-                status: item.status,
-                tipo: tipo,
-              }));
-              allSolicitacoes = [...allSolicitacoes, ...solicitacoesWithType];
+              if (data && data.length > 0) {
+                const solicitacoesWithType: SolicitacaoRefeicao[] = data.map(item => ({
+                  id: item.id,
+                  created_at: item.created_at,
+                  status: item.status,
+                  tipo: tipo,
+                  tipo_refeicao: item.tipo_refeicao,
+                  data_refeicao: item.data_refeicao,
+                  colaboradores: item.colaboradores,
+                }));
+                allSolicitacoes = [...allSolicitacoes, ...solicitacoesWithType];
+              }
+            } else {
+              // For other request types
+              const { data, error } = await (supabase as any)
+                .from(table)
+                .select('id, created_at, status')
+                .eq('solicitante_id', user.id)
+                .order('created_at', { ascending: false });
+
+              if (error) {
+                console.error(`Erro ao buscar solicitações de ${tipo}:`, error.message);
+                continue; // Skip this table and try the next one
+              }
+
+              if (data && data.length > 0) {
+                const solicitacoesWithType: SolicitacaoOutros[] = data.map(item => ({
+                  id: item.id,
+                  created_at: item.created_at,
+                  status: item.status,
+                  tipo: tipo,
+                }));
+                allSolicitacoes = [...allSolicitacoes, ...solicitacoesWithType];
+              }
             }
           } catch (tableError) {
             console.error(`Erro ao processar tabela ${table}:`, tableError);
@@ -98,6 +140,17 @@ const MinhasSolicitacoes = () => {
 
     fetchSolicitacoes();
   }, [user, isAuthenticated]);
+
+  const handleDownloadTicket = async (solicitacao: Solicitacao) => {
+    if (solicitacao.tipo === 'Refeição' && solicitacao.status === 'aprovada') {
+      await downloadTicket({ id: solicitacao.id, tipo: 'refeicao' });
+    }
+  };
+
+  // Utility to check if solicitacao is of type SolicitacaoRefeicao
+  const isRefeicaoSolicitacao = (solicitacao: Solicitacao): solicitacao is SolicitacaoRefeicao => {
+    return solicitacao.tipo === 'Refeição';
+  };
 
   if (loading) {
     return <div className="flex justify-center items-center h-screen">Carregando suas solicitações...</div>;
@@ -172,24 +225,55 @@ const MinhasSolicitacoes = () => {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Tipo</TableHead>
+                      {user?.tipo_usuario === 'refeicao' && (
+                        <>
+                          <TableHead>Colaboradores</TableHead>
+                          <TableHead>Tipo de Refeição</TableHead>
+                          <TableHead>Data da Refeição</TableHead>
+                        </>
+                      )}
                       <TableHead>Data de Criação</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead>Ações</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {solicitacoes.map((solicitacao) => (
                       <TableRow key={solicitacao.id}>
                         <TableCell>{solicitacao.tipo}</TableCell>
+                        {user?.tipo_usuario === 'refeicao' && isRefeicaoSolicitacao(solicitacao) && (
+                          <>
+                            <TableCell>{solicitacao.colaboradores.join(', ')}</TableCell>
+                            <TableCell>{solicitacao.tipo_refeicao}</TableCell>
+                            <TableCell>{new Date(solicitacao.data_refeicao).toLocaleDateString()}</TableCell>
+                          </>
+                        )}
                         <TableCell>{new Date(solicitacao.created_at).toLocaleDateString()}</TableCell>
                         <TableCell>
-                          <Badge variant="secondary">{solicitacao.status}</Badge>
+                          <Badge 
+                            variant={solicitacao.status === 'aprovada' ? 'success' : 'secondary'}
+                          >
+                            {solicitacao.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {isRefeicaoSolicitacao(solicitacao) && solicitacao.status === 'aprovada' && (
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => handleDownloadTicket(solicitacao)}
+                              title="Baixar Ticket"
+                            >
+                              <Download className="h-4 w-4" />
+                            </Button>
+                          )}
                         </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                   <TableFooter>
                     <TableRow>
-                      <TableCell colSpan={3} className="text-center">
+                      <TableCell colSpan={user?.tipo_usuario === 'refeicao' ? 7 : 4} className="text-center">
                         Total de solicitações: {solicitacoes.length}
                       </TableCell>
                     </TableRow>
