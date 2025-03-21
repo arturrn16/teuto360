@@ -31,6 +31,8 @@ import { Button } from "@/components/ui/button";
 import { Download, Search } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { downloadTicket } from "@/services/ticketService";
+import { toast } from "sonner";
 
 interface Solicitacao {
   id: number;
@@ -71,36 +73,45 @@ const MinhasSolicitacoes = () => {
   const [loading, setLoading] = useState(true);
   const [filtroColaborador, setFiltroColaborador] = useState("");
   const [filtroStatus, setFiltroStatus] = useState("todos");
+  const [activeTab, setActiveTab] = useState<string>("rota");
   
   useEffect(() => {
     if (!user) return;
     
+    // Set default active tab based on user type
+    if (user.tipo_usuario === "refeicao") {
+      setActiveTab("refeicao");
+    }
+    
     const fetchSolicitacoes = async () => {
       try {
-        // Buscar solicitações de transporte rota
-        const { data: dataRota, error: errorRota } = await supabase
-          .from("solicitacoes_transporte_rota")
-          .select("*")
-          .eq("solicitante_id", user.id)
-          .order("created_at", { ascending: false });
+        // Fetch data based on user type
+        if (user.tipo_usuario === "admin" || user.tipo_usuario === "comum") {
+          // Buscar solicitações de transporte rota
+          const { data: dataRota, error: errorRota } = await supabase
+            .from("solicitacoes_transporte_rota")
+            .select("*")
+            .eq("solicitante_id", user.id)
+            .order("created_at", { ascending: false });
+            
+          if (errorRota) {
+            console.error("Erro ao buscar solicitações de rota:", errorRota);
+          } else {
+            setSolicitacoesRota(dataRota || []);
+          }
           
-        if (errorRota) {
-          console.error("Erro ao buscar solicitações de rota:", errorRota);
-        } else {
-          setSolicitacoesRota(dataRota || []);
-        }
-        
-        // Buscar solicitações de transporte 12x36
-        const { data: data12x36, error: error12x36 } = await supabase
-          .from("solicitacoes_transporte_12x36")
-          .select("*")
-          .eq("solicitante_id", user.id)
-          .order("created_at", { ascending: false });
-          
-        if (error12x36) {
-          console.error("Erro ao buscar solicitações 12x36:", error12x36);
-        } else {
-          setSolicitacoes12x36(data12x36 || []);
+          // Buscar solicitações de transporte 12x36
+          const { data: data12x36, error: error12x36 } = await supabase
+            .from("solicitacoes_transporte_12x36")
+            .select("*")
+            .eq("solicitante_id", user.id)
+            .order("created_at", { ascending: false });
+            
+          if (error12x36) {
+            console.error("Erro ao buscar solicitações 12x36:", error12x36);
+          } else {
+            setSolicitacoes12x36(data12x36 || []);
+          }
         }
         
         // Buscar solicitações de refeição (se o usuário tiver permissão)
@@ -126,6 +137,16 @@ const MinhasSolicitacoes = () => {
     
     fetchSolicitacoes();
   }, [user]);
+  
+  // Função para baixar ticket
+  const handleDownloadTicket = async (id: number, tipo: 'rota' | '12x36' | 'refeicao') => {
+    try {
+      await downloadTicket({ id, tipo });
+    } catch (error) {
+      console.error("Erro ao baixar ticket:", error);
+      toast.error("Erro ao baixar ticket");
+    }
+  };
   
   // Função para formatar a data
   const formatarData = (dataString: string) => {
@@ -199,6 +220,28 @@ const MinhasSolicitacoes = () => {
     );
   };
   
+  // Determine which tabs should be visible based on user type
+  const getVisibleTabs = () => {
+    if (!user) return [];
+    
+    const tabs = [];
+    
+    if (user.tipo_usuario === "admin" || user.tipo_usuario === "comum") {
+      tabs.push(
+        { id: "rota", label: "Transporte Rota" },
+        { id: "12x36", label: "Transporte 12x36" }
+      );
+    }
+    
+    if (user.tipo_usuario === "admin" || user.tipo_usuario === "refeicao") {
+      tabs.push({ id: "refeicao", label: "Refeição" });
+    }
+    
+    return tabs;
+  };
+  
+  const visibleTabs = getVisibleTabs();
+  
   return (
     <div className="container py-10">
       <Card>
@@ -243,157 +286,182 @@ const MinhasSolicitacoes = () => {
                 </div>
               </div>
               
-              <Tabs defaultValue="rota">
-                <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="rota">Transporte Rota</TabsTrigger>
-                  <TabsTrigger value="12x36">Transporte 12x36</TabsTrigger>
-                  {(user?.tipo_usuario === "admin" || user?.tipo_usuario === "refeicao") && (
-                    <TabsTrigger value="refeicao">Refeição</TabsTrigger>
-                  )}
-                </TabsList>
-                
-                <TabsContent value="rota" className="mt-4">
-                  {filtrarSolicitacoesRota().length > 0 ? (
-                    <div className="rounded-md border overflow-hidden">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Colaborador</TableHead>
-                            <TableHead>Cidade / Turno</TableHead>
-                            <TableHead>Rota</TableHead>
-                            <TableHead>Período</TableHead>
-                            <TableHead>Data de Solicitação</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead className="w-[100px]">Ações</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {filtrarSolicitacoesRota().map((solicitacao) => (
-                            <TableRow key={solicitacao.id}>
-                              <TableCell className="font-medium">{solicitacao.colaborador_nome}</TableCell>
-                              <TableCell>{solicitacao.cidade} / {solicitacao.turno}</TableCell>
-                              <TableCell>{solicitacao.rota}</TableCell>
-                              <TableCell>
-                                {formatarData(solicitacao.periodo_inicio)} até {formatarData(solicitacao.periodo_fim)}
-                              </TableCell>
-                              <TableCell>{formatarTimestamp(solicitacao.created_at)}</TableCell>
-                              <TableCell>
-                                <StatusBadge status={solicitacao.status} />
-                              </TableCell>
-                              <TableCell>
-                                {solicitacao.status === "aprovada" && (
-                                  <Button variant="outline" size="sm" className="w-full">
-                                    <Download className="h-4 w-4 mr-1" />
-                                    Ticket
-                                  </Button>
-                                )}
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  ) : (
-                    <p className="text-center py-10 text-muted-foreground">
-                      Nenhuma solicitação de transporte rota encontrada.
-                    </p>
-                  )}
-                </TabsContent>
-                
-                <TabsContent value="12x36" className="mt-4">
-                  {filtrarSolicitacoes12x36().length > 0 ? (
-                    <div className="rounded-md border overflow-hidden">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Colaborador</TableHead>
-                            <TableHead>Telefone</TableHead>
-                            <TableHead>Rota</TableHead>
-                            <TableHead>Data de Início</TableHead>
-                            <TableHead>Data de Solicitação</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead className="w-[100px]">Ações</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {filtrarSolicitacoes12x36().map((solicitacao) => (
-                            <TableRow key={solicitacao.id}>
-                              <TableCell className="font-medium">{solicitacao.colaborador_nome}</TableCell>
-                              <TableCell>{solicitacao.telefone}</TableCell>
-                              <TableCell>{solicitacao.rota}</TableCell>
-                              <TableCell>{formatarData(solicitacao.data_inicio)}</TableCell>
-                              <TableCell>{formatarTimestamp(solicitacao.created_at)}</TableCell>
-                              <TableCell>
-                                <StatusBadge status={solicitacao.status} />
-                              </TableCell>
-                              <TableCell>
-                                {solicitacao.status === "aprovada" && (
-                                  <Button variant="outline" size="sm" className="w-full">
-                                    <Download className="h-4 w-4 mr-1" />
-                                    Ticket
-                                  </Button>
-                                )}
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  ) : (
-                    <p className="text-center py-10 text-muted-foreground">
-                      Nenhuma solicitação de transporte 12x36 encontrada.
-                    </p>
-                  )}
-                </TabsContent>
-                
-                {(user?.tipo_usuario === "admin" || user?.tipo_usuario === "refeicao") && (
-                  <TabsContent value="refeicao" className="mt-4">
-                    {filtrarSolicitacoesRefeicao().length > 0 ? (
-                      <div className="rounded-md border overflow-hidden">
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>Colaboradores</TableHead>
-                              <TableHead>Tipo de Refeição</TableHead>
-                              <TableHead>Data da Refeição</TableHead>
-                              <TableHead>Data de Solicitação</TableHead>
-                              <TableHead>Status</TableHead>
-                              <TableHead className="w-[100px]">Ações</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {filtrarSolicitacoesRefeicao().map((solicitacao) => (
-                              <TableRow key={solicitacao.id}>
-                                <TableCell className="font-medium">
-                                  {solicitacao.colaboradores.join(", ")}
-                                </TableCell>
-                                <TableCell>{solicitacao.tipo_refeicao}</TableCell>
-                                <TableCell>{formatarData(solicitacao.data_refeicao)}</TableCell>
-                                <TableCell>{formatarTimestamp(solicitacao.created_at)}</TableCell>
-                                <TableCell>
-                                  <StatusBadge status={solicitacao.status} />
-                                </TableCell>
-                                <TableCell>
-                                  {solicitacao.status === "aprovada" && (
-                                    <Button variant="outline" size="sm" className="w-full">
-                                      <Download className="h-4 w-4 mr-1" />
-                                      Ticket
-                                    </Button>
-                                  )}
-                                </TableCell>
+              {visibleTabs.length > 0 ? (
+                <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab}>
+                  <TabsList className={`grid w-full grid-cols-${visibleTabs.length}`}>
+                    {visibleTabs.map(tab => (
+                      <TabsTrigger key={tab.id} value={tab.id}>
+                        {tab.label}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                  
+                  {visibleTabs.some(tab => tab.id === "rota") && (
+                    <TabsContent value="rota" className="mt-4">
+                      {filtrarSolicitacoesRota().length > 0 ? (
+                        <div className="rounded-md border overflow-hidden overflow-x-auto">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Colaborador</TableHead>
+                                <TableHead>Cidade / Turno</TableHead>
+                                <TableHead>Rota</TableHead>
+                                <TableHead>Período</TableHead>
+                                <TableHead>Data de Solicitação</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead className="w-[100px]">Ações</TableHead>
                               </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </div>
-                    ) : (
-                      <p className="text-center py-10 text-muted-foreground">
-                        Nenhuma solicitação de refeição encontrada.
-                      </p>
-                    )}
-                  </TabsContent>
-                )}
-              </Tabs>
+                            </TableHeader>
+                            <TableBody>
+                              {filtrarSolicitacoesRota().map((solicitacao) => (
+                                <TableRow key={solicitacao.id}>
+                                  <TableCell className="font-medium">{solicitacao.colaborador_nome}</TableCell>
+                                  <TableCell>{solicitacao.cidade} / {solicitacao.turno}</TableCell>
+                                  <TableCell>{solicitacao.rota}</TableCell>
+                                  <TableCell>
+                                    {formatarData(solicitacao.periodo_inicio)} até {formatarData(solicitacao.periodo_fim)}
+                                  </TableCell>
+                                  <TableCell>{formatarTimestamp(solicitacao.created_at)}</TableCell>
+                                  <TableCell>
+                                    <StatusBadge status={solicitacao.status} />
+                                  </TableCell>
+                                  <TableCell>
+                                    {solicitacao.status === "aprovada" && (
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm" 
+                                        className="w-full"
+                                        onClick={() => handleDownloadTicket(solicitacao.id, 'rota')}
+                                      >
+                                        <Download className="h-4 w-4 mr-1" />
+                                        Ticket
+                                      </Button>
+                                    )}
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      ) : (
+                        <p className="text-center py-10 text-muted-foreground">
+                          Nenhuma solicitação de transporte rota encontrada.
+                        </p>
+                      )}
+                    </TabsContent>
+                  )}
+                  
+                  {visibleTabs.some(tab => tab.id === "12x36") && (
+                    <TabsContent value="12x36" className="mt-4">
+                      {filtrarSolicitacoes12x36().length > 0 ? (
+                        <div className="rounded-md border overflow-hidden overflow-x-auto">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Colaborador</TableHead>
+                                <TableHead>Telefone</TableHead>
+                                <TableHead>Rota</TableHead>
+                                <TableHead>Data de Início</TableHead>
+                                <TableHead>Data de Solicitação</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead className="w-[100px]">Ações</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {filtrarSolicitacoes12x36().map((solicitacao) => (
+                                <TableRow key={solicitacao.id}>
+                                  <TableCell className="font-medium">{solicitacao.colaborador_nome}</TableCell>
+                                  <TableCell>{solicitacao.telefone}</TableCell>
+                                  <TableCell>{solicitacao.rota}</TableCell>
+                                  <TableCell>{formatarData(solicitacao.data_inicio)}</TableCell>
+                                  <TableCell>{formatarTimestamp(solicitacao.created_at)}</TableCell>
+                                  <TableCell>
+                                    <StatusBadge status={solicitacao.status} />
+                                  </TableCell>
+                                  <TableCell>
+                                    {solicitacao.status === "aprovada" && (
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm" 
+                                        className="w-full"
+                                        onClick={() => handleDownloadTicket(solicitacao.id, '12x36')}
+                                      >
+                                        <Download className="h-4 w-4 mr-1" />
+                                        Ticket
+                                      </Button>
+                                    )}
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      ) : (
+                        <p className="text-center py-10 text-muted-foreground">
+                          Nenhuma solicitação de transporte 12x36 encontrada.
+                        </p>
+                      )}
+                    </TabsContent>
+                  )}
+                  
+                  {visibleTabs.some(tab => tab.id === "refeicao") && (
+                    <TabsContent value="refeicao" className="mt-4">
+                      {filtrarSolicitacoesRefeicao().length > 0 ? (
+                        <div className="rounded-md border overflow-hidden overflow-x-auto">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Colaboradores</TableHead>
+                                <TableHead>Tipo de Refeição</TableHead>
+                                <TableHead>Data da Refeição</TableHead>
+                                <TableHead>Data de Solicitação</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead className="w-[100px]">Ações</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {filtrarSolicitacoesRefeicao().map((solicitacao) => (
+                                <TableRow key={solicitacao.id}>
+                                  <TableCell className="font-medium">
+                                    {solicitacao.colaboradores.join(", ")}
+                                  </TableCell>
+                                  <TableCell>{solicitacao.tipo_refeicao}</TableCell>
+                                  <TableCell>{formatarData(solicitacao.data_refeicao)}</TableCell>
+                                  <TableCell>{formatarTimestamp(solicitacao.created_at)}</TableCell>
+                                  <TableCell>
+                                    <StatusBadge status={solicitacao.status} />
+                                  </TableCell>
+                                  <TableCell>
+                                    {solicitacao.status === "aprovada" && (
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm" 
+                                        className="w-full"
+                                        onClick={() => handleDownloadTicket(solicitacao.id, 'refeicao')}
+                                      >
+                                        <Download className="h-4 w-4 mr-1" />
+                                        Ticket
+                                      </Button>
+                                    )}
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      ) : (
+                        <p className="text-center py-10 text-muted-foreground">
+                          Nenhuma solicitação de refeição encontrada.
+                        </p>
+                      )}
+                    </TabsContent>
+                  )}
+                </Tabs>
+              ) : (
+                <p className="text-center py-10 text-muted-foreground">
+                  Você não tem permissão para visualizar nenhum tipo de solicitação.
+                </p>
+              )}
             </>
           )}
         </CardContent>
