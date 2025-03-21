@@ -18,6 +18,9 @@ import {
   SidebarMenuSubItem
 } from "@/components/ui/sidebar";
 
+// Types for user roles
+type UserType = 'admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum';
+
 // Navigation structure for comum user
 interface NavItem {
   name: string;
@@ -81,7 +84,14 @@ const comumNavItems: NavItem[] = [
 ];
 
 // Navigation items for other user types
-const regularNavItems = [
+interface RegularNavItem {
+  name: string;
+  href: string;
+  icon: React.ReactNode;
+  allowedTypes: ReadonlyArray<UserType>;
+}
+
+const regularNavItems: RegularNavItem[] = [
   { 
     name: "Dashboard", 
     href: "/dashboard", 

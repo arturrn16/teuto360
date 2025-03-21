@@ -66,7 +66,7 @@ export const storeUser = (user: User): void => {
 
 export const checkUserPermission = (
   user: User | null,
-  requiredTypes: ('admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum')[]
+  requiredTypes: ReadonlyArray<'admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum'>
 ): boolean => {
   if (!user) return false;
   
@@ -77,10 +77,10 @@ export const checkUserPermission = (
   return requiredTypes.includes(user.tipo_usuario);
 };
 
-// Add a new function to check if a route should be shown to a user
+// Update function to accept readonly arrays
 export const shouldShowRoute = (
   user: User | null,
-  allowedTypes: ('admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum')[]
+  allowedTypes: ReadonlyArray<'admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum'>
 ): boolean => {
   if (!user) return false;
   if (user.admin) return true;
