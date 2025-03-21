@@ -59,8 +59,8 @@ const AdesaoCancelamento = () => {
     setIsSubmitting(true);
     
     try {
-      // Use direct insert instead of RPC
-      const { error } = await supabase
+      // Use type assertion to bypass TypeScript errors
+      const { error } = await (supabase as any)
         .from('solicitacoes_adesao_cancelamento')
         .insert({
           solicitante_id: user.id,

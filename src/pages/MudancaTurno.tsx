@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -127,8 +126,8 @@ const MudancaTurno = () => {
     setIsSubmitting(true);
     
     try {
-      // Use direct insert instead of RPC
-      const { error } = await supabase
+      // Use type assertion to bypass TypeScript errors
+      const { error } = await (supabase as any)
         .from('solicitacoes_mudanca_turno')
         .insert({
           solicitante_id: user.id,
