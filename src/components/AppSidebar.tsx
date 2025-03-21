@@ -1,3 +1,4 @@
+
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
@@ -126,7 +127,6 @@ const navItems: NavItem[] = [
     icon: <MapPin className="h-5 w-5" />,
     allowedTypes: ["colaborador", "comum"] as const
   },
-  // Removed Dashboard for admin users
 ];
 
 export const AppSidebar = () => {
@@ -143,25 +143,25 @@ export const AppSidebar = () => {
 
   return (
     <Sidebar>
-      <SidebarHeader className="h-16 flex items-center px-4 border-b border-gray-200 dark:border-gray-800">
-        <Building2 className="h-8 w-8 text-primary mr-2" />
-        <span className="font-semibold text-lg text-primary">Teuto360®</span>
+      <SidebarHeader className="h-16 flex items-center px-4 border-b border-gray-700 dark:border-gray-800 bg-gray-900">
+        <Building2 className="h-6 w-6 text-blue-500 mr-2" />
+        <span className="font-semibold text-lg text-blue-500">Teuto360®</span>
       </SidebarHeader>
       
-      <SidebarContent>
+      <SidebarContent className="bg-gray-900 text-gray-300">
         {/* User info */}
-        <div className="p-4 mb-2 border-b border-gray-200 dark:border-gray-800">
+        <div className="p-4 mb-2 border-b border-gray-700 dark:border-gray-800">
           <div className="flex items-center space-x-3">
             <div className="flex-shrink-0">
-              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <User className="h-5 w-5 text-primary" />
+              <div className="h-10 w-10 rounded-full bg-blue-500/10 flex items-center justify-center">
+                <User className="h-5 w-5 text-blue-500" />
               </div>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+              <p className="text-sm font-medium text-gray-300 truncate">
                 {user.nome}
               </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+              <p className="text-xs text-gray-400 truncate">
                 {user.tipo_usuario === 'admin' ? 'Administrador' : 
                  user.tipo_usuario === 'refeicao' ? 'Refeição' : 
                  user.tipo_usuario === 'selecao' ? 'Seleção' :
@@ -176,7 +176,13 @@ export const AppSidebar = () => {
           {filteredLinks.map((item, index) => (
             <SidebarMenuItem key={index}>
               <SidebarMenuButton asChild isActive={location.pathname === item.href}>
-                <Link to={item.href} className="flex items-center">
+                <Link 
+                  to={item.href} 
+                  className={cn(
+                    "flex items-center text-gray-300 hover:text-blue-500",
+                    location.pathname === item.href && "text-blue-500"
+                  )}
+                >
                   {item.icon}
                   <span className="ml-2">{item.name}</span>
                 </Link>
@@ -186,10 +192,10 @@ export const AppSidebar = () => {
         </SidebarMenu>
       </SidebarContent>
       
-      <SidebarFooter className="p-4 border-t border-gray-200 dark:border-gray-800">
+      <SidebarFooter className="p-4 border-t border-gray-700 dark:border-gray-800 bg-gray-900 text-gray-300">
         <button 
           onClick={logout}
-          className="flex items-center w-full px-3 py-2 text-sm font-medium rounded-md transition-colors text-gray-600 hover:text-primary hover:bg-primary/5 dark:text-gray-300 dark:hover:text-white"
+          className="flex items-center w-full px-3 py-2 text-sm font-medium rounded-md transition-colors text-gray-300 hover:text-blue-500 hover:bg-gray-800"
         >
           <LogOut className="h-5 w-5 mr-2" />
           <span>Sair</span>
