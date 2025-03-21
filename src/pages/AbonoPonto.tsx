@@ -89,15 +89,17 @@ const AbonoPonto = () => {
     setIsSubmitting(true);
     
     try {
-      // Use rpc to execute raw SQL insert since the tables are not in the TypeScript types
-      const { error } = await supabase.rpc('insert_solicitacao_abono_ponto', {
-        p_solicitante_id: user.id,
-        p_cidade: data.cidade,
-        p_turno: data.turno,
-        p_rota: data.rota, 
-        p_descricao: data.descricao,
-        p_status: 'pendente'
-      });
+      // Use direct insert instead of RPC
+      const { error } = await supabase
+        .from('solicitacoes_abono_ponto')
+        .insert({
+          solicitante_id: user.id,
+          cidade: data.cidade,
+          turno: data.turno,
+          rota: data.rota, 
+          descricao: data.descricao,
+          status: 'pendente'
+        });
       
       if (error) {
         console.error("Erro ao enviar solicitação:", error);

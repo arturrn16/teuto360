@@ -1,9 +1,6 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import {
   Card,
   CardContent,
@@ -11,462 +8,166 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import {
   Table,
   TableBody,
+  TableCaption,
   TableCell,
   TableHead,
+  TableFooter,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Download, Search } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { downloadTicket } from "@/services/ticketService";
-import { toast } from "sonner";
+} from "@/components/ui/table"
 
 interface Solicitacao {
   id: number;
-  status: string;
   created_at: string;
-}
-
-interface SolicitacaoTransporteRota extends Solicitacao {
-  colaborador_nome: string;
-  cidade: string;
-  turno: string;
-  rota: string;
-  periodo_inicio: string;
-  periodo_fim: string;
-  motivo: string;
-}
-
-interface SolicitacaoTransporte12x36 extends Solicitacao {
-  colaborador_nome: string;
-  telefone: string;
-  endereco: string;
-  cep: string;
-  rota: string;
-  data_inicio: string;
-}
-
-interface SolicitacaoRefeicao extends Solicitacao {
-  colaboradores: string[];
-  tipo_refeicao: string;
-  data_refeicao: string;
+  status: string;
+  tipo: string;
 }
 
 const MinhasSolicitacoes = () => {
-  const { user } = useAuth();
-  const [solicitacoesRota, setSolicitacoesRota] = useState<SolicitacaoTransporteRota[]>([]);
-  const [solicitacoes12x36, setSolicitacoes12x36] = useState<SolicitacaoTransporte12x36[]>([]);
-  const [solicitacoesRefeicao, setSolicitacoesRefeicao] = useState<SolicitacaoRefeicao[]>([]);
+  const { user, isAuthenticated } = useAuth();
+  const [solicitacoes, setSolicitacoes] = useState<Solicitacao[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filtroColaborador, setFiltroColaborador] = useState("");
-  const [filtroStatus, setFiltroStatus] = useState("todos");
-  const [activeTab, setActiveTab] = useState<string>("rota");
-  
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
-    if (!user) return;
-    
-    // Set default active tab based on user type
-    if (user.tipo_usuario === "refeicao") {
-      setActiveTab("refeicao");
-    }
-    
     const fetchSolicitacoes = async () => {
+      if (!isAuthenticated || !user) {
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
+
       try {
-        // Fetch data based on user type
-        if (user.tipo_usuario === "admin" || user.tipo_usuario === "selecao") {
-          // Buscar solicitações de transporte rota
-          const { data: dataRota, error: errorRota } = await supabase
-            .from("solicitacoes_transporte_rota")
-            .select("*")
-            .eq("solicitante_id", user.id)
-            .order("created_at", { ascending: false });
-            
-          if (errorRota) {
-            console.error("Erro ao buscar solicitações de rota:", errorRota);
-          } else {
-            setSolicitacoesRota(dataRota || []);
+        const tables = [
+          { table: 'solicitacoes_abono_ponto', tipo: 'Abono de Ponto' },
+          { table: 'solicitacoes_adesao_cancelamento', tipo: 'Adesão/Cancelamento' },
+          { table: 'solicitacoes_alteracao_endereco', tipo: 'Alteração de Endereço' },
+          { table: 'solicitacoes_mudanca_turno', tipo: 'Mudança de Turno' },
+        ];
+
+        let allSolicitacoes: Solicitacao[] = [];
+
+        for (const { table, tipo } of tables) {
+          const { data, error } = await supabase
+            .from(table)
+            .select('id, created_at, status')
+            .eq('solicitante_id', user.id)
+            .order('created_at', { ascending: false });
+
+          if (error) {
+            throw new Error(`Erro ao buscar solicitações de ${tipo}: ${error.message}`);
           }
-          
-          // Buscar solicitações de transporte 12x36
-          const { data: data12x36, error: error12x36 } = await supabase
-            .from("solicitacoes_transporte_12x36")
-            .select("*")
-            .eq("solicitante_id", user.id)
-            .order("created_at", { ascending: false });
-            
-          if (error12x36) {
-            console.error("Erro ao buscar solicitações 12x36:", error12x36);
-          } else {
-            setSolicitacoes12x36(data12x36 || []);
-          }
-        }
-        
-        // Buscar solicitações de refeição (se o usuário tiver permissão)
-        if (user.tipo_usuario === "admin" || user.tipo_usuario === "refeicao") {
-          const { data: dataRefeicao, error: errorRefeicao } = await supabase
-            .from("solicitacoes_refeicao")
-            .select("*")
-            .eq("solicitante_id", user.id)
-            .order("created_at", { ascending: false });
-            
-          if (errorRefeicao) {
-            console.error("Erro ao buscar solicitações de refeição:", errorRefeicao);
-          } else {
-            setSolicitacoesRefeicao(dataRefeicao || []);
+
+          if (data) {
+            const solicitacoesWithType: Solicitacao[] = data.map(item => ({
+              id: item.id,
+              created_at: item.created_at,
+              status: item.status,
+              tipo: tipo,
+            }));
+            allSolicitacoes = [...allSolicitacoes, ...solicitacoesWithType];
           }
         }
-      } catch (error) {
-        console.error("Erro ao buscar solicitações:", error);
+
+        // Ordenar todas as solicitações por data de criação
+        allSolicitacoes.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        setSolicitacoes(allSolicitacoes);
+      } catch (err: any) {
+        setError(err.message);
       } finally {
         setLoading(false);
       }
     };
-    
+
     fetchSolicitacoes();
-  }, [user]);
-  
-  // Função para baixar ticket
-  const handleDownloadTicket = async (id: number, tipo: 'rota' | '12x36' | 'refeicao') => {
-    try {
-      await downloadTicket({ id, tipo });
-    } catch (error) {
-      console.error("Erro ao baixar ticket:", error);
-      toast.error("Erro ao baixar ticket");
-    }
-  };
-  
-  // Função para formatar a data
-  const formatarData = (dataString: string) => {
-    try {
-      return format(new Date(dataString), "dd/MM/yyyy", { locale: ptBR });
-    } catch (error) {
-      return dataString;
-    }
-  };
-  
-  // Função para formatar o timestamp
-  const formatarTimestamp = (dataString: string) => {
-    try {
-      return format(new Date(dataString), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
-    } catch (error) {
-      return dataString;
-    }
-  };
-  
-  // Função para filtrar solicitações de rota
-  const filtrarSolicitacoesRota = () => {
-    return solicitacoesRota.filter(s => {
-      const matchColaborador = s.colaborador_nome.toLowerCase().includes(filtroColaborador.toLowerCase());
-      const matchStatus = filtroStatus === "todos" || s.status === filtroStatus;
-      return matchColaborador && matchStatus;
-    });
-  };
-  
-  // Função para filtrar solicitações 12x36
-  const filtrarSolicitacoes12x36 = () => {
-    return solicitacoes12x36.filter(s => {
-      const matchColaborador = s.colaborador_nome.toLowerCase().includes(filtroColaborador.toLowerCase());
-      const matchStatus = filtroStatus === "todos" || s.status === filtroStatus;
-      return matchColaborador && matchStatus;
-    });
-  };
-  
-  // Função para filtrar solicitações de refeição
-  const filtrarSolicitacoesRefeicao = () => {
-    return solicitacoesRefeicao.filter(s => {
-      const matchColaborador = s.colaboradores.some(c => 
-        c.toLowerCase().includes(filtroColaborador.toLowerCase())
-      );
-      const matchStatus = filtroStatus === "todos" || s.status === filtroStatus;
-      return matchColaborador && matchStatus;
-    });
-  };
-  
-  // Badge de status com cores diferentes
-  const StatusBadge = ({ status }: { status: string }) => {
-    let variant = "default";
-    
-    switch (status) {
-      case "aprovada":
-        variant = "success";
-        break;
-      case "rejeitada":
-        variant = "destructive";
-        break;
-      case "pendente":
-        variant = "secondary";
-        break;
-      default:
-        variant = "outline";
-    }
-    
-    return (
-      <Badge variant={variant as any} className="capitalize">
-        {status}
-      </Badge>
-    );
-  };
-  
-  // Determine which tabs should be visible based on user type
-  const getVisibleTabs = () => {
-    if (!user) return [];
-    
-    const tabs = [];
-    
-    if (user.tipo_usuario === "admin" || user.tipo_usuario === "selecao") {
-      tabs.push(
-        { id: "rota", label: "Transporte Rota" },
-        { id: "12x36", label: "Transporte 12x36" }
-      );
-    }
-    
-    if (user.tipo_usuario === "admin" || user.tipo_usuario === "refeicao") {
-      tabs.push({ id: "refeicao", label: "Refeição" });
-    }
-    
-    if (user.tipo_usuario === "colaborador") {
-      tabs.push({ id: "rota", label: "Uso de Rota" });
-    }
-    
-    return tabs;
-  };
-  
-  const visibleTabs = getVisibleTabs();
-  
+  }, [user, isAuthenticated]);
+
+  if (loading) {
+    return <div className="flex justify-center items-center h-screen">Carregando suas solicitações...</div>;
+  }
+
+  if (error) {
+    return <div className="text-red-500">Erro ao carregar solicitações: {error}</div>;
+  }
+
   return (
-    <div className="container py-10">
+    <div className="container max-w-5xl py-10">
       <Card>
         <CardHeader>
           <CardTitle>Minhas Solicitações</CardTitle>
           <CardDescription>
-            Visualize todas as suas solicitações realizadas
+            Acompanhe o status das suas solicitações.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {loading ? (
-            <p className="text-center py-10">Carregando solicitações...</p>
-          ) : (
-            <>
-              <div className="flex flex-col md:flex-row gap-4 mb-6">
-                <div className="flex-1">
-                  <div className="relative">
-                    <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                    <Input
-                      placeholder="Filtrar por nome do colaborador"
-                      value={filtroColaborador}
-                      onChange={(e) => setFiltroColaborador(e.target.value)}
-                      className="pl-8"
-                    />
+          {solicitacoes.length === 0 ? (
+            <div className="text-center py-6">
+              <p className="text-lg">Nenhuma solicitação encontrada.</p>
+              {user && (
+                <>
+                  {user.tipo_usuario === "selecao" && (
+                    <div className="mt-4">
+                      <Button asChild>
+                        <Link to="/cadastro-usuario">Cadastrar Usuário</Link>
+                      </Button>
+                    </div>
+                  )}
+                  <div className="mt-4 space-x-2">
+                    <Button asChild variant="outline">
+                      <Link to="/abono-ponto">Abono de Ponto</Link>
+                    </Button>
+                    <Button asChild variant="outline">
+                      <Link to="/adesao-cancelamento">Adesão/Cancelamento</Link>
+                    </Button>
+                    <Button asChild variant="outline">
+                      <Link to="/alteracao-endereco">Alteração de Endereço</Link>
+                    </Button>
+                    <Button asChild variant="outline">
+                      <Link to="/mudanca-turno">Mudança de Turno</Link>
+                    </Button>
                   </div>
-                </div>
-                <div className="w-full md:w-64">
-                  <Select
-                    value={filtroStatus}
-                    onValueChange={setFiltroStatus}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Filtrar por status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="todos">Todos os status</SelectItem>
-                      <SelectItem value="pendente">Pendente</SelectItem>
-                      <SelectItem value="aprovada">Aprovada</SelectItem>
-                      <SelectItem value="rejeitada">Rejeitada</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              
-              {visibleTabs.length > 0 ? (
-                <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab}>
-                  <TabsList className={`grid w-full grid-cols-${visibleTabs.length}`}>
-                    {visibleTabs.map(tab => (
-                      <TabsTrigger key={tab.id} value={tab.id}>
-                        {tab.label}
-                      </TabsTrigger>
-                    ))}
-                  </TabsList>
-                  
-                  {visibleTabs.some(tab => tab.id === "rota") && (
-                    <TabsContent value="rota" className="mt-4">
-                      {filtrarSolicitacoesRota().length > 0 ? (
-                        <div className="rounded-md border overflow-hidden overflow-x-auto">
-                          <Table>
-                            <TableHeader>
-                              <TableRow>
-                                <TableHead>Colaborador</TableHead>
-                                <TableHead>Cidade / Turno</TableHead>
-                                <TableHead>Rota</TableHead>
-                                <TableHead>Período</TableHead>
-                                <TableHead>Data de Solicitação</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead className="w-[100px]">Ações</TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {filtrarSolicitacoesRota().map((solicitacao) => (
-                                <TableRow key={solicitacao.id}>
-                                  <TableCell className="font-medium">{solicitacao.colaborador_nome}</TableCell>
-                                  <TableCell>{solicitacao.cidade} / {solicitacao.turno}</TableCell>
-                                  <TableCell>{solicitacao.rota}</TableCell>
-                                  <TableCell>
-                                    {formatarData(solicitacao.periodo_inicio)} até {formatarData(solicitacao.periodo_fim)}
-                                  </TableCell>
-                                  <TableCell>{formatarTimestamp(solicitacao.created_at)}</TableCell>
-                                  <TableCell>
-                                    <StatusBadge status={solicitacao.status} />
-                                  </TableCell>
-                                  <TableCell>
-                                    {solicitacao.status === "aprovada" && (
-                                      <Button 
-                                        variant="outline" 
-                                        size="sm" 
-                                        className="w-full"
-                                        onClick={() => handleDownloadTicket(solicitacao.id, 'rota')}
-                                      >
-                                        <Download className="h-4 w-4 mr-1" />
-                                        Ticket
-                                      </Button>
-                                    )}
-                                  </TableCell>
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
-                        </div>
-                      ) : (
-                        <p className="text-center py-10 text-muted-foreground">
-                          Nenhuma solicitação de transporte rota encontrada.
-                        </p>
-                      )}
-                    </TabsContent>
-                  )}
-                  
-                  {visibleTabs.some(tab => tab.id === "12x36") && (
-                    <TabsContent value="12x36" className="mt-4">
-                      {filtrarSolicitacoes12x36().length > 0 ? (
-                        <div className="rounded-md border overflow-hidden overflow-x-auto">
-                          <Table>
-                            <TableHeader>
-                              <TableRow>
-                                <TableHead>Colaborador</TableHead>
-                                <TableHead>Telefone</TableHead>
-                                <TableHead>Rota</TableHead>
-                                <TableHead>Data de Início</TableHead>
-                                <TableHead>Data de Solicitação</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead className="w-[100px]">Ações</TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {filtrarSolicitacoes12x36().map((solicitacao) => (
-                                <TableRow key={solicitacao.id}>
-                                  <TableCell className="font-medium">{solicitacao.colaborador_nome}</TableCell>
-                                  <TableCell>{solicitacao.telefone}</TableCell>
-                                  <TableCell>{solicitacao.rota}</TableCell>
-                                  <TableCell>{formatarData(solicitacao.data_inicio)}</TableCell>
-                                  <TableCell>{formatarTimestamp(solicitacao.created_at)}</TableCell>
-                                  <TableCell>
-                                    <StatusBadge status={solicitacao.status} />
-                                  </TableCell>
-                                  <TableCell>
-                                    {solicitacao.status === "aprovada" && (
-                                      <Button 
-                                        variant="outline" 
-                                        size="sm" 
-                                        className="w-full"
-                                        onClick={() => handleDownloadTicket(solicitacao.id, '12x36')}
-                                      >
-                                        <Download className="h-4 w-4 mr-1" />
-                                        Ticket
-                                      </Button>
-                                    )}
-                                  </TableCell>
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
-                        </div>
-                      ) : (
-                        <p className="text-center py-10 text-muted-foreground">
-                          Nenhuma solicitação de transporte 12x36 encontrada.
-                        </p>
-                      )}
-                    </TabsContent>
-                  )}
-                  
-                  {visibleTabs.some(tab => tab.id === "refeicao") && (
-                    <TabsContent value="refeicao" className="mt-4">
-                      {filtrarSolicitacoesRefeicao().length > 0 ? (
-                        <div className="rounded-md border overflow-hidden overflow-x-auto">
-                          <Table>
-                            <TableHeader>
-                              <TableRow>
-                                <TableHead>Colaboradores</TableHead>
-                                <TableHead>Tipo de Refeição</TableHead>
-                                <TableHead>Data da Refeição</TableHead>
-                                <TableHead>Data de Solicitação</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead className="w-[100px]">Ações</TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {filtrarSolicitacoesRefeicao().map((solicitacao) => (
-                                <TableRow key={solicitacao.id}>
-                                  <TableCell className="font-medium">
-                                    {solicitacao.colaboradores.join(", ")}
-                                  </TableCell>
-                                  <TableCell>{solicitacao.tipo_refeicao}</TableCell>
-                                  <TableCell>{formatarData(solicitacao.data_refeicao)}</TableCell>
-                                  <TableCell>{formatarTimestamp(solicitacao.created_at)}</TableCell>
-                                  <TableCell>
-                                    <StatusBadge status={solicitacao.status} />
-                                  </TableCell>
-                                  <TableCell>
-                                    {solicitacao.status === "aprovada" && (
-                                      <Button 
-                                        variant="outline" 
-                                        size="sm" 
-                                        className="w-full"
-                                        onClick={() => handleDownloadTicket(solicitacao.id, 'refeicao')}
-                                      >
-                                        <Download className="h-4 w-4 mr-1" />
-                                        Ticket
-                                      </Button>
-                                    )}
-                                  </TableCell>
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
-                        </div>
-                      ) : (
-                        <p className="text-center py-10 text-muted-foreground">
-                          Nenhuma solicitação de refeição encontrada.
-                        </p>
-                      )}
-                    </TabsContent>
-                  )}
-                </Tabs>
-              ) : (
-                <p className="text-center py-10 text-muted-foreground">
-                  Você não tem permissão para visualizar nenhum tipo de solicitação.
-                </p>
+                </>
               )}
-            </>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableCaption>Suas solicitações de serviços.</TableCaption>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Tipo</TableHead>
+                    <TableHead>Data de Criação</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {solicitacoes.map((solicitacao) => (
+                    <TableRow key={solicitacao.id}>
+                      <TableCell>{solicitacao.tipo}</TableCell>
+                      <TableCell>{new Date(solicitacao.created_at).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        <Badge variant="secondary">{solicitacao.status}</Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+                <TableFooter>
+                  <TableRow>
+                    <TableCell colSpan={3} className="text-center">
+                      Total de solicitações: {solicitacoes.length}
+                    </TableCell>
+                  </TableRow>
+                </TableFooter>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>
