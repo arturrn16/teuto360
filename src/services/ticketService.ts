@@ -74,16 +74,19 @@ export const generateTicket = async ({ id, tipo }: GenerateTicketParams): Promis
       ctx.fillText(`Turno: ${ticketData.turno}`, 30, y_start + line_height * 2);
       ctx.fillText(`Rota: ${ticketData.rota}`, 30, y_start + line_height * 3);
       ctx.fillText(`Período: ${new Date(ticketData.periodo_inicio).toLocaleDateString()} a ${new Date(ticketData.periodo_fim).toLocaleDateString()}`, 30, y_start + line_height * 4);
+      ctx.fillText(`Status: ${ticketData.status.toUpperCase()}`, 30, y_start + line_height * 5);
     } else if (tipo === '12x36') {
       ctx.fillText(`Colaborador: ${ticketData.colaborador_nome}`, 30, y_start);
       ctx.fillText(`Telefone: ${ticketData.telefone}`, 30, y_start + line_height);
       ctx.fillText(`Endereço: ${ticketData.endereco}`, 30, y_start + line_height * 2);
       ctx.fillText(`Rota: ${ticketData.rota}`, 30, y_start + line_height * 3);
       ctx.fillText(`Data de Início: ${new Date(ticketData.data_inicio).toLocaleDateString()}`, 30, y_start + line_height * 4);
+      ctx.fillText(`Status: ${ticketData.status.toUpperCase()}`, 30, y_start + line_height * 5);
     } else if (tipo === 'refeicao') {
       ctx.fillText(`Colaborador: ${ticketData.colaboradores.join(', ')}`, 30, y_start);
       ctx.fillText(`Tipo de Refeição: ${ticketData.tipo_refeicao}`, 30, y_start + line_height);
       ctx.fillText(`Data da Refeição: ${new Date(ticketData.data_refeicao).toLocaleDateString()}`, 30, y_start + line_height * 2);
+      ctx.fillText(`Status: ${ticketData.status.toUpperCase()}`, 30, y_start + line_height * 3);
     }
     
     // Footer message
@@ -104,12 +107,13 @@ export const generateTicket = async ({ id, tipo }: GenerateTicketParams): Promis
 };
 
 export const downloadTicket = async (params: GenerateTicketParams): Promise<void> => {
-  toast.loading("Gerando ticket...");
+  const toastId = toast.loading("Gerando ticket...");
   
   try {
     const dataUrl = await generateTicket(params);
     
     if (!dataUrl) {
+      toast.dismiss(toastId);
       toast.error("Falha ao gerar ticket");
       return;
     }
@@ -122,9 +126,11 @@ export const downloadTicket = async (params: GenerateTicketParams): Promise<void
     link.click();
     document.body.removeChild(link);
     
+    toast.dismiss(toastId);
     toast.success("Ticket gerado com sucesso!");
   } catch (error) {
     console.error("Erro ao baixar ticket:", error);
+    toast.dismiss(toastId);
     toast.error("Erro ao baixar ticket");
   }
 };

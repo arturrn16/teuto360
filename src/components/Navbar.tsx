@@ -64,7 +64,7 @@ export const Navbar = () => {
     if (!user) return false;
     
     // Admin can see all links
-    if (user.admin) return true;
+    if (user.admin) return link.allowedTypes.includes('admin');
     
     // Otherwise, check if user type is in the allowed types
     return link.allowedTypes.includes(user.tipo_usuario);
@@ -77,7 +77,7 @@ export const Navbar = () => {
           <div className="flex items-center">
             <Link to="/dashboard" className="flex-shrink-0 flex items-center">
               <Building2 className="h-8 w-8 text-primary" />
-              <span className="ml-2 text-xl font-semibold text-gray-900 dark:text-white">HR Portal</span>
+              <span className="ml-2 text-xl font-semibold text-gray-900 dark:text-white">SGR TEUTO®</span>
             </Link>
           </div>
 

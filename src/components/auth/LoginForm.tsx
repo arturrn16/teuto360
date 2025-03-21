@@ -123,17 +123,6 @@ export const LoginForm = () => {
               "Entrar"
             )}
           </button>
-
-          <div className="text-sm text-center mt-4">
-            <p className="text-gray-600 dark:text-gray-400">
-              Usuários de teste:
-            </p>
-            <div className="flex flex-col gap-1 mt-2 text-xs text-gray-500 dark:text-gray-500">
-              <div>admin / admin (Administrador)</div>
-              <div>user / user (Usuário Comum)</div>
-              <div>meal / meal (Usuário Refeição)</div>
-            </div>
-          </div>
         </form>
       </CardContent>
     </Card>
