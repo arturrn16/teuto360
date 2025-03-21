@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { useAuth } from "@/context/AuthContext";
 import { queryCustomTable, updateCustomTable } from "@/integrations/supabase/client";
 import { Comunicado, ComunicadoInput } from "@/models/comunicado";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -95,7 +95,11 @@ const GerenciarComunicados = () => {
 
   const onSubmit = async (data: FormValues) => {
     if (!user) {
-      toast.error("Você precisa estar logado para publicar um comunicado");
+      toast({
+        title: "Erro",
+        description: "Você precisa estar logado para publicar um comunicado",
+        variant: "destructive"
+      });
       return;
     }
     
@@ -117,16 +121,23 @@ const GerenciarComunicados = () => {
         
         if (error) {
           console.error("Erro ao atualizar comunicado:", error);
-          toast.error("Erro ao atualizar comunicado");
+          toast({
+            title: "Erro",
+            description: "Erro ao atualizar comunicado",
+            variant: "destructive"
+          });
           return;
         }
         
-        toast.success("Comunicado atualizado com sucesso!");
+        toast({
+          title: "Sucesso",
+          description: "Comunicado atualizado com sucesso!"
+        });
       } else {
-        // Criar novo comunicado
+        // Criar novo comunicado - Corrigido para enviar objeto único em vez de array
         const { error } = await updateCustomTable(
           "comunicados",
-          [{
+          {
             titulo: data.titulo,
             conteudo: data.conteudo,
             data_publicacao: new Date().toISOString(),
@@ -134,17 +145,24 @@ const GerenciarComunicados = () => {
             autor_nome: user.nome,
             importante: data.importante,
             arquivado: false,
-          }],
-          { column: "id", value: null }
+          },
+          { column: "id", value: null }  // null para inserção
         );
         
         if (error) {
           console.error("Erro ao publicar comunicado:", error);
-          toast.error("Erro ao publicar comunicado");
+          toast({
+            title: "Erro",
+            description: "Erro ao publicar comunicado",
+            variant: "destructive"
+          });
           return;
         }
         
-        toast.success("Comunicado publicado com sucesso!");
+        toast({
+          title: "Sucesso",
+          description: "Comunicado publicado com sucesso!"
+        });
       }
       
       // Limpar o formulário e recarregar comunicados
@@ -155,7 +173,11 @@ const GerenciarComunicados = () => {
       fetchComunicados();
     } catch (error) {
       console.error("Erro ao processar comunicado:", error);
-      toast.error("Erro ao processar comunicado");
+      toast({
+        title: "Erro",
+        description: "Erro ao processar comunicado",
+        variant: "destructive"
+      });
     } finally {
       setIsSubmitting(false);
     }
