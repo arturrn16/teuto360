@@ -14,7 +14,8 @@ import {
   Star, 
   Phone, 
   MapPin,
-  Replace
+  Replace,
+  Megaphone
 } from "lucide-react";
 import React from "react";
 
@@ -61,9 +62,21 @@ export const navItems: NavItem[] = [
     allowedTypes: ["selecao", "refeicao", "colaborador", "comum"] as const
   },
   { 
+    name: "Comunicados", 
+    href: "/comunicados", 
+    icon: <Megaphone className="h-5 w-5" />,
+    allowedTypes: ["selecao", "refeicao", "colaborador", "comum"] as const
+  },
+  { 
     name: "Administração", 
     href: "/admin", 
     icon: <Shield className="h-5 w-5" />,
+    allowedTypes: ["admin"] as const
+  },
+  { 
+    name: "Gerenciar Comunicados", 
+    href: "/gerenciar-comunicados", 
+    icon: <Megaphone className="h-5 w-5" />,
     allowedTypes: ["admin"] as const
   },
   // Items for colaborador/comum

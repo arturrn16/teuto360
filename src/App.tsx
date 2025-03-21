@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,6 +19,8 @@ import Transporte12x36 from "./pages/Transporte12x36";
 import Refeicao from "./pages/Refeicao";
 import MinhasSolicitacoes from "./pages/MinhasSolicitacoes";
 import Admin from "./pages/Admin";
+import Comunicados from "./pages/Comunicados";
+import GerenciarComunicados from "./pages/GerenciarComunicados";
 
 // Import new pages for collaborators
 import AdesaoCancelamento from "./pages/AdesaoCancelamento";
@@ -99,7 +102,26 @@ const App = () => (
                 }
               />
               
-              {/* New routes for collaborators and comum users */}
+              {/* New routes for announcements */}
+              <Route
+                path="/comunicados"
+                element={
+                  <ProtectedRoute allowedTypes={["selecao", "refeicao", "colaborador", "comum"]}>
+                    <Comunicados />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/gerenciar-comunicados"
+                element={
+                  <ProtectedRoute allowedTypes={["admin"]}>
+                    <GerenciarComunicados />
+                  </ProtectedRoute>
+                }
+              />
+              
+              {/* Routes for collaborators and comum users */}
               <Route
                 path="/adesao-cancelamento"
                 element={

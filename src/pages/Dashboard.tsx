@@ -1,4 +1,3 @@
-
 import { useAuth } from "@/context/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui-components/Card";
 import { cn } from "@/lib/utils";
@@ -79,6 +78,26 @@ const Dashboard = () => {
       color: "from-rose-50 to-rose-100 dark:from-rose-900/20 dark:to-rose-800/20",
       textColor: "text-rose-600 dark:text-rose-400"
     },
+    // New card for announcements
+    {
+      title: "Comunicados",
+      description: "Visualize os comunicados importantes",
+      icon: <FileText className="h-8 w-8 text-amber-500" />,
+      to: "/comunicados",
+      allowedTypes: ["selecao", "refeicao", "colaborador", "comum"],
+      color: "from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20",
+      textColor: "text-amber-600 dark:text-amber-400"
+    },
+    // New admin card for managing announcements
+    {
+      title: "Gerenciar Comunicados",
+      description: "Publique e gerencie comunicados para colaboradores",
+      icon: <FileText className="h-8 w-8 text-orange-500" />,
+      to: "/gerenciar-comunicados",
+      allowedTypes: ["admin"],
+      color: "from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20",
+      textColor: "text-orange-600 dark:text-orange-400"
+    },
     // New cards for colaborador and comum
     {
       title: "Adesão/Cancelamento de Rota",
@@ -149,8 +168,8 @@ const Dashboard = () => {
   const filteredCards = cards.filter(card => {
     if (!user) return false;
     
-    // Admin can see all cards
-    if (user.admin) return true;
+    // Admin should only see admin-specific cards
+    if (user.admin) return card.title === "Administração" || card.title === "Gerenciar Comunicados";
     
     // Otherwise, check if user type is in the allowed types
     return card.allowedTypes.includes(user.tipo_usuario);
@@ -161,7 +180,7 @@ const Dashboard = () => {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
         <p className="text-gray-600 dark:text-gray-400 mt-2">
-          Bem-vindo ao Sistema de Gerenciamento de RH, {user?.nome}
+          Bem-vindo ao Sistema Teuto360®, {user?.nome}
         </p>
       </div>
 
@@ -187,25 +206,27 @@ const Dashboard = () => {
         ))}
 
         {/* Current time card - visible to all users */}
-        <Card glass={true} hoverEffect={true} className="overflow-hidden h-full bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 text-amber-600 dark:text-amber-400">
-            <CardTitle className="text-xl font-semibold">Data e Hora</CardTitle>
-            <Clock className="h-8 w-8 text-amber-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl font-bold text-gray-700 dark:text-gray-200">
-              {currentTime.toLocaleDateString('pt-BR', { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
-              })}
-            </div>
-            <div className="text-lg text-gray-600 dark:text-gray-300 mt-1">
-              {currentTime.toLocaleTimeString('pt-BR')}
-            </div>
-          </CardContent>
-        </Card>
+        {!user?.admin && (
+          <Card glass={true} hoverEffect={true} className="overflow-hidden h-full bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 text-amber-600 dark:text-amber-400">
+              <CardTitle className="text-xl font-semibold">Data e Hora</CardTitle>
+              <Clock className="h-8 w-8 text-amber-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-xl font-bold text-gray-700 dark:text-gray-200">
+                {currentTime.toLocaleDateString('pt-BR', { 
+                  weekday: 'long', 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric' 
+                })}
+              </div>
+              <div className="text-lg text-gray-600 dark:text-gray-300 mt-1">
+                {currentTime.toLocaleTimeString('pt-BR')}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
