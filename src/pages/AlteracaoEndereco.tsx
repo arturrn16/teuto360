@@ -106,20 +106,20 @@ const AlteracaoEndereco = () => {
     setIsSubmitting(true);
     
     try {
-      // Use the raw insert method to avoid type checking since the table was just created
-      const { error } = await supabase.from('solicitacoes_alteracao_endereco').insert({
-        solicitante_id: user.id,
-        telefone: data.telefone,
-        cep: data.cep,
-        endereco: data.endereco,
-        bairro: data.bairro,
-        cidade: data.cidade,
-        complemento: data.complemento,
-        telefone_whatsapp: data.telefoneWhatsapp,
-        rota_atual: data.rotaAtual,
-        alterar_rota: data.alterarRota === "sim",
-        nova_rota: data.alterarRota === "sim" ? data.novaRota : null,
-        status: 'pendente'
+      // Use rpc to execute raw SQL insert since the tables are not in the TypeScript types
+      const { error } = await supabase.rpc('insert_solicitacao_alteracao_endereco', {
+        p_solicitante_id: user.id,
+        p_telefone: data.telefone,
+        p_cep: data.cep,
+        p_endereco: data.endereco,
+        p_bairro: data.bairro,
+        p_cidade: data.cidade,
+        p_complemento: data.complemento,
+        p_telefone_whatsapp: data.telefoneWhatsapp,
+        p_rota_atual: data.rotaAtual,
+        p_alterar_rota: data.alterarRota === "sim",
+        p_nova_rota: data.alterarRota === "sim" ? data.novaRota : null,
+        p_status: 'pendente'
       });
       
       if (error) {

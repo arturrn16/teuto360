@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -234,6 +235,10 @@ const MinhasSolicitacoes = () => {
     
     if (user.tipo_usuario === "admin" || user.tipo_usuario === "refeicao") {
       tabs.push({ id: "refeicao", label: "Refeição" });
+    }
+    
+    if (user.tipo_usuario === "colaborador") {
+      tabs.push({ id: "rota", label: "Uso de Rota" });
     }
     
     return tabs;

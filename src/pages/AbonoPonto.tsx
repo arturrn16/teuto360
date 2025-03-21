@@ -89,14 +89,14 @@ const AbonoPonto = () => {
     setIsSubmitting(true);
     
     try {
-      // Use the raw insert method to avoid type checking since the table was just created
-      const { error } = await supabase.from('solicitacoes_abono_ponto').insert({
-        solicitante_id: user.id,
-        cidade: data.cidade,
-        turno: data.turno,
-        rota: data.rota,
-        descricao: data.descricao,
-        status: 'pendente'
+      // Use rpc to execute raw SQL insert since the tables are not in the TypeScript types
+      const { error } = await supabase.rpc('insert_solicitacao_abono_ponto', {
+        p_solicitante_id: user.id,
+        p_cidade: data.cidade,
+        p_turno: data.turno,
+        p_rota: data.rota, 
+        p_descricao: data.descricao,
+        p_status: 'pendente'
       });
       
       if (error) {
