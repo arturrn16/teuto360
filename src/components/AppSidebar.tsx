@@ -143,14 +143,14 @@ export const AppSidebar = () => {
 
   return (
     <Sidebar>
-      <SidebarHeader className="h-16 flex items-center px-4 border-b border-gray-700 dark:border-gray-800 bg-gray-900">
+      <SidebarHeader className="h-16 flex items-center px-4 border-b border-gray-200 bg-white">
         <Building2 className="h-6 w-6 text-blue-500 mr-2" />
         <span className="font-semibold text-lg text-blue-500">Teuto360®</span>
       </SidebarHeader>
       
-      <SidebarContent className="bg-gray-900 text-gray-300">
+      <SidebarContent className="bg-white text-gray-700">
         {/* User info */}
-        <div className="p-4 mb-2 border-b border-gray-700 dark:border-gray-800">
+        <div className="p-4 mb-2 border-b border-gray-200">
           <div className="flex items-center space-x-3">
             <div className="flex-shrink-0">
               <div className="h-10 w-10 rounded-full bg-blue-500/10 flex items-center justify-center">
@@ -158,10 +158,10 @@ export const AppSidebar = () => {
               </div>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-300 truncate">
+              <p className="text-sm font-medium text-gray-700 truncate">
                 {user.nome}
               </p>
-              <p className="text-xs text-gray-400 truncate">
+              <p className="text-xs text-gray-500 truncate">
                 {user.tipo_usuario === 'admin' ? 'Administrador' : 
                  user.tipo_usuario === 'refeicao' ? 'Refeição' : 
                  user.tipo_usuario === 'selecao' ? 'Seleção' :
@@ -179,8 +179,8 @@ export const AppSidebar = () => {
                 <Link 
                   to={item.href} 
                   className={cn(
-                    "flex items-center text-gray-300 hover:text-blue-500",
-                    location.pathname === item.href && "text-blue-500"
+                    "flex items-center text-gray-700 hover:text-blue-500",
+                    location.pathname === item.href && "text-blue-500 bg-blue-50"
                   )}
                 >
                   {item.icon}
@@ -192,10 +192,10 @@ export const AppSidebar = () => {
         </SidebarMenu>
       </SidebarContent>
       
-      <SidebarFooter className="p-4 border-t border-gray-700 dark:border-gray-800 bg-gray-900 text-gray-300">
+      <SidebarFooter className="p-4 border-t border-gray-200 bg-white text-gray-700">
         <button 
           onClick={logout}
-          className="flex items-center w-full px-3 py-2 text-sm font-medium rounded-md transition-colors text-gray-300 hover:text-blue-500 hover:bg-gray-800"
+          className="flex items-center w-full px-3 py-2 text-sm font-medium rounded-md transition-colors text-gray-700 hover:text-blue-500 hover:bg-gray-100"
         >
           <LogOut className="h-5 w-5 mr-2" />
           <span>Sair</span>
