@@ -369,12 +369,92 @@ const GerenciarComunicados = () => {
         <Card>
           <CardContent className="flex flex-col items-center justify-center h-40">
             <p className="text-gray-500 mb-4">Nenhum comunicado publicado ainda.</p>
-            <DialogTrigger asChild>
-              <Button onClick={resetForm}>
-                <Megaphone className="mr-2 h-4 w-4" />
-                Criar Primeiro Comunicado
-              </Button>
-            </DialogTrigger>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button onClick={resetForm}>
+                  <Megaphone className="mr-2 h-4 w-4" />
+                  Criar Primeiro Comunicado
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[550px]">
+                <DialogHeader>
+                  <DialogTitle>Publicar Novo Comunicado</DialogTitle>
+                  <DialogDescription>
+                    Preencha as informações do comunicado e clique em publicar.
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="titulo"
+                      rules={{ required: "O título é obrigatório" }}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Título</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="Título do comunicado" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="conteudo"
+                      rules={{ required: "O conteúdo é obrigatório" }}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Conteúdo</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              {...field}
+                              placeholder="Conteúdo do comunicado"
+                              className="min-h-[150px]"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="importante"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                          <div className="space-y-0.5">
+                            <FormLabel>Destacar como Importante</FormLabel>
+                            <FormDescription>
+                              Comunicados importantes são destacados visualmente para os usuários.
+                            </FormDescription>
+                          </div>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <DialogFooter>
+                      <DialogClose asChild>
+                        <Button variant="outline" type="button">
+                          Cancelar
+                        </Button>
+                      </DialogClose>
+                      <Button type="submit" disabled={isSubmitting}>
+                        {isSubmitting ? "Processando..." : "Publicar Comunicado"}
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                </Form>
+              </DialogContent>
+            </Dialog>
           </CardContent>
         </Card>
       ) : (
