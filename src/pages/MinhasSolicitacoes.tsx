@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, customSupabase, SolicitacaoAbonoPonto, SolicitacaoAdesaoCancelamento, SolicitacaoAlteracaoEndereco, SolicitacaoMudancaTurno } from "@/integrations/supabase/client";
 import {
   Card,
   CardContent,
@@ -46,38 +45,17 @@ interface SolicitacaoTransporte {
   periodo_fim?: string;
 }
 
-type Solicitacao = SolicitacaoRefeicao | SolicitacaoTransporte;
-
-interface SolicitacaoAbonosPonto {
-  id: number;
-  created_at: string;
-  status: string;
-  tipo: string;
-}
-
-interface SolicitacaoAdesaoCancelamento {
-  id: number;
-  created_at: string;
-  status: string;
-  tipo: string;
-}
-
-interface SolicitacaoAlteracaoEndereco {
-  id: number;
-  created_at: string;
-  status: string;
-  tipo: string;
-}
-
-interface SolicitacaoMudancaTurno {
-  id: number;
-  created_at: string;
-  status: string;
-  tipo: string;
-}
-
 type SolicitacaoOutros = 
-  | SolicitacaoAbonosPonto 
+  | SolicitacaoAbonoPonto 
+  | SolicitacaoAdesaoCancelamento 
+  | SolicitacaoAlteracaoEndereco 
+  | SolicitacaoMudancaTurno;
+
+// Redefine Solicitacao to be a union of all types
+type Solicitacao = 
+  | SolicitacaoRefeicao 
+  | SolicitacaoTransporte 
+  | SolicitacaoAbonoPonto 
   | SolicitacaoAdesaoCancelamento 
   | SolicitacaoAlteracaoEndereco 
   | SolicitacaoMudancaTurno;
@@ -125,6 +103,7 @@ const MinhasSolicitacoes = () => {
 
         let allSolicitacoes: Solicitacao[] = [];
 
+        // For collaborator request types
         for (const { table, tipo } of tables) {
           try {
             if (table === 'solicitacoes_refeicao') {
@@ -137,7 +116,7 @@ const MinhasSolicitacoes = () => {
 
               if (error) {
                 console.error(`Erro ao buscar solicitações de ${tipo}:`, error.message);
-                continue; // Skip this table and try the next one
+                continue;
               }
 
               if (data && data.length > 0) {
@@ -206,25 +185,87 @@ const MinhasSolicitacoes = () => {
                 allSolicitacoes = [...allSolicitacoes, ...solicitacoesWithType];
               }
             }
-            else {
-              // For other request types
-              const { data, error } = await (supabase as any)
+            else if (table === 'solicitacoes_abono_ponto') {
+              const { data, error } = await customSupabase
                 .from(table)
-                .select('id, created_at, status')
+                .select('*')
                 .eq('solicitante_id', user.id)
                 .order('created_at', { ascending: false });
 
               if (error) {
                 console.error(`Erro ao buscar solicitações de ${tipo}:`, error.message);
-                continue; // Skip this table and try the next one
+                continue;
               }
 
               if (data && data.length > 0) {
-                const solicitacoesWithType: SolicitacaoOutros[] = data.map(item => ({
-                  id: item.id,
-                  created_at: item.created_at,
-                  status: item.status,
+                const solicitacoesWithType: SolicitacaoAbonoPonto[] = data.map(item => ({
+                  ...item,
                   tipo: tipo,
+                }));
+                allSolicitacoes = [...allSolicitacoes, ...solicitacoesWithType];
+              }
+            }
+            else if (table === 'solicitacoes_adesao_cancelamento') {
+              const { data, error } = await customSupabase
+                .from(table)
+                .select('*')
+                .eq('solicitante_id', user.id)
+                .order('created_at', { ascending: false });
+
+              if (error) {
+                console.error(`Erro ao buscar solicitações de ${tipo}:`, error.message);
+                continue;
+              }
+
+              if (data && data.length > 0) {
+                const solicitacoesWithType: SolicitacaoAdesaoCancelamento[] = data.map(item => ({
+                  ...item,
+                  tipo: tipo,
+                }));
+                allSolicitacoes = [...allSolicitacoes, ...solicitacoesWithType];
+              }
+            }
+            else if (table === 'solicitacoes_alteracao_endereco') {
+              const { data, error } = await customSupabase
+                .from(table)
+                .select('*')
+                .eq('solicitante_id', user.id)
+                .order('created_at', { ascending: false });
+
+              if (error) {
+                console.error(`Erro ao buscar solicitações de ${tipo}:`, error.message);
+                continue;
+              }
+
+              if (data && data.length > 0) {
+                const solicitacoesWithType: SolicitacaoAlteracaoEndereco[] = data.map(item => ({
+                  ...item,
+                  tipo: tipo,
+                  endereco_atual: item.endereco,
+                  endereco_novo: item.nova_rota ? `${item.endereco} (nova rota: ${item.nova_rota})` : item.endereco,
+                  data_alteracao: item.created_at,
+                }));
+                allSolicitacoes = [...allSolicitacoes, ...solicitacoesWithType];
+              }
+            }
+            else if (table === 'solicitacoes_mudanca_turno') {
+              const { data, error } = await customSupabase
+                .from(table)
+                .select('*')
+                .eq('solicitante_id', user.id)
+                .order('created_at', { ascending: false });
+
+              if (error) {
+                console.error(`Erro ao buscar solicitações de ${tipo}:`, error.message);
+                continue;
+              }
+
+              if (data && data.length > 0) {
+                const solicitacoesWithType: SolicitacaoMudancaTurno[] = data.map(item => ({
+                  ...item,
+                  tipo: tipo,
+                  turno_novo: item.novo_turno,
+                  data_alteracao: item.created_at,
                 }));
                 allSolicitacoes = [...allSolicitacoes, ...solicitacoesWithType];
               }

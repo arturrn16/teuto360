@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, customSupabase, SolicitacaoAbonoPonto, SolicitacaoAdesaoCancelamento, SolicitacaoAlteracaoEndereco, SolicitacaoMudancaTurno } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
@@ -110,7 +109,7 @@ const Admin = () => {
   const [solicitacoesRota, setSolicitacoesRota] = useState<SolicitacaoTransporteRota[]>([]);
   const [solicitacoes12x36, setSolicitacoes12x36] = useState<SolicitacaoTransporte12x36[]>([]);
   const [solicitacoesRefeicao, setSolicitacoesRefeicao] = useState<SolicitacaoRefeicao[]>([]);
-  const [solicitacoesAbonoPonto, setSolicitacoesAbonoPonto] = useState<SolicitacaoAbonosPonto[]>([]);
+  const [solicitacoesAbonoPonto, setSolicitacoesAbonoPonto] = useState<SolicitacaoAbonoPonto[]>([]);
   const [solicitacoesAdesaoCancelamento, setSolicitacoesAdesaoCancelamento] = useState<SolicitacaoAdesaoCancelamento[]>([]);
   const [solicitacoesAlteracaoEndereco, setSolicitacoesAlteracaoEndereco] = useState<SolicitacaoAlteracaoEndereco[]>([]);
   const [solicitacoesMudancaTurno, setSolicitacoesMudancaTurno] = useState<SolicitacaoMudancaTurno[]>([]);
@@ -126,7 +125,6 @@ const Admin = () => {
       try {
         setLoading(true);
         
-        // Buscar solicitações de transporte rota
         const { data: dataRota, error: errorRota } = await supabase
           .from("solicitacoes_transporte_rota")
           .select("*")
@@ -138,7 +136,6 @@ const Admin = () => {
           setSolicitacoesRota(dataRota || []);
         }
         
-        // Buscar solicitações de transporte 12x36
         const { data: data12x36, error: error12x36 } = await supabase
           .from("solicitacoes_transporte_12x36")
           .select("*")
@@ -150,7 +147,6 @@ const Admin = () => {
           setSolicitacoes12x36(data12x36 || []);
         }
         
-        // Buscar solicitações de refeição
         const { data: dataRefeicao, error: errorRefeicao } = await supabase
           .from("solicitacoes_refeicao")
           .select("*")
@@ -162,8 +158,7 @@ const Admin = () => {
           setSolicitacoesRefeicao(dataRefeicao || []);
         }
 
-        // Buscar solicitações de abono de ponto
-        const { data: dataAbonoPonto, error: errorAbonoPonto } = await supabase
+        const { data: dataAbonoPonto, error: errorAbonoPonto } = await customSupabase
           .from("solicitacoes_abono_ponto")
           .select("*")
           .order("created_at", { ascending: false });
@@ -174,8 +169,7 @@ const Admin = () => {
           setSolicitacoesAbonoPonto(dataAbonoPonto || []);
         }
 
-        // Buscar solicitações de adesão/cancelamento
-        const { data: dataAdesaoCancelamento, error: errorAdesaoCancelamento } = await supabase
+        const { data: dataAdesaoCancelamento, error: errorAdesaoCancelamento } = await customSupabase
           .from("solicitacoes_adesao_cancelamento")
           .select("*")
           .order("created_at", { ascending: false });
@@ -186,8 +180,7 @@ const Admin = () => {
           setSolicitacoesAdesaoCancelamento(dataAdesaoCancelamento || []);
         }
 
-        // Buscar solicitações de alteração de endereço
-        const { data: dataAlteracaoEndereco, error: errorAlteracaoEndereco } = await supabase
+        const { data: dataAlteracaoEndereco, error: errorAlteracaoEndereco } = await customSupabase
           .from("solicitacoes_alteracao_endereco")
           .select("*")
           .order("created_at", { ascending: false });
@@ -198,8 +191,7 @@ const Admin = () => {
           setSolicitacoesAlteracaoEndereco(dataAlteracaoEndereco || []);
         }
 
-        // Buscar solicitações de mudança de turno
-        const { data: dataMudancaTurno, error: errorMudancaTurno } = await supabase
+        const { data: dataMudancaTurno, error: errorMudancaTurno } = await customSupabase
           .from("solicitacoes_mudanca_turno")
           .select("*")
           .order("created_at", { ascending: false });
@@ -210,7 +202,6 @@ const Admin = () => {
           setSolicitacoesMudancaTurno(dataMudancaTurno || []);
         }
         
-        // Coletar IDs de solicitantes para buscar informações
         const solicitanteIds = new Set<number>();
         
         [
@@ -225,7 +216,6 @@ const Admin = () => {
           if (s.solicitante_id) solicitanteIds.add(s.solicitante_id);
         });
           
-        // Buscar informações dos solicitantes
         if (solicitanteIds.size > 0) {
           const { data: solicitantesData, error: solicitantesError } = await supabase
             .from("usuarios")
@@ -252,7 +242,6 @@ const Admin = () => {
     fetchSolicitacoes();
   }, [user]);
   
-  // Função para formatar a data
   const formatarData = (dataString: string) => {
     try {
       return format(new Date(dataString), "dd/MM/yyyy", { locale: ptBR });
@@ -261,7 +250,6 @@ const Admin = () => {
     }
   };
   
-  // Função para formatar o timestamp
   const formatarTimestamp = (dataString: string) => {
     try {
       return format(new Date(dataString), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
@@ -270,7 +258,6 @@ const Admin = () => {
     }
   };
   
-  // Função para filtrar solicitações de rota
   const filtrarSolicitacoesRota = () => {
     return solicitacoesRota.filter(s => {
       const matchColaborador = s.colaborador_nome.toLowerCase().includes(filtroColaborador.toLowerCase());
@@ -279,7 +266,6 @@ const Admin = () => {
     });
   };
   
-  // Função para filtrar solicitações 12x36
   const filtrarSolicitacoes12x36 = () => {
     return solicitacoes12x36.filter(s => {
       const matchColaborador = s.colaborador_nome.toLowerCase().includes(filtroColaborador.toLowerCase());
@@ -288,7 +274,6 @@ const Admin = () => {
     });
   };
   
-  // Função para filtrar solicitações de refeição
   const filtrarSolicitacoesRefeicao = () => {
     return solicitacoesRefeicao.filter(s => {
       const matchColaborador = s.colaboradores.some(c => 
@@ -299,7 +284,6 @@ const Admin = () => {
     });
   };
 
-  // Função para filtrar solicitações de abono de ponto
   const filtrarSolicitacoesAbonoPonto = () => {
     return solicitacoesAbonoPonto.filter(s => {
       const matchStatus = filtroStatus === "todos" || s.status === filtroStatus;
@@ -307,7 +291,6 @@ const Admin = () => {
     });
   };
 
-  // Função para filtrar solicitações de adesão/cancelamento
   const filtrarSolicitacoesAdesaoCancelamento = () => {
     return solicitacoesAdesaoCancelamento.filter(s => {
       const matchStatus = filtroStatus === "todos" || s.status === filtroStatus;
@@ -315,7 +298,6 @@ const Admin = () => {
     });
   };
 
-  // Função para filtrar solicitações de alteração de endereço
   const filtrarSolicitacoesAlteracaoEndereco = () => {
     return solicitacoesAlteracaoEndereco.filter(s => {
       const matchStatus = filtroStatus === "todos" || s.status === filtroStatus;
@@ -323,7 +305,6 @@ const Admin = () => {
     });
   };
 
-  // Função para filtrar solicitações de mudança de turno
   const filtrarSolicitacoesMudancaTurno = () => {
     return solicitacoesMudancaTurno.filter(s => {
       const matchStatus = filtroStatus === "todos" || s.status === filtroStatus;
@@ -331,7 +312,6 @@ const Admin = () => {
     });
   };
   
-  // Aprovar ou rejeitar solicitação de transporte rota
   const atualizarStatusRota = async (id: number, status: 'aprovada' | 'rejeitada') => {
     try {
       const { error } = await supabase
@@ -345,7 +325,6 @@ const Admin = () => {
         return;
       }
       
-      // Atualizar o estado local
       setSolicitacoesRota(prev => 
         prev.map(s => s.id === id ? { ...s, status } : s)
       );
@@ -357,7 +336,6 @@ const Admin = () => {
     }
   };
   
-  // Aprovar ou rejeitar solicitação de transporte 12x36
   const atualizarStatus12x36 = async (id: number, status: 'aprovada' | 'rejeitada') => {
     try {
       const { error } = await supabase
@@ -371,7 +349,6 @@ const Admin = () => {
         return;
       }
       
-      // Atualizar o estado local
       setSolicitacoes12x36(prev => 
         prev.map(s => s.id === id ? { ...s, status } : s)
       );
@@ -383,7 +360,6 @@ const Admin = () => {
     }
   };
   
-  // Aprovar ou rejeitar solicitação de refeição
   const atualizarStatusRefeicao = async (id: number, status: 'aprovada' | 'rejeitada') => {
     try {
       const { error } = await supabase
@@ -397,7 +373,6 @@ const Admin = () => {
         return;
       }
       
-      // Atualizar o estado local
       setSolicitacoesRefeicao(prev => 
         prev.map(s => s.id === id ? { ...s, status } : s)
       );
@@ -409,10 +384,9 @@ const Admin = () => {
     }
   };
 
-  // Função para atualizar status de outras solicitações
   const atualizarStatusGenerico = async (tabela: string, id: number, status: 'aprovada' | 'rejeitada', atualizarEstado: Function) => {
     try {
-      const { error } = await supabase
+      const { error } = await customSupabase
         .from(tabela)
         .update({ status })
         .eq('id', id);
@@ -423,9 +397,8 @@ const Admin = () => {
         return;
       }
       
-      // Atualizar o estado local usando a função passada
-      atualizarEstado(prev => 
-        prev.map(s => s.id === id ? { ...s, status } : s)
+      atualizarEstado((prev: any[]) => 
+        prev.map((s: any) => s.id === id ? { ...s, status } : s)
       );
       
       toast.success(`Solicitação ${status === 'aprovada' ? 'aprovada' : 'rejeitada'} com sucesso!`);
@@ -435,7 +408,6 @@ const Admin = () => {
     }
   };
   
-  // Badge de status com cores diferentes
   const StatusBadge = ({ status }: { status: string }) => {
     let variant = "default";
     
@@ -460,7 +432,6 @@ const Admin = () => {
     );
   };
   
-  // Exibir informações do solicitante
   const SolicitanteInfo = ({ id }: { id: number }) => {
     const info = solicitantesInfo[id];
     
@@ -826,7 +797,6 @@ const Admin = () => {
                   )}
                 </TabsContent>
 
-                {/* Tab para Abono de Ponto */}
                 <TabsContent value="abono" className="mt-4">
                   {filtrarSolicitacoesAbonoPonto().length > 0 ? (
                     <div className="rounded-md border overflow-hidden">
@@ -904,7 +874,6 @@ const Admin = () => {
                   )}
                 </TabsContent>
 
-                {/* Tab para Adesão/Cancelamento */}
                 <TabsContent value="adesao" className="mt-4">
                   {filtrarSolicitacoesAdesaoCancelamento().length > 0 ? (
                     <div className="rounded-md border overflow-hidden">
@@ -980,7 +949,6 @@ const Admin = () => {
                   )}
                 </TabsContent>
 
-                {/* Tab para Alteração de Endereço */}
                 <TabsContent value="endereco" className="mt-4">
                   {filtrarSolicitacoesAlteracaoEndereco().length > 0 ? (
                     <div className="rounded-md border overflow-hidden">
@@ -1058,7 +1026,6 @@ const Admin = () => {
                   )}
                 </TabsContent>
 
-                {/* Tab para Mudança de Turno */}
                 <TabsContent value="turno" className="mt-4">
                   {filtrarSolicitacoesMudancaTurno().length > 0 ? (
                     <div className="rounded-md border overflow-hidden">
