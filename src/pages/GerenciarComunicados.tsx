@@ -209,20 +209,29 @@ const GerenciarComunicados = () => {
       
       if (error) {
         console.error("Erro ao arquivar/desarquivar comunicado:", error);
-        toast.error("Erro ao arquivar/desarquivar comunicado");
+        toast({
+          title: "Erro",
+          description: "Erro ao arquivar/desarquivar comunicado",
+          variant: "destructive"
+        });
         return;
       }
       
-      toast.success(
-        comunicado.arquivado
+      toast({
+        title: "Sucesso",
+        description: comunicado.arquivado
           ? "Comunicado desarquivado com sucesso!"
           : "Comunicado arquivado com sucesso!"
-      );
+      });
       
       fetchComunicados();
     } catch (error) {
       console.error("Erro ao arquivar/desarquivar comunicado:", error);
-      toast.error("Erro ao arquivar/desarquivar comunicado");
+      toast({
+        title: "Erro",
+        description: "Erro ao arquivar/desarquivar comunicado",
+        variant: "destructive"
+      });
     }
   };
 
@@ -243,17 +252,28 @@ const GerenciarComunicados = () => {
       
       if (error) {
         console.error("Erro ao excluir comunicado:", error);
-        toast.error("Erro ao excluir comunicado");
+        toast({
+          title: "Erro",
+          description: "Erro ao excluir comunicado",
+          variant: "destructive"
+        });
         return;
       }
       
-      toast.success("Comunicado excluído com sucesso!");
+      toast({
+        title: "Sucesso",
+        description: "Comunicado excluído com sucesso!"
+      });
       setIsDeleting(false);
       setSelectedComunicado(null);
       fetchComunicados();
     } catch (error) {
       console.error("Erro ao excluir comunicado:", error);
-      toast.error("Erro ao excluir comunicado");
+      toast({
+        title: "Erro",
+        description: "Erro ao excluir comunicado",
+        variant: "destructive"
+      });
     }
   };
 
