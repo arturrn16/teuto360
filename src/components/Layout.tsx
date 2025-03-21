@@ -28,7 +28,6 @@ export const Layout = () => {
         <div className="flex flex-1">
           <AppSidebar />
           <main className="flex-1 px-4 py-8 animate-fade-in">
-            {/* Mobile Sidebar Trigger */}
             {isMobile && (
               <div className="mb-4">
                 <SidebarTrigger>
