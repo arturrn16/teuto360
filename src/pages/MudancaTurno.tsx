@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, queryCustomTable } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -126,23 +126,21 @@ const MudancaTurno = () => {
     setIsSubmitting(true);
     
     try {
-      // Use type assertion to bypass TypeScript errors
-      const { error } = await (supabase as any)
-        .from('solicitacoes_mudanca_turno')
-        .insert({
-          solicitante_id: user.id,
-          telefone: data.telefone,
-          cep: data.cep,
-          endereco: data.endereco,
-          bairro: data.bairro,
-          cidade: data.cidade,
-          turno_atual: data.turnoAtual,
-          novo_turno: data.novoTurno,
-          nova_rota: data.novaRota,
-          nome_gestor: data.nomeGestor,
-          motivo: data.motivo,
-          status: 'pendente'
-        });
+      const { error } = await supabase.from('solicitacoes_mudanca_turno').insert({
+        solicitante_id: user.id,
+        telefone: data.telefone,
+        cep: data.cep,
+        endereco: data.endereco,
+        bairro: data.bairro,
+        cidade: data.cidade,
+        turno_atual: data.turnoAtual,
+        novo_turno: data.novoTurno,
+        turno_novo: data.novoTurno,
+        nova_rota: data.novaRota,
+        nome_gestor: data.nomeGestor,
+        motivo: data.motivo,
+        status: 'pendente'
+      });
       
       if (error) {
         console.error("Erro ao enviar solicitação:", error);

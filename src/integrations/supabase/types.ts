@@ -9,6 +9,236 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      solicitacoes_abono_ponto: {
+        Row: {
+          cidade: string
+          created_at: string | null
+          data_ocorrencia: string | null
+          descricao: string
+          id: number
+          motivo: string
+          rota: string
+          solicitante_id: number | null
+          status: string | null
+          turno: string
+          updated_at: string | null
+        }
+        Insert: {
+          cidade: string
+          created_at?: string | null
+          data_ocorrencia?: string | null
+          descricao: string
+          id?: number
+          motivo: string
+          rota: string
+          solicitante_id?: number | null
+          status?: string | null
+          turno: string
+          updated_at?: string | null
+        }
+        Update: {
+          cidade?: string
+          created_at?: string | null
+          data_ocorrencia?: string | null
+          descricao?: string
+          id?: number
+          motivo?: string
+          rota?: string
+          solicitante_id?: number | null
+          status?: string | null
+          turno?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "solicitacoes_abono_ponto_solicitante_id_fkey"
+            columns: ["solicitante_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      solicitacoes_adesao_cancelamento: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: number
+          motivo: string
+          solicitante_id: number | null
+          status: string | null
+          tipo_solicitacao: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: number
+          motivo: string
+          solicitante_id?: number | null
+          status?: string | null
+          tipo_solicitacao: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: number
+          motivo?: string
+          solicitante_id?: number | null
+          status?: string | null
+          tipo_solicitacao?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "solicitacoes_adesao_cancelamento_solicitante_id_fkey"
+            columns: ["solicitante_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      solicitacoes_alteracao_endereco: {
+        Row: {
+          alterar_rota: boolean
+          bairro: string
+          cep: string
+          cidade: string
+          complemento: string | null
+          created_at: string | null
+          data_alteracao: string | null
+          endereco: string
+          endereco_atual: string | null
+          endereco_novo: string | null
+          id: number
+          nova_rota: string | null
+          rota_atual: string
+          solicitante_id: number | null
+          status: string | null
+          telefone: string
+          telefone_whatsapp: string
+          updated_at: string | null
+        }
+        Insert: {
+          alterar_rota: boolean
+          bairro: string
+          cep: string
+          cidade: string
+          complemento?: string | null
+          created_at?: string | null
+          data_alteracao?: string | null
+          endereco: string
+          endereco_atual?: string | null
+          endereco_novo?: string | null
+          id?: number
+          nova_rota?: string | null
+          rota_atual: string
+          solicitante_id?: number | null
+          status?: string | null
+          telefone: string
+          telefone_whatsapp: string
+          updated_at?: string | null
+        }
+        Update: {
+          alterar_rota?: boolean
+          bairro?: string
+          cep?: string
+          cidade?: string
+          complemento?: string | null
+          created_at?: string | null
+          data_alteracao?: string | null
+          endereco?: string
+          endereco_atual?: string | null
+          endereco_novo?: string | null
+          id?: number
+          nova_rota?: string | null
+          rota_atual?: string
+          solicitante_id?: number | null
+          status?: string | null
+          telefone?: string
+          telefone_whatsapp?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "solicitacoes_alteracao_endereco_solicitante_id_fkey"
+            columns: ["solicitante_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      solicitacoes_mudanca_turno: {
+        Row: {
+          bairro: string
+          cep: string
+          cidade: string
+          created_at: string | null
+          data_alteracao: string | null
+          endereco: string
+          id: number
+          motivo: string
+          nome_gestor: string
+          nova_rota: string
+          novo_turno: string
+          solicitante_id: number | null
+          status: string | null
+          telefone: string
+          turno_atual: string
+          turno_novo: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          bairro: string
+          cep: string
+          cidade: string
+          created_at?: string | null
+          data_alteracao?: string | null
+          endereco: string
+          id?: number
+          motivo: string
+          nome_gestor: string
+          nova_rota: string
+          novo_turno: string
+          solicitante_id?: number | null
+          status?: string | null
+          telefone: string
+          turno_atual: string
+          turno_novo?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          bairro?: string
+          cep?: string
+          cidade?: string
+          created_at?: string | null
+          data_alteracao?: string | null
+          endereco?: string
+          id?: number
+          motivo?: string
+          nome_gestor?: string
+          nova_rota?: string
+          novo_turno?: string
+          solicitante_id?: number | null
+          status?: string | null
+          telefone?: string
+          turno_atual?: string
+          turno_novo?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "solicitacoes_mudanca_turno_solicitante_id_fkey"
+            columns: ["solicitante_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       solicitacoes_refeicao: {
         Row: {
           colaboradores: string[]

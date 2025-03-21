@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, queryCustomTable } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -36,6 +36,7 @@ interface FormValues {
   turno: string;
   rota: string;
   descricao: string;
+  motivo?: string;
 }
 
 const AbonoPonto = () => {
@@ -49,6 +50,7 @@ const AbonoPonto = () => {
       turno: "",
       rota: "",
       descricao: "",
+      motivo: "Problema com transporte fretado"
     },
   });
   
@@ -89,17 +91,15 @@ const AbonoPonto = () => {
     setIsSubmitting(true);
     
     try {
-      // Use type assertion to bypass TypeScript errors
-      const { error } = await (supabase as any)
-        .from('solicitacoes_abono_ponto')
-        .insert({
-          solicitante_id: user.id,
-          cidade: data.cidade,
-          turno: data.turno,
-          rota: data.rota, 
-          descricao: data.descricao,
-          status: 'pendente'
-        });
+      const { error } = await supabase.from('solicitacoes_abono_ponto').insert({
+        solicitante_id: user.id,
+        cidade: data.cidade,
+        turno: data.turno,
+        rota: data.rota, 
+        descricao: data.descricao,
+        motivo: data.motivo || "Problema com transporte fretado",
+        status: 'pendente'
+      });
       
       if (error) {
         console.error("Erro ao enviar solicitação:", error);

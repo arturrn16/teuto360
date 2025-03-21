@@ -1,10 +1,9 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, queryCustomTable } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -59,16 +58,13 @@ const AdesaoCancelamento = () => {
     setIsSubmitting(true);
     
     try {
-      // Use type assertion to bypass TypeScript errors
-      const { error } = await (supabase as any)
-        .from('solicitacoes_adesao_cancelamento')
-        .insert({
-          solicitante_id: user.id,
-          tipo_solicitacao: data.tipoSolicitacao,
-          email: data.email,
-          motivo: data.motivo,
-          status: 'pendente'
-        });
+      const { error } = await supabase.from('solicitacoes_adesao_cancelamento').insert({
+        solicitante_id: user.id,
+        tipo_solicitacao: data.tipoSolicitacao,
+        email: data.email,
+        motivo: data.motivo,
+        status: 'pendente'
+      });
       
       if (error) {
         console.error("Erro ao enviar solicitação:", error);

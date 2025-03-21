@@ -1,10 +1,9 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, queryCustomTable } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -106,23 +105,22 @@ const AlteracaoEndereco = () => {
     setIsSubmitting(true);
     
     try {
-      // Use type assertion to bypass TypeScript errors
-      const { error } = await (supabase as any)
-        .from('solicitacoes_alteracao_endereco')
-        .insert({
-          solicitante_id: user.id,
-          telefone: data.telefone,
-          cep: data.cep,
-          endereco: data.endereco,
-          bairro: data.bairro,
-          cidade: data.cidade,
-          complemento: data.complemento,
-          telefone_whatsapp: data.telefoneWhatsapp,
-          rota_atual: data.rotaAtual,
-          alterar_rota: data.alterarRota === "sim",
-          nova_rota: data.alterarRota === "sim" ? data.novaRota : null,
-          status: 'pendente'
-        });
+      const { error } = await supabase.from('solicitacoes_alteracao_endereco').insert({
+        solicitante_id: user.id,
+        telefone: data.telefone,
+        cep: data.cep,
+        endereco: data.endereco,
+        bairro: data.bairro,
+        cidade: data.cidade,
+        complemento: data.complemento,
+        telefone_whatsapp: data.telefoneWhatsapp,
+        rota_atual: data.rotaAtual,
+        alterar_rota: data.alterarRota === "sim",
+        nova_rota: data.alterarRota === "sim" ? data.novaRota : null,
+        endereco_atual: "Endereço atual do sistema",
+        endereco_novo: `${data.endereco}, ${data.bairro}, ${data.cidade}, ${data.cep}`,
+        status: 'pendente'
+      });
       
       if (error) {
         console.error("Erro ao enviar solicitação:", error);
