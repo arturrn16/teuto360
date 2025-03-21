@@ -1,8 +1,7 @@
-
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useAuth } from "@/context/AuthContext";
-import { queryCustomTable, updateCustomTable } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 import { Comunicado, ComunicadoInput } from "@/models/comunicado";
 import { toast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
@@ -76,16 +75,17 @@ const GerenciarComunicados = () => {
     setIsLoading(true);
     
     try {
-      const { data, error } = await queryCustomTable<Comunicado>("comunicados", {
-        order: { column: "data_publicacao", ascending: false }
-      });
+      const { data, error } = await supabase
+        .from('comunicados')
+        .select('*')
+        .order('data_publicacao', { ascending: false });
       
       if (error) {
         console.error("Erro ao buscar comunicados:", error);
         return;
       }
       
-      setComunicados(data);
+      setComunicados(data || []);
     } catch (error) {
       console.error("Erro ao buscar comunicados:", error);
     } finally {
@@ -108,16 +108,15 @@ const GerenciarComunicados = () => {
     try {
       if (isEditing && selectedComunicado) {
         // Atualizar comunicado existente
-        const { error } = await updateCustomTable(
-          "comunicados",
-          {
+        const { error } = await supabase
+          .from('comunicados')
+          .update({
             titulo: data.titulo,
             conteudo: data.conteudo,
             importante: data.importante,
             updated_at: new Date().toISOString(),
-          },
-          { column: "id", value: selectedComunicado.id }
-        );
+          })
+          .eq('id', selectedComunicado.id);
         
         if (error) {
           console.error("Erro ao atualizar comunicado:", error);
@@ -134,10 +133,10 @@ const GerenciarComunicados = () => {
           description: "Comunicado atualizado com sucesso!"
         });
       } else {
-        // Criar novo comunicado - Corrigido para enviar objeto único em vez de array
-        const { error } = await updateCustomTable(
-          "comunicados",
-          {
+        // Criar novo comunicado
+        const { error } = await supabase
+          .from('comunicados')
+          .insert({
             titulo: data.titulo,
             conteudo: data.conteudo,
             data_publicacao: new Date().toISOString(),
@@ -145,9 +144,7 @@ const GerenciarComunicados = () => {
             autor_nome: user.nome,
             importante: data.importante,
             arquivado: false,
-          },
-          { column: "id", value: null }  // null para inserção
-        );
+          });
         
         if (error) {
           console.error("Erro ao publicar comunicado:", error);
@@ -198,14 +195,13 @@ const GerenciarComunicados = () => {
 
   const handleArchive = async (comunicado: Comunicado) => {
     try {
-      const { error } = await updateCustomTable(
-        "comunicados",
-        {
+      const { error } = await supabase
+        .from('comunicados')
+        .update({
           arquivado: !comunicado.arquivado,
           updated_at: new Date().toISOString(),
-        },
-        { column: "id", value: comunicado.id }
-      );
+        })
+        .eq('id', comunicado.id);
       
       if (error) {
         console.error("Erro ao arquivar/desarquivar comunicado:", error);
@@ -244,11 +240,10 @@ const GerenciarComunicados = () => {
     if (!selectedComunicado) return;
     
     try {
-      const { error } = await updateCustomTable(
-        "comunicados",
-        { id: selectedComunicado.id },
-        { column: "id", value: selectedComunicado.id }
-      );
+      const { error } = await supabase
+        .from('comunicados')
+        .delete()
+        .eq('id', selectedComunicado.id);
       
       if (error) {
         console.error("Erro ao excluir comunicado:", error);
