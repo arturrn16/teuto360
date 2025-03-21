@@ -9,13 +9,213 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      solicitacoes_refeicao: {
+        Row: {
+          colaboradores: string[]
+          created_at: string | null
+          data_refeicao: string
+          id: number
+          solicitante_id: number | null
+          status: string | null
+          tipo_refeicao: string
+          updated_at: string | null
+        }
+        Insert: {
+          colaboradores: string[]
+          created_at?: string | null
+          data_refeicao: string
+          id?: number
+          solicitante_id?: number | null
+          status?: string | null
+          tipo_refeicao: string
+          updated_at?: string | null
+        }
+        Update: {
+          colaboradores?: string[]
+          created_at?: string | null
+          data_refeicao?: string
+          id?: number
+          solicitante_id?: number | null
+          status?: string | null
+          tipo_refeicao?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "solicitacoes_refeicao_solicitante_id_fkey"
+            columns: ["solicitante_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      solicitacoes_transporte_12x36: {
+        Row: {
+          cep: string
+          colaborador_nome: string
+          created_at: string | null
+          data_inicio: string
+          endereco: string
+          id: number
+          rota: string
+          solicitante_id: number | null
+          status: string | null
+          telefone: string
+          updated_at: string | null
+        }
+        Insert: {
+          cep: string
+          colaborador_nome: string
+          created_at?: string | null
+          data_inicio: string
+          endereco: string
+          id?: number
+          rota: string
+          solicitante_id?: number | null
+          status?: string | null
+          telefone: string
+          updated_at?: string | null
+        }
+        Update: {
+          cep?: string
+          colaborador_nome?: string
+          created_at?: string | null
+          data_inicio?: string
+          endereco?: string
+          id?: number
+          rota?: string
+          solicitante_id?: number | null
+          status?: string | null
+          telefone?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "solicitacoes_transporte_12x36_solicitante_id_fkey"
+            columns: ["solicitante_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      solicitacoes_transporte_rota: {
+        Row: {
+          cidade: string
+          colaborador_nome: string
+          created_at: string | null
+          id: number
+          motivo: string
+          periodo_fim: string
+          periodo_inicio: string
+          rota: string
+          solicitante_id: number | null
+          status: string | null
+          turno: string
+          updated_at: string | null
+        }
+        Insert: {
+          cidade: string
+          colaborador_nome: string
+          created_at?: string | null
+          id?: number
+          motivo: string
+          periodo_fim: string
+          periodo_inicio: string
+          rota: string
+          solicitante_id?: number | null
+          status?: string | null
+          turno: string
+          updated_at?: string | null
+        }
+        Update: {
+          cidade?: string
+          colaborador_nome?: string
+          created_at?: string | null
+          id?: number
+          motivo?: string
+          periodo_fim?: string
+          periodo_inicio?: string
+          rota?: string
+          solicitante_id?: number | null
+          status?: string | null
+          turno?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "solicitacoes_transporte_rota_solicitante_id_fkey"
+            columns: ["solicitante_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      usuarios: {
+        Row: {
+          admin: boolean | null
+          cargo: string
+          created_at: string | null
+          id: number
+          matricula: string
+          nome: string
+          password: string
+          setor: string
+          tipo_usuario: string
+          updated_at: string | null
+          username: string
+        }
+        Insert: {
+          admin?: boolean | null
+          cargo: string
+          created_at?: string | null
+          id?: number
+          matricula: string
+          nome: string
+          password: string
+          setor: string
+          tipo_usuario: string
+          updated_at?: string | null
+          username: string
+        }
+        Update: {
+          admin?: boolean | null
+          cargo?: string
+          created_at?: string | null
+          id?: number
+          matricula?: string
+          nome?: string
+          password?: string
+          setor?: string
+          tipo_usuario?: string
+          updated_at?: string | null
+          username?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      verify_user_credentials: {
+        Args: {
+          p_username: string
+          p_password: string
+        }
+        Returns: {
+          id: number
+          matricula: string
+          nome: string
+          cargo: string
+          setor: string
+          username: string
+          admin: boolean
+          tipo_usuario: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

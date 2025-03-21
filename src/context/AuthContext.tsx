@@ -20,7 +20,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if user is already logged in
+    // Verifica se o usuário já está logado
     const storedUser = getStoredUser();
     if (storedUser) {
       setUser(storedUser);
@@ -90,7 +90,7 @@ export const ProtectedRoute: React.FC<{
     if (!isLoading && !isAuthenticated) {
       navigate("/login");
     } else if (!isLoading && isAuthenticated && user) {
-      // Check user type permissions
+      // Verifica permissões do tipo de usuário
       const isAllowed = user.admin || allowedTypes.includes(user.tipo_usuario);
       if (!isAllowed) {
         toast.error("Você não tem permissão para acessar esta página");
@@ -105,6 +105,6 @@ export const ProtectedRoute: React.FC<{
     </div>;
   }
 
-  // If authenticated and has permission, render children
+  // Se autenticado e tem permissão, renderiza os children
   return isAuthenticated ? <>{children}</> : null;
 };

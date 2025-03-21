@@ -8,7 +8,7 @@ const Index = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // If authenticated, redirect to dashboard, otherwise to login
+    // Se autenticado, redirecionar para o dashboard, caso contrário para o login
     if (!isLoading) {
       if (isAuthenticated) {
         navigate("/dashboard");
@@ -18,7 +18,7 @@ const Index = () => {
     }
   }, [isAuthenticated, isLoading, navigate]);
 
-  // Render a loading screen while checking auth status
+  // Renderiza uma tela de carregamento enquanto verifica o status de autenticação
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="text-center">
