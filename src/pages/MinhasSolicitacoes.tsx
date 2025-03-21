@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -46,6 +47,7 @@ const MinhasSolicitacoes = () => {
       setError(null);
 
       try {
+        // Define which tables to query based on user type
         const tables = user.tipo_usuario === 'refeicao' 
           ? [{ table: 'solicitacoes_refeicao', tipo: 'Refeição' }]
           : [
@@ -108,6 +110,7 @@ const MinhasSolicitacoes = () => {
   const showButtons = () => {
     if (!user) return null;
     
+    // Only show the Refeição button for refeicao users
     if (user.tipo_usuario === 'refeicao') {
       return (
         <div className="mt-4">
@@ -117,6 +120,7 @@ const MinhasSolicitacoes = () => {
         </div>
       );
     } else {
+      // For other users, show all the appropriate buttons
       return (
         <>
           {user.tipo_usuario === "selecao" && (
