@@ -1,4 +1,3 @@
-
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
@@ -127,13 +126,7 @@ const navItems: NavItem[] = [
     icon: <MapPin className="h-5 w-5" />,
     allowedTypes: ["colaborador", "comum"] as const
   },
-  // Adding Dashboard for admin but with a separate allowedTypes array
-  { 
-    name: "Dashboard", 
-    href: "/dashboard", 
-    icon: <LayoutDashboard className="h-5 w-5" />,
-    allowedTypes: ["admin"] as const
-  },
+  // Removed Dashboard for admin users
 ];
 
 export const AppSidebar = () => {

@@ -1,11 +1,15 @@
 
 import { useAuth } from "@/context/AuthContext";
 import { Outlet } from "react-router-dom";
-import { SidebarProvider } from "./ui/sidebar";
+import { SidebarProvider, SidebarTrigger } from "./ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
+import { Menu } from "lucide-react";
+import { Button } from "./ui/button";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const Layout = () => {
   const { isAuthenticated, isLoading } = useAuth();
+  const isMobile = useIsMobile();
 
   if (isLoading) {
     return (
@@ -25,6 +29,17 @@ export const Layout = () => {
         <div className="flex flex-1">
           <AppSidebar />
           <main className="flex-1 container mx-auto px-4 py-8 animate-fade-in">
+            {/* Mobile Sidebar Trigger */}
+            {isMobile && (
+              <div className="mb-4">
+                <SidebarTrigger asChild>
+                  <Button variant="outline" size="icon" className="md:hidden">
+                    <Menu className="h-5 w-5" />
+                    <span className="sr-only">Menu</span>
+                  </Button>
+                </SidebarTrigger>
+              </div>
+            )}
             <Outlet />
           </main>
         </div>
