@@ -15,6 +15,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import {
   Card,
@@ -103,19 +104,16 @@ const GerenciarComunicados = () => {
     try {
       if (isEditing && selectedComunicado) {
         // Atualizar comunicado existente
-        const { error } = await queryCustomTable("comunicados", {})
-          .then(async () => {
-            return await updateCustomTable(
-              "comunicados",
-              {
-                titulo: data.titulo,
-                conteudo: data.conteudo,
-                importante: data.importante,
-                updated_at: new Date().toISOString(),
-              },
-              { column: "id", value: selectedComunicado.id }
-            );
-          });
+        const { error } = await updateCustomTable(
+          "comunicados",
+          {
+            titulo: data.titulo,
+            conteudo: data.conteudo,
+            importante: data.importante,
+            updated_at: new Date().toISOString(),
+          },
+          { column: "id", value: selectedComunicado.id }
+        );
         
         if (error) {
           console.error("Erro ao atualizar comunicado:", error);
@@ -126,22 +124,19 @@ const GerenciarComunicados = () => {
         toast.success("Comunicado atualizado com sucesso!");
       } else {
         // Criar novo comunicado
-        const { error } = await queryCustomTable("comunicados", {})
-          .then(async () => {
-            return await updateCustomTable(
-              "comunicados",
-              [{
-                titulo: data.titulo,
-                conteudo: data.conteudo,
-                data_publicacao: new Date().toISOString(),
-                autor_id: user.id,
-                autor_nome: user.nome,
-                importante: data.importante,
-                arquivado: false,
-              }],
-              { column: "id", value: null }
-            );
-          });
+        const { error } = await updateCustomTable(
+          "comunicados",
+          [{
+            titulo: data.titulo,
+            conteudo: data.conteudo,
+            data_publicacao: new Date().toISOString(),
+            autor_id: user.id,
+            autor_nome: user.nome,
+            importante: data.importante,
+            arquivado: false,
+          }],
+          { column: "id", value: null }
+        );
         
         if (error) {
           console.error("Erro ao publicar comunicado:", error);
@@ -181,17 +176,14 @@ const GerenciarComunicados = () => {
 
   const handleArchive = async (comunicado: Comunicado) => {
     try {
-      const { error } = await queryCustomTable("comunicados", {})
-        .then(async () => {
-          return await updateCustomTable(
-            "comunicados",
-            {
-              arquivado: !comunicado.arquivado,
-              updated_at: new Date().toISOString(),
-            },
-            { column: "id", value: comunicado.id }
-          );
-        });
+      const { error } = await updateCustomTable(
+        "comunicados",
+        {
+          arquivado: !comunicado.arquivado,
+          updated_at: new Date().toISOString(),
+        },
+        { column: "id", value: comunicado.id }
+      );
       
       if (error) {
         console.error("Erro ao arquivar/desarquivar comunicado:", error);
@@ -221,14 +213,11 @@ const GerenciarComunicados = () => {
     if (!selectedComunicado) return;
     
     try {
-      const { error } = await queryCustomTable("comunicados", {})
-        .then(async () => {
-          return await updateCustomTable(
-            "comunicados",
-            { id: selectedComunicado.id },
-            { column: "id", value: selectedComunicado.id }
-          );
-        });
+      const { error } = await updateCustomTable(
+        "comunicados",
+        { id: selectedComunicado.id },
+        { column: "id", value: selectedComunicado.id }
+      );
       
       if (error) {
         console.error("Erro ao excluir comunicado:", error);
@@ -319,9 +308,9 @@ const GerenciarComunicados = () => {
                     <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
                       <div className="space-y-0.5">
                         <FormLabel>Destacar como Importante</FormLabel>
-                        <CardDescription>
+                        <FormDescription>
                           Comunicados importantes são destacados visualmente para os usuários.
-                        </CardDescription>
+                        </FormDescription>
                       </div>
                       <FormControl>
                         <Switch
