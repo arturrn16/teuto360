@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { User, getStoredUser, loginUser, logoutUser, storeUser } from "@/utils/auth";
+import { User, getStoredUser, loginUser, logoutUser, storeUser, shouldShowRoute } from "@/utils/auth";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -10,6 +10,7 @@ interface AuthContextType {
   login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
   isAuthenticated: boolean;
+  shouldShowRoute: (allowedTypes: ('admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum')[]) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -55,6 +56,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     navigate("/login");
   };
 
+  // Add a method to check if a route should be displayed
+  const checkShouldShowRoute = (allowedTypes: ('admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum')[]) => {
+    return shouldShowRoute(user, allowedTypes);
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -63,6 +69,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         login,
         logout,
         isAuthenticated: !!user,
+        shouldShowRoute: checkShouldShowRoute,
       }}
     >
       {children}

@@ -39,13 +39,13 @@ const Dashboard = () => {
       color: "from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20",
       textColor: "text-indigo-600 dark:text-indigo-400"
     },
-    // "Uso de Rota" card for colaborador users
+    // "Uso de Rota" card for comum users
     {
       title: "Uso de Rota",
       description: "Solicite transporte para rotas regulares",
       icon: <Route className="h-8 w-8 text-blue-500" />,
       to: "/transporte-rota",
-      allowedTypes: ["colaborador"],
+      allowedTypes: ["colaborador", "comum"],
       color: "from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20",
       textColor: "text-blue-600 dark:text-blue-400"
     },
@@ -55,7 +55,7 @@ const Dashboard = () => {
       description: "Visualize todas as suas solicitações",
       icon: <FileText className="h-8 w-8 text-violet-500" />,
       to: "/minhas-solicitacoes",
-      allowedTypes: ["selecao", "refeicao", "colaborador"],
+      allowedTypes: ["selecao", "refeicao", "colaborador", "comum"],
       color: "from-violet-50 to-violet-100 dark:from-violet-900/20 dark:to-violet-800/20",
       textColor: "text-violet-600 dark:text-violet-400"
     },
@@ -79,13 +79,13 @@ const Dashboard = () => {
       color: "from-rose-50 to-rose-100 dark:from-rose-900/20 dark:to-rose-800/20",
       textColor: "text-rose-600 dark:text-rose-400"
     },
-    // New cards for colaborador
+    // New cards for colaborador and comum
     {
       title: "Adesão/Cancelamento de Rota",
       description: "Solicite adesão ou cancelamento do transporte fretado",
       icon: <ClipboardCheck className="h-8 w-8 text-teal-500" />,
       to: "/adesao-cancelamento",
-      allowedTypes: ["colaborador"],
+      allowedTypes: ["colaborador", "comum"],
       color: "from-teal-50 to-teal-100 dark:from-teal-900/20 dark:to-teal-800/20",
       textColor: "text-teal-600 dark:text-teal-400"
     },
@@ -94,7 +94,7 @@ const Dashboard = () => {
       description: "Solicite alteração do seu turno de trabalho",
       icon: <Replace className="h-8 w-8 text-cyan-500" />,
       to: "/mudanca-turno",
-      allowedTypes: ["colaborador"],
+      allowedTypes: ["colaborador", "comum"],
       color: "from-cyan-50 to-cyan-100 dark:from-cyan-900/20 dark:to-cyan-800/20",
       textColor: "text-cyan-600 dark:text-cyan-400"
     },
@@ -103,7 +103,7 @@ const Dashboard = () => {
       description: "Atualize seu endereço cadastrado",
       icon: <Home className="h-8 w-8 text-fuchsia-500" />,
       to: "/alteracao-endereco",
-      allowedTypes: ["colaborador"],
+      allowedTypes: ["colaborador", "comum"],
       color: "from-fuchsia-50 to-fuchsia-100 dark:from-fuchsia-900/20 dark:to-fuchsia-800/20",
       textColor: "text-fuchsia-600 dark:text-fuchsia-400"
     },
@@ -112,7 +112,7 @@ const Dashboard = () => {
       description: "Solicite abono por problemas no transporte",
       icon: <UserCheck className="h-8 w-8 text-pink-500" />,
       to: "/abono-ponto",
-      allowedTypes: ["colaborador"],
+      allowedTypes: ["colaborador", "comum"],
       color: "from-pink-50 to-pink-100 dark:from-pink-900/20 dark:to-pink-800/20",
       textColor: "text-pink-600 dark:text-pink-400"
     },
@@ -121,7 +121,7 @@ const Dashboard = () => {
       description: "Avalie o serviço de transporte fretado",
       icon: <Star className="h-8 w-8 text-yellow-500" />,
       to: "/avaliacao",
-      allowedTypes: ["colaborador"],
+      allowedTypes: ["colaborador", "comum"],
       color: "from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/20",
       textColor: "text-yellow-600 dark:text-yellow-400"
     },
@@ -130,7 +130,7 @@ const Dashboard = () => {
       description: "Contate o plantão do transporte fretado",
       icon: <Phone className="h-8 w-8 text-green-500" />,
       to: "/plantao",
-      allowedTypes: ["colaborador"],
+      allowedTypes: ["colaborador", "comum"],
       color: "from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20",
       textColor: "text-green-600 dark:text-green-400"
     },
@@ -139,7 +139,7 @@ const Dashboard = () => {
       description: "Visualize os mapas das rotas disponíveis",
       icon: <MapPin className="h-8 w-8 text-red-500" />,
       to: "/mapa-rotas",
-      allowedTypes: ["colaborador"],
+      allowedTypes: ["colaborador", "comum"],
       color: "from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20",
       textColor: "text-red-600 dark:text-red-400"
     },
@@ -157,7 +157,7 @@ const Dashboard = () => {
   });
 
   return (
-    <div className="animate-slide-in">
+    <div className="p-6 animate-slide-in">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
         <p className="text-gray-600 dark:text-gray-400 mt-2">

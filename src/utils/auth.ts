@@ -76,3 +76,13 @@ export const checkUserPermission = (
   // Verifica se o tipo de usuário está nos tipos requeridos
   return requiredTypes.includes(user.tipo_usuario);
 };
+
+// Add a new function to check if a route should be shown to a user
+export const shouldShowRoute = (
+  user: User | null,
+  allowedTypes: ('admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum')[]
+): boolean => {
+  if (!user) return false;
+  if (user.admin) return true;
+  return allowedTypes.includes(user.tipo_usuario);
+};

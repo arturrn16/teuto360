@@ -8,6 +8,8 @@ import { AuthProvider, ProtectedRoute } from "@/context/AuthContext";
 
 // Import layout
 import { Layout } from "@/components/Layout";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
 
 // Import pages
 import Index from "./pages/Index";
@@ -39,135 +41,142 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <Routes>
-            <Route path="/" element={<Layout />}>
-              {/* Public routes */}
-              <Route index element={<Index />} />
-              <Route path="/login" element={<Login />} />
-              
-              {/* Protected routes */}
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute>
-                    <Dashboard />
-                  </ProtectedRoute>
-                }
-              />
+          <SidebarProvider>
+            <div className="flex w-full min-h-screen">
+              <AppSidebar />
+              <div className="flex-1">
+                <Routes>
+                  <Route path="/" element={<Layout />}>
+                    {/* Public routes */}
+                    <Route index element={<Index />} />
+                    <Route path="/login" element={<Login />} />
+                    
+                    {/* Protected routes */}
+                    <Route
+                      path="/dashboard"
+                      element={
+                        <ProtectedRoute>
+                          <Dashboard />
+                        </ProtectedRoute>
+                      }
+                    />
 
-              <Route
-                path="/transporte-rota"
-                element={
-                  <ProtectedRoute allowedTypes={["admin", "selecao", "comum"]}>
-                    <TransporteRota />
-                  </ProtectedRoute>
-                }
-              />
+                    <Route
+                      path="/transporte-rota"
+                      element={
+                        <ProtectedRoute allowedTypes={["admin", "selecao", "comum"]}>
+                          <TransporteRota />
+                        </ProtectedRoute>
+                      }
+                    />
 
-              <Route
-                path="/transporte-12x36"
-                element={
-                  <ProtectedRoute allowedTypes={["admin", "selecao"]}>
-                    <Transporte12x36 />
-                  </ProtectedRoute>
-                }
-              />
+                    <Route
+                      path="/transporte-12x36"
+                      element={
+                        <ProtectedRoute allowedTypes={["admin", "selecao"]}>
+                          <Transporte12x36 />
+                        </ProtectedRoute>
+                      }
+                    />
 
-              <Route
-                path="/refeicao"
-                element={
-                  <ProtectedRoute allowedTypes={["admin", "refeicao"]}>
-                    <Refeicao />
-                  </ProtectedRoute>
-                }
-              />
+                    <Route
+                      path="/refeicao"
+                      element={
+                        <ProtectedRoute allowedTypes={["admin", "refeicao"]}>
+                          <Refeicao />
+                        </ProtectedRoute>
+                      }
+                    />
 
-              <Route
-                path="/minhas-solicitacoes"
-                element={
-                  <ProtectedRoute allowedTypes={["selecao", "refeicao", "colaborador", "comum"]}>
-                    <MinhasSolicitacoes />
-                  </ProtectedRoute>
-                }
-              />
+                    <Route
+                      path="/minhas-solicitacoes"
+                      element={
+                        <ProtectedRoute allowedTypes={["selecao", "refeicao", "colaborador", "comum"]}>
+                          <MinhasSolicitacoes />
+                        </ProtectedRoute>
+                      }
+                    />
 
-              <Route
-                path="/admin"
-                element={
-                  <ProtectedRoute allowedTypes={["admin"]}>
-                    <Admin />
-                  </ProtectedRoute>
-                }
-              />
-              
-              {/* New routes for collaborators and comum users */}
-              <Route
-                path="/adesao-cancelamento"
-                element={
-                  <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
-                    <AdesaoCancelamento />
-                  </ProtectedRoute>
-                }
-              />
-              
-              <Route
-                path="/mudanca-turno"
-                element={
-                  <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
-                    <MudancaTurno />
-                  </ProtectedRoute>
-                }
-              />
-              
-              <Route
-                path="/alteracao-endereco"
-                element={
-                  <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
-                    <AlteracaoEndereco />
-                  </ProtectedRoute>
-                }
-              />
-              
-              <Route
-                path="/abono-ponto"
-                element={
-                  <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
-                    <AbonoPonto />
-                  </ProtectedRoute>
-                }
-              />
-              
-              <Route
-                path="/avaliacao"
-                element={
-                  <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
-                    <Avaliacao />
-                  </ProtectedRoute>
-                }
-              />
-              
-              <Route
-                path="/plantao"
-                element={
-                  <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
-                    <Plantao />
-                  </ProtectedRoute>
-                }
-              />
-              
-              <Route
-                path="/mapa-rotas"
-                element={
-                  <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
-                    <MapaRotas />
-                  </ProtectedRoute>
-                }
-              />
+                    <Route
+                      path="/admin"
+                      element={
+                        <ProtectedRoute allowedTypes={["admin"]}>
+                          <Admin />
+                        </ProtectedRoute>
+                      }
+                    />
+                    
+                    {/* New routes for collaborators and comum users */}
+                    <Route
+                      path="/adesao-cancelamento"
+                      element={
+                        <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
+                          <AdesaoCancelamento />
+                        </ProtectedRoute>
+                      }
+                    />
+                    
+                    <Route
+                      path="/mudanca-turno"
+                      element={
+                        <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
+                          <MudancaTurno />
+                        </ProtectedRoute>
+                      }
+                    />
+                    
+                    <Route
+                      path="/alteracao-endereco"
+                      element={
+                        <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
+                          <AlteracaoEndereco />
+                        </ProtectedRoute>
+                      }
+                    />
+                    
+                    <Route
+                      path="/abono-ponto"
+                      element={
+                        <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
+                          <AbonoPonto />
+                        </ProtectedRoute>
+                      }
+                    />
+                    
+                    <Route
+                      path="/avaliacao"
+                      element={
+                        <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
+                          <Avaliacao />
+                        </ProtectedRoute>
+                      }
+                    />
+                    
+                    <Route
+                      path="/plantao"
+                      element={
+                        <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
+                          <Plantao />
+                        </ProtectedRoute>
+                      }
+                    />
+                    
+                    <Route
+                      path="/mapa-rotas"
+                      element={
+                        <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
+                          <MapaRotas />
+                        </ProtectedRoute>
+                      }
+                    />
 
-              {/* Catch-all route */}
-              <Route path="*" element={<NotFound />} />
-            </Route>
-          </Routes>
+                    {/* Catch-all route */}
+                    <Route path="*" element={<NotFound />} />
+                  </Route>
+                </Routes>
+              </div>
+            </div>
+          </SidebarProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
