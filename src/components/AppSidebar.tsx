@@ -2,7 +2,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
-import { ChevronDown, Dashboard, Map, MapPin, Truck, Home, ClipboardCheck, Clock, User, Check, Star, Phone } from "lucide-react";
+import { ChevronDown, LayoutDashboard, Map, MapPin, Truck, Home, ClipboardCheck, Clock, User, Check, Star, Phone } from "lucide-react";
 import { useState } from "react";
 import { 
   Sidebar, 
@@ -32,7 +32,7 @@ interface NavItem {
 const comumNavItems: NavItem[] = [
   {
     name: "Página Principal",
-    icon: <Dashboard className="h-4 w-4" />,
+    icon: <LayoutDashboard className="h-4 w-4" />,
     subItems: [
       {
         name: "Dashboard",
@@ -85,80 +85,80 @@ const regularNavItems = [
   { 
     name: "Dashboard", 
     href: "/dashboard", 
-    icon: <Dashboard className="h-5 w-5" />,
-    allowedTypes: ["admin", "selecao", "refeicao", "colaborador"]
+    icon: <LayoutDashboard className="h-5 w-5" />,
+    allowedTypes: ["admin", "selecao", "refeicao", "colaborador"] as const
   },
   { 
     name: "Transporte Rota", 
     href: "/transporte-rota", 
     icon: <Truck className="h-5 w-5" />,
-    allowedTypes: ["admin", "selecao"]
+    allowedTypes: ["admin", "selecao"] as const
   },
   { 
     name: "Transporte 12x36", 
     href: "/transporte-12x36", 
     icon: <Map className="h-5 w-5" />,
-    allowedTypes: ["admin", "selecao"]
+    allowedTypes: ["admin", "selecao"] as const
   },
   { 
     name: "Refeição", 
     href: "/refeicao", 
     icon: <User className="h-5 w-5" />,
-    allowedTypes: ["admin", "refeicao"]
+    allowedTypes: ["admin", "refeicao"] as const
   },
   { 
     name: "Minhas Solicitações", 
     href: "/minhas-solicitacoes", 
     icon: <ClipboardCheck className="h-5 w-5" />,
-    allowedTypes: ["selecao", "refeicao", "colaborador"]
+    allowedTypes: ["selecao", "refeicao", "colaborador"] as const
   },
   { 
     name: "Administração", 
     href: "/admin", 
     icon: <User className="h-5 w-5" />,
-    allowedTypes: ["admin"]
+    allowedTypes: ["admin"] as const
   },
   { 
     name: "Adesão/Cancelamento", 
     href: "/adesao-cancelamento", 
     icon: <ClipboardCheck className="h-5 w-5" />,
-    allowedTypes: ["colaborador"]
+    allowedTypes: ["colaborador"] as const
   },
   { 
     name: "Mudança de Turno", 
     href: "/mudanca-turno", 
     icon: <Clock className="h-5 w-5" />,
-    allowedTypes: ["colaborador"]
+    allowedTypes: ["colaborador"] as const
   },
   { 
     name: "Alteração de Endereço", 
     href: "/alteracao-endereco", 
     icon: <Home className="h-5 w-5" />,
-    allowedTypes: ["colaborador"]
+    allowedTypes: ["colaborador"] as const
   },
   { 
     name: "Abono de Ponto", 
     href: "/abono-ponto", 
     icon: <Check className="h-5 w-5" />,
-    allowedTypes: ["colaborador"]
+    allowedTypes: ["colaborador"] as const
   },
   { 
     name: "Avaliação", 
     href: "/avaliacao", 
     icon: <Star className="h-5 w-5" />,
-    allowedTypes: ["colaborador"]
+    allowedTypes: ["colaborador"] as const
   },
   { 
     name: "Plantão 24hs", 
     href: "/plantao", 
     icon: <Phone className="h-5 w-5" />,
-    allowedTypes: ["colaborador"]
+    allowedTypes: ["colaborador"] as const
   },
   { 
     name: "Mapa de Rotas", 
     href: "/mapa-rotas", 
     icon: <MapPin className="h-5 w-5" />,
-    allowedTypes: ["colaborador"]
+    allowedTypes: ["colaborador"] as const
   },
 ];
 
