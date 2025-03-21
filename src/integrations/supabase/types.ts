@@ -9,6 +9,53 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      comunicados: {
+        Row: {
+          arquivado: boolean | null
+          autor_id: number | null
+          autor_nome: string
+          conteudo: string
+          created_at: string | null
+          data_publicacao: string | null
+          id: number
+          importante: boolean | null
+          titulo: string
+          updated_at: string | null
+        }
+        Insert: {
+          arquivado?: boolean | null
+          autor_id?: number | null
+          autor_nome: string
+          conteudo: string
+          created_at?: string | null
+          data_publicacao?: string | null
+          id?: number
+          importante?: boolean | null
+          titulo: string
+          updated_at?: string | null
+        }
+        Update: {
+          arquivado?: boolean | null
+          autor_id?: number | null
+          autor_nome?: string
+          conteudo?: string
+          created_at?: string | null
+          data_publicacao?: string | null
+          id?: number
+          importante?: boolean | null
+          titulo?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comunicados_autor_id_fkey"
+            columns: ["autor_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       solicitacoes_abono_ponto: {
         Row: {
           cidade: string
@@ -430,6 +477,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      insert_comunicado: {
+        Args: {
+          p_titulo: string
+          p_conteudo: string
+          p_autor_id: number
+          p_autor_nome: string
+          p_importante?: boolean
+        }
+        Returns: undefined
+      }
       verify_user_credentials: {
         Args: {
           p_username: string
