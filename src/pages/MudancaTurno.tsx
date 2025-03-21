@@ -127,7 +127,8 @@ const MudancaTurno = () => {
     setIsSubmitting(true);
     
     try {
-      const { error } = await supabase.from("solicitacoes_mudanca_turno").insert({
+      // Use the raw insert method to avoid type checking since the table was just created
+      const { error } = await supabase.from('solicitacoes_mudanca_turno').insert({
         solicitante_id: user.id,
         telefone: data.telefone,
         cep: data.cep,
@@ -139,6 +140,7 @@ const MudancaTurno = () => {
         nova_rota: data.novaRota,
         nome_gestor: data.nomeGestor,
         motivo: data.motivo,
+        status: 'pendente'
       });
       
       if (error) {
@@ -170,59 +172,35 @@ const MudancaTurno = () => {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <div className="grid grid-cols-2 gap-6">
-                <FormField
-                  control={form.control}
-                  name="matricula"
-                  render={() => (
-                    <FormItem>
-                      <FormLabel>Matrícula</FormLabel>
-                      <FormControl>
-                        <Input value={user?.matricula || ""} disabled />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
+                <FormItem>
+                  <FormLabel>Matrícula</FormLabel>
+                  <FormControl>
+                    <Input value={user?.matricula || ""} disabled />
+                  </FormControl>
+                </FormItem>
                 
-                <FormField
-                  control={form.control}
-                  name="nome"
-                  render={() => (
-                    <FormItem>
-                      <FormLabel>Nome</FormLabel>
-                      <FormControl>
-                        <Input value={user?.nome || ""} disabled />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
+                <FormItem>
+                  <FormLabel>Nome</FormLabel>
+                  <FormControl>
+                    <Input value={user?.nome || ""} disabled />
+                  </FormControl>
+                </FormItem>
               </div>
               
               <div className="grid grid-cols-2 gap-6">
-                <FormField
-                  control={form.control}
-                  name="cargo"
-                  render={() => (
-                    <FormItem>
-                      <FormLabel>Cargo</FormLabel>
-                      <FormControl>
-                        <Input value={user?.cargo || ""} disabled />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
+                <FormItem>
+                  <FormLabel>Cargo</FormLabel>
+                  <FormControl>
+                    <Input value={user?.cargo || ""} disabled />
+                  </FormControl>
+                </FormItem>
                 
-                <FormField
-                  control={form.control}
-                  name="setor"
-                  render={() => (
-                    <FormItem>
-                      <FormLabel>Setor</FormLabel>
-                      <FormControl>
-                        <Input value={user?.setor || ""} disabled />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
+                <FormItem>
+                  <FormLabel>Setor</FormLabel>
+                  <FormControl>
+                    <Input value={user?.setor || ""} disabled />
+                  </FormControl>
+                </FormItem>
               </div>
               
               <FormField

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -86,7 +85,7 @@ const MinhasSolicitacoes = () => {
     const fetchSolicitacoes = async () => {
       try {
         // Fetch data based on user type
-        if (user.tipo_usuario === "admin" || user.tipo_usuario === "comum") {
+        if (user.tipo_usuario === "admin" || user.tipo_usuario === "selecao") {
           // Buscar solicitações de transporte rota
           const { data: dataRota, error: errorRota } = await supabase
             .from("solicitacoes_transporte_rota")
@@ -226,7 +225,7 @@ const MinhasSolicitacoes = () => {
     
     const tabs = [];
     
-    if (user.tipo_usuario === "admin" || user.tipo_usuario === "comum") {
+    if (user.tipo_usuario === "admin" || user.tipo_usuario === "selecao") {
       tabs.push(
         { id: "rota", label: "Transporte Rota" },
         { id: "12x36", label: "Transporte 12x36" }
