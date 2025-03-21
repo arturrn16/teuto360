@@ -46,25 +46,25 @@ const navItems: NavItem[] = [
     name: "Dashboard", 
     href: "/dashboard", 
     icon: <LayoutDashboard className="h-5 w-5" />,
-    allowedTypes: ["admin", "selecao", "refeicao", "colaborador", "comum"] as const
+    allowedTypes: ["selecao", "refeicao", "colaborador", "comum"] as const
   },
   { 
     name: "Transporte Rota", 
     href: "/transporte-rota", 
     icon: <Route className="h-5 w-5" />,
-    allowedTypes: ["admin", "selecao"] as const
+    allowedTypes: ["selecao"] as const
   },
   { 
     name: "Transporte 12x36", 
     href: "/transporte-12x36", 
     icon: <Map className="h-5 w-5" />,
-    allowedTypes: ["admin", "selecao"] as const
+    allowedTypes: ["selecao"] as const
   },
   { 
     name: "Refeição", 
     href: "/refeicao", 
     icon: <Utensils className="h-5 w-5" />,
-    allowedTypes: ["admin", "refeicao"] as const
+    allowedTypes: ["refeicao"] as const
   },
   { 
     name: "Minhas Solicitações", 
@@ -127,10 +127,17 @@ const navItems: NavItem[] = [
     icon: <MapPin className="h-5 w-5" />,
     allowedTypes: ["colaborador", "comum"] as const
   },
+  // Adding Dashboard for admin but with a separate allowedTypes array
+  { 
+    name: "Dashboard", 
+    href: "/dashboard", 
+    icon: <LayoutDashboard className="h-5 w-5" />,
+    allowedTypes: ["admin"] as const
+  },
 ];
 
 export const AppSidebar = () => {
-  const { user, logout, shouldShowRoute } = useAuth();
+  const { user, logout } = useAuth();
   const location = useLocation();
   
   if (!user) return null;
