@@ -32,10 +32,8 @@ export const Layout = () => {
             {/* Mobile Sidebar Trigger */}
             {isMobile && (
               <div className="mb-4">
-                <SidebarTrigger asChild>
-                  <Button variant="outline" size="icon" className="md:hidden">
-                    <Menu className="h-5 w-5" />
-                  </Button>
+                <SidebarTrigger>
+                  <Menu className="h-5 w-5" />
                 </SidebarTrigger>
               </div>
             )}
