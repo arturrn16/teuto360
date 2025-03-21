@@ -1,11 +1,28 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import { useAuth } from "@/context/AuthContext";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
+  const { isAuthenticated, isLoading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // If authenticated, redirect to dashboard, otherwise to login
+    if (!isLoading) {
+      if (isAuthenticated) {
+        navigate("/dashboard");
+      } else {
+        navigate("/login");
+      }
+    }
+  }, [isAuthenticated, isLoading, navigate]);
+
+  // Render a loading screen while checking auth status
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
+        <div className="animate-pulse text-primary">Carregando...</div>
       </div>
     </div>
   );
