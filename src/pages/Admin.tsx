@@ -168,6 +168,7 @@ const Admin = () => {
         }
 
         try {
+          console.log("Fetching abono_ponto solicitations...");
           const { data: dataAbonoPonto, error: errorAbonoPonto } = await queryCustomTable<any>(
             "solicitacoes_abono_ponto",
             {
@@ -178,6 +179,7 @@ const Admin = () => {
           if (errorAbonoPonto) {
             console.error("Erro ao buscar solicitações de abono de ponto:", errorAbonoPonto);
           } else if (dataAbonoPonto) {
+            console.log("Received abono_ponto data:", dataAbonoPonto.length, "records");
             const formattedData: SolicitacaoAbonosPonto[] = dataAbonoPonto.map((item: any) => ({
               id: item.id,
               solicitante_id: item.solicitante_id,
@@ -195,6 +197,7 @@ const Admin = () => {
         }
 
         try {
+          console.log("Fetching adesao_cancelamento solicitations...");
           const { data: dataAdesaoCancelamento, error: errorAdesaoCancelamento } = await queryCustomTable<any>(
             "solicitacoes_adesao_cancelamento",
             {
@@ -205,6 +208,7 @@ const Admin = () => {
           if (errorAdesaoCancelamento) {
             console.error("Erro ao buscar solicitações de adesão/cancelamento:", errorAdesaoCancelamento);
           } else if (dataAdesaoCancelamento) {
+            console.log("Received adesao_cancelamento data:", dataAdesaoCancelamento.length, "records");
             const formattedData: SolicitacaoAdesaoCancelamento[] = dataAdesaoCancelamento.map((item: any) => ({
               id: item.id,
               solicitante_id: item.solicitante_id,
@@ -221,6 +225,7 @@ const Admin = () => {
         }
 
         try {
+          console.log("Fetching alteracao_endereco solicitations...");
           const { data: dataAlteracaoEndereco, error: errorAlteracaoEndereco } = await queryCustomTable<any>(
             "solicitacoes_alteracao_endereco",
             {
@@ -231,6 +236,7 @@ const Admin = () => {
           if (errorAlteracaoEndereco) {
             console.error("Erro ao buscar solicitações de alteração de endereço:", errorAlteracaoEndereco);
           } else if (dataAlteracaoEndereco) {
+            console.log("Received alteracao_endereco data:", dataAlteracaoEndereco.length, "records");
             const formattedData: SolicitacaoAlteracaoEndereco[] = dataAlteracaoEndereco.map((item: any) => ({
               id: item.id,
               solicitante_id: item.solicitante_id,
@@ -239,7 +245,7 @@ const Admin = () => {
               updated_at: item.updated_at,
               endereco_atual: item.endereco || '',
               endereco_novo: item.nova_rota ? `${item.endereco} (nova rota: ${item.nova_rota})` : (item.endereco || ''),
-              data_alteracao: item.created_at
+              data_alteracao: item.data_alteracao || item.created_at
             }));
             setSolicitacoesAlteracaoEndereco(formattedData);
           }
@@ -248,6 +254,7 @@ const Admin = () => {
         }
 
         try {
+          console.log("Fetching mudanca_turno solicitations...");
           const { data: dataMudancaTurno, error: errorMudancaTurno } = await queryCustomTable<any>(
             "solicitacoes_mudanca_turno",
             {
@@ -258,6 +265,7 @@ const Admin = () => {
           if (errorMudancaTurno) {
             console.error("Erro ao buscar solicitações de mudança de turno:", errorMudancaTurno);
           } else if (dataMudancaTurno) {
+            console.log("Received mudanca_turno data:", dataMudancaTurno.length, "records");
             const formattedData: SolicitacaoMudancaTurno[] = dataMudancaTurno.map((item: any) => ({
               id: item.id,
               solicitante_id: item.solicitante_id,
@@ -266,7 +274,7 @@ const Admin = () => {
               updated_at: item.updated_at,
               turno_atual: item.turno_atual || '',
               turno_novo: item.novo_turno || '',
-              data_alteracao: item.created_at,
+              data_alteracao: item.data_alteracao || item.created_at,
               motivo: item.motivo || ''
             }));
             setSolicitacoesMudancaTurno(formattedData);
@@ -1200,3 +1208,4 @@ const Admin = () => {
 };
 
 export default Admin;
+

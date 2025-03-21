@@ -126,20 +126,20 @@ export async function queryCustomTable<T = any>(
 ): Promise<{ data: T[]; error: any }> {
   try {
     // Use any to bypass type checking
-    const query = (supabase as any).from(tableName);
+    let query = (supabase as any).from(tableName);
     
     if (options.select) {
-      query.select(options.select);
+      query = query.select(options.select);
     } else {
-      query.select();
+      query = query.select();
     }
     
     if (options.eq) {
-      query.eq(options.eq.column, options.eq.value);
+      query = query.eq(options.eq.column, options.eq.value);
     }
     
     if (options.order) {
-      query.order(options.order.column, { ascending: options.order.ascending });
+      query = query.order(options.order.column, { ascending: options.order.ascending });
     }
     
     const { data, error } = await query;
@@ -149,6 +149,7 @@ export async function queryCustomTable<T = any>(
       error
     };
   } catch (error) {
+    console.error("Error in queryCustomTable:", error);
     return {
       data: [],
       error
