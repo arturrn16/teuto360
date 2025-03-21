@@ -34,14 +34,53 @@ interface SolicitacaoRefeicao {
   colaboradores: string[];
 }
 
-interface SolicitacaoOutros {
+interface SolicitacaoTransporte {
+  id: number;
+  created_at: string;
+  status: string;
+  tipo: string;
+  colaborador_nome: string;
+  rota: string;
+  data_inicio?: string;
+  periodo_inicio?: string;
+  periodo_fim?: string;
+}
+
+type Solicitacao = SolicitacaoRefeicao | SolicitacaoTransporte;
+
+interface SolicitacaoAbonosPonto {
   id: number;
   created_at: string;
   status: string;
   tipo: string;
 }
 
-type Solicitacao = SolicitacaoRefeicao | SolicitacaoOutros;
+interface SolicitacaoAdesaoCancelamento {
+  id: number;
+  created_at: string;
+  status: string;
+  tipo: string;
+}
+
+interface SolicitacaoAlteracaoEndereco {
+  id: number;
+  created_at: string;
+  status: string;
+  tipo: string;
+}
+
+interface SolicitacaoMudancaTurno {
+  id: number;
+  created_at: string;
+  status: string;
+  tipo: string;
+}
+
+type SolicitacaoOutros = 
+  | SolicitacaoAbonosPonto 
+  | SolicitacaoAdesaoCancelamento 
+  | SolicitacaoAlteracaoEndereco 
+  | SolicitacaoMudancaTurno;
 
 const MinhasSolicitacoes = () => {
   const { user, isAuthenticated } = useAuth();
@@ -61,14 +100,28 @@ const MinhasSolicitacoes = () => {
 
       try {
         // Define which tables to query based on user type
-        const tables = user.tipo_usuario === 'refeicao' 
-          ? [{ table: 'solicitacoes_refeicao', tipo: 'Refeição' }]
-          : [
-              { table: 'solicitacoes_abono_ponto', tipo: 'Abono de Ponto' },
-              { table: 'solicitacoes_adesao_cancelamento', tipo: 'Adesão/Cancelamento' },
-              { table: 'solicitacoes_alteracao_endereco', tipo: 'Alteração de Endereço' },
-              { table: 'solicitacoes_mudanca_turno', tipo: 'Mudança de Turno' },
-            ];
+        let tables = [];
+        
+        // For 'refeicao' users, show only meal requests
+        if (user.tipo_usuario === 'refeicao') {
+          tables = [{ table: 'solicitacoes_refeicao', tipo: 'Refeição' }];
+        } 
+        // For 'selecao' users, show only transport requests
+        else if (user.tipo_usuario === 'selecao') {
+          tables = [
+            { table: 'solicitacoes_transporte_rota', tipo: 'Transporte Rota' },
+            { table: 'solicitacoes_transporte_12x36', tipo: 'Transporte 12x36' },
+          ];
+        }
+        // For other users (colaborador, comum)
+        else {
+          tables = [
+            { table: 'solicitacoes_abono_ponto', tipo: 'Abono de Ponto' },
+            { table: 'solicitacoes_adesao_cancelamento', tipo: 'Adesão/Cancelamento' },
+            { table: 'solicitacoes_alteracao_endereco', tipo: 'Alteração de Endereço' },
+            { table: 'solicitacoes_mudanca_turno', tipo: 'Mudança de Turno' },
+          ];
+        }
 
         let allSolicitacoes: Solicitacao[] = [];
 
@@ -99,7 +152,61 @@ const MinhasSolicitacoes = () => {
                 }));
                 allSolicitacoes = [...allSolicitacoes, ...solicitacoesWithType];
               }
-            } else {
+            } 
+            else if (table === 'solicitacoes_transporte_rota') {
+              // For route transport requests, select relevant fields
+              const { data, error } = await (supabase as any)
+                .from(table)
+                .select('id, created_at, status, colaborador_nome, rota, periodo_inicio, periodo_fim')
+                .eq('solicitante_id', user.id)
+                .order('created_at', { ascending: false });
+
+              if (error) {
+                console.error(`Erro ao buscar solicitações de ${tipo}:`, error.message);
+                continue;
+              }
+
+              if (data && data.length > 0) {
+                const solicitacoesWithType: SolicitacaoTransporte[] = data.map(item => ({
+                  id: item.id,
+                  created_at: item.created_at,
+                  status: item.status,
+                  tipo: tipo,
+                  colaborador_nome: item.colaborador_nome,
+                  rota: item.rota,
+                  periodo_inicio: item.periodo_inicio,
+                  periodo_fim: item.periodo_fim,
+                }));
+                allSolicitacoes = [...allSolicitacoes, ...solicitacoesWithType];
+              }
+            }
+            else if (table === 'solicitacoes_transporte_12x36') {
+              // For 12x36 transport requests, select relevant fields
+              const { data, error } = await (supabase as any)
+                .from(table)
+                .select('id, created_at, status, colaborador_nome, rota, data_inicio')
+                .eq('solicitante_id', user.id)
+                .order('created_at', { ascending: false });
+
+              if (error) {
+                console.error(`Erro ao buscar solicitações de ${tipo}:`, error.message);
+                continue;
+              }
+
+              if (data && data.length > 0) {
+                const solicitacoesWithType: SolicitacaoTransporte[] = data.map(item => ({
+                  id: item.id,
+                  created_at: item.created_at,
+                  status: item.status,
+                  tipo: tipo,
+                  colaborador_nome: item.colaborador_nome,
+                  rota: item.rota,
+                  data_inicio: item.data_inicio,
+                }));
+                allSolicitacoes = [...allSolicitacoes, ...solicitacoesWithType];
+              }
+            }
+            else {
               // For other request types
               const { data, error } = await (supabase as any)
                 .from(table)
@@ -151,6 +258,11 @@ const MinhasSolicitacoes = () => {
     return solicitacao.tipo === 'Refeição';
   };
 
+  // Utility to check if solicitacao is of type SolicitacaoTransporte
+  const isTransporteSolicitacao = (solicitacao: Solicitacao): solicitacao is SolicitacaoTransporte => {
+    return solicitacao.tipo === 'Transporte Rota' || solicitacao.tipo === 'Transporte 12x36';
+  };
+
   // Format date to display in the format DD/MM/YYYY
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
@@ -183,32 +295,42 @@ const MinhasSolicitacoes = () => {
           </Button>
         </div>
       );
-    } else {
-      // For other users, show all the appropriate buttons
+    } 
+    // Show transport buttons for selecao users
+    else if (user.tipo_usuario === 'selecao') {
       return (
-        <>
+        <div className="mt-4 space-x-2">
           {user.tipo_usuario === "selecao" && (
-            <div className="mt-4">
-              <Button asChild>
-                <Link to="/cadastro-usuario">Cadastrar Usuário</Link>
-              </Button>
-            </div>
+            <Button asChild className="mr-2">
+              <Link to="/cadastro-usuario">Cadastrar Usuário</Link>
+            </Button>
           )}
-          <div className="mt-4 space-x-2">
-            <Button asChild variant="outline">
-              <Link to="/abono-ponto">Abono de Ponto</Link>
-            </Button>
-            <Button asChild variant="outline">
-              <Link to="/adesao-cancelamento">Adesão/Cancelamento</Link>
-            </Button>
-            <Button asChild variant="outline">
-              <Link to="/alteracao-endereco">Alteração de Endereço</Link>
-            </Button>
-            <Button asChild variant="outline">
-              <Link to="/mudanca-turno">Mudança de Turno</Link>
-            </Button>
-          </div>
-        </>
+          <Button asChild variant="outline">
+            <Link to="/transporte-rota">Transporte Rota</Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link to="/transporte-12x36">Transporte 12x36</Link>
+          </Button>
+        </div>
+      );
+    } 
+    else {
+      // For other users (colaborador, comum), show all the appropriate buttons
+      return (
+        <div className="mt-4 space-x-2">
+          <Button asChild variant="outline">
+            <Link to="/abono-ponto">Abono de Ponto</Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link to="/adesao-cancelamento">Adesão/Cancelamento</Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link to="/alteracao-endereco">Alteração de Endereço</Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link to="/mudanca-turno">Mudança de Turno</Link>
+          </Button>
+        </div>
       );
     }
   };
@@ -294,8 +416,66 @@ const MinhasSolicitacoes = () => {
                       })}
                     </TableBody>
                   </Table>
+                ) : user?.tipo_usuario === 'selecao' ? (
+                  // Custom table layout for selecao users
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Tipo</TableHead>
+                        <TableHead>Colaborador</TableHead>
+                        <TableHead>Rota</TableHead>
+                        <TableHead>Período/Data</TableHead>
+                        <TableHead>Data de Solicitação</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Ações</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {solicitacoes.map((solicitacao) => {
+                        if (isTransporteSolicitacao(solicitacao)) {
+                          return (
+                            <TableRow key={solicitacao.id}>
+                              <TableCell>{solicitacao.tipo}</TableCell>
+                              <TableCell>{solicitacao.colaborador_nome}</TableCell>
+                              <TableCell>{solicitacao.rota}</TableCell>
+                              <TableCell>
+                                {solicitacao.tipo === 'Transporte Rota' ? 
+                                  (solicitacao.periodo_inicio && solicitacao.periodo_fim ? 
+                                    `${formatDate(solicitacao.periodo_inicio)} a ${formatDate(solicitacao.periodo_fim)}` : 
+                                    'N/A') : 
+                                  (solicitacao.data_inicio ? 
+                                    formatDate(solicitacao.data_inicio) : 
+                                    'N/A')
+                                }
+                              </TableCell>
+                              <TableCell>{formatDateTime(solicitacao.created_at)}</TableCell>
+                              <TableCell>
+                                <Badge 
+                                  variant={solicitacao.status === 'aprovada' ? 'success' : 'secondary'}
+                                >
+                                  {solicitacao.status}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                {solicitacao.status === 'aprovada' && (
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    title="Gerar Ticket"
+                                  >
+                                    <Download className="h-4 w-4" />
+                                  </Button>
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        }
+                        return null;
+                      })}
+                    </TableBody>
+                  </Table>
                 ) : (
-                  // Standard table for other users
+                  // Standard table for other users (colaborador, comum)
                   <Table>
                     <TableCaption>Suas solicitações de serviços.</TableCaption>
                     <TableHeader>

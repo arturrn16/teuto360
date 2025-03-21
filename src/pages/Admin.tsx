@@ -36,7 +36,10 @@ import {
   Route, 
   Search, 
   Utensils, 
-  XCircle 
+  XCircle,
+  Home,
+  ClipboardCheck,
+  Replace
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -78,11 +81,39 @@ interface SolicitacaoRefeicao extends Solicitacao {
   data_refeicao: string;
 }
 
+interface SolicitacaoAbonosPonto extends Solicitacao {
+  data_ocorrencia: string;
+  turno: string;
+  motivo: string;
+}
+
+interface SolicitacaoAdesaoCancelamento extends Solicitacao {
+  tipo_solicitacao: string;
+  motivo: string;
+}
+
+interface SolicitacaoAlteracaoEndereco extends Solicitacao {
+  endereco_atual: string;
+  endereco_novo: string;
+  data_alteracao: string;
+}
+
+interface SolicitacaoMudancaTurno extends Solicitacao {
+  turno_atual: string;
+  turno_novo: string;
+  data_alteracao: string;
+  motivo: string;
+}
+
 const Admin = () => {
   const { user } = useAuth();
   const [solicitacoesRota, setSolicitacoesRota] = useState<SolicitacaoTransporteRota[]>([]);
   const [solicitacoes12x36, setSolicitacoes12x36] = useState<SolicitacaoTransporte12x36[]>([]);
   const [solicitacoesRefeicao, setSolicitacoesRefeicao] = useState<SolicitacaoRefeicao[]>([]);
+  const [solicitacoesAbonoPonto, setSolicitacoesAbonoPonto] = useState<SolicitacaoAbonosPonto[]>([]);
+  const [solicitacoesAdesaoCancelamento, setSolicitacoesAdesaoCancelamento] = useState<SolicitacaoAdesaoCancelamento[]>([]);
+  const [solicitacoesAlteracaoEndereco, setSolicitacoesAlteracaoEndereco] = useState<SolicitacaoAlteracaoEndereco[]>([]);
+  const [solicitacoesMudancaTurno, setSolicitacoesMudancaTurno] = useState<SolicitacaoMudancaTurno[]>([]);
   const [loading, setLoading] = useState(true);
   const [filtroColaborador, setFiltroColaborador] = useState("");
   const [filtroStatus, setFiltroStatus] = useState("todos");
@@ -93,6 +124,8 @@ const Admin = () => {
     
     const fetchSolicitacoes = async () => {
       try {
+        setLoading(true);
+        
         // Buscar solicitações de transporte rota
         const { data: dataRota, error: errorRota } = await supabase
           .from("solicitacoes_transporte_rota")
@@ -128,14 +161,69 @@ const Admin = () => {
         } else {
           setSolicitacoesRefeicao(dataRefeicao || []);
         }
+
+        // Buscar solicitações de abono de ponto
+        const { data: dataAbonoPonto, error: errorAbonoPonto } = await supabase
+          .from("solicitacoes_abono_ponto")
+          .select("*")
+          .order("created_at", { ascending: false });
+          
+        if (errorAbonoPonto) {
+          console.error("Erro ao buscar solicitações de abono de ponto:", errorAbonoPonto);
+        } else {
+          setSolicitacoesAbonoPonto(dataAbonoPonto || []);
+        }
+
+        // Buscar solicitações de adesão/cancelamento
+        const { data: dataAdesaoCancelamento, error: errorAdesaoCancelamento } = await supabase
+          .from("solicitacoes_adesao_cancelamento")
+          .select("*")
+          .order("created_at", { ascending: false });
+          
+        if (errorAdesaoCancelamento) {
+          console.error("Erro ao buscar solicitações de adesão/cancelamento:", errorAdesaoCancelamento);
+        } else {
+          setSolicitacoesAdesaoCancelamento(dataAdesaoCancelamento || []);
+        }
+
+        // Buscar solicitações de alteração de endereço
+        const { data: dataAlteracaoEndereco, error: errorAlteracaoEndereco } = await supabase
+          .from("solicitacoes_alteracao_endereco")
+          .select("*")
+          .order("created_at", { ascending: false });
+          
+        if (errorAlteracaoEndereco) {
+          console.error("Erro ao buscar solicitações de alteração de endereço:", errorAlteracaoEndereco);
+        } else {
+          setSolicitacoesAlteracaoEndereco(dataAlteracaoEndereco || []);
+        }
+
+        // Buscar solicitações de mudança de turno
+        const { data: dataMudancaTurno, error: errorMudancaTurno } = await supabase
+          .from("solicitacoes_mudanca_turno")
+          .select("*")
+          .order("created_at", { ascending: false });
+          
+        if (errorMudancaTurno) {
+          console.error("Erro ao buscar solicitações de mudança de turno:", errorMudancaTurno);
+        } else {
+          setSolicitacoesMudancaTurno(dataMudancaTurno || []);
+        }
         
         // Coletar IDs de solicitantes para buscar informações
         const solicitanteIds = new Set<number>();
         
-        [...(dataRota || []), ...(data12x36 || []), ...(dataRefeicao || [])]
-          .forEach(s => {
-            if (s.solicitante_id) solicitanteIds.add(s.solicitante_id);
-          });
+        [
+          ...(dataRota || []), 
+          ...(data12x36 || []), 
+          ...(dataRefeicao || []),
+          ...(dataAbonoPonto || []),
+          ...(dataAdesaoCancelamento || []),
+          ...(dataAlteracaoEndereco || []),
+          ...(dataMudancaTurno || [])
+        ].forEach(s => {
+          if (s.solicitante_id) solicitanteIds.add(s.solicitante_id);
+        });
           
         // Buscar informações dos solicitantes
         if (solicitanteIds.size > 0) {
@@ -208,6 +296,38 @@ const Admin = () => {
       );
       const matchStatus = filtroStatus === "todos" || s.status === filtroStatus;
       return matchColaborador && matchStatus;
+    });
+  };
+
+  // Função para filtrar solicitações de abono de ponto
+  const filtrarSolicitacoesAbonoPonto = () => {
+    return solicitacoesAbonoPonto.filter(s => {
+      const matchStatus = filtroStatus === "todos" || s.status === filtroStatus;
+      return matchStatus;
+    });
+  };
+
+  // Função para filtrar solicitações de adesão/cancelamento
+  const filtrarSolicitacoesAdesaoCancelamento = () => {
+    return solicitacoesAdesaoCancelamento.filter(s => {
+      const matchStatus = filtroStatus === "todos" || s.status === filtroStatus;
+      return matchStatus;
+    });
+  };
+
+  // Função para filtrar solicitações de alteração de endereço
+  const filtrarSolicitacoesAlteracaoEndereco = () => {
+    return solicitacoesAlteracaoEndereco.filter(s => {
+      const matchStatus = filtroStatus === "todos" || s.status === filtroStatus;
+      return matchStatus;
+    });
+  };
+
+  // Função para filtrar solicitações de mudança de turno
+  const filtrarSolicitacoesMudancaTurno = () => {
+    return solicitacoesMudancaTurno.filter(s => {
+      const matchStatus = filtroStatus === "todos" || s.status === filtroStatus;
+      return matchStatus;
     });
   };
   
@@ -288,6 +408,32 @@ const Admin = () => {
       toast.error(`Erro ao ${status === 'aprovada' ? 'aprovar' : 'rejeitar'} solicitação`);
     }
   };
+
+  // Função para atualizar status de outras solicitações
+  const atualizarStatusGenerico = async (tabela: string, id: number, status: 'aprovada' | 'rejeitada', atualizarEstado: Function) => {
+    try {
+      const { error } = await supabase
+        .from(tabela)
+        .update({ status })
+        .eq('id', id);
+        
+      if (error) {
+        console.error(`Erro ao atualizar status em ${tabela}:`, error);
+        toast.error(`Erro ao ${status === 'aprovada' ? 'aprovar' : 'rejeitar'} solicitação`);
+        return;
+      }
+      
+      // Atualizar o estado local usando a função passada
+      atualizarEstado(prev => 
+        prev.map(s => s.id === id ? { ...s, status } : s)
+      );
+      
+      toast.success(`Solicitação ${status === 'aprovada' ? 'aprovada' : 'rejeitada'} com sucesso!`);
+    } catch (error) {
+      console.error(`Erro ao atualizar status em ${tabela}:`, error);
+      toast.error(`Erro ao ${status === 'aprovada' ? 'aprovar' : 'rejeitar'} solicitação`);
+    }
+  };
   
   // Badge de status com cores diferentes
   const StatusBadge = ({ status }: { status: string }) => {
@@ -347,7 +493,7 @@ const Admin = () => {
         <CardHeader>
           <CardTitle>Administração de Solicitações</CardTitle>
           <CardDescription>
-            Gerenciamento de solicitações de transporte e refeição
+            Gerenciamento de solicitações de transporte, refeição e serviços
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -386,7 +532,7 @@ const Admin = () => {
               </div>
               
               <Tabs defaultValue="rota">
-                <TabsList className="grid w-full grid-cols-3">
+                <TabsList className="grid w-full grid-cols-7">
                   <TabsTrigger value="rota" className="flex items-center gap-1">
                     <Route className="h-4 w-4" />
                     Transporte Rota
@@ -398,6 +544,22 @@ const Admin = () => {
                   <TabsTrigger value="refeicao" className="flex items-center gap-1">
                     <Utensils className="h-4 w-4" />
                     Refeição
+                  </TabsTrigger>
+                  <TabsTrigger value="abono" className="flex items-center gap-1">
+                    <FileText className="h-4 w-4" />
+                    Abono Ponto
+                  </TabsTrigger>
+                  <TabsTrigger value="adesao" className="flex items-center gap-1">
+                    <ClipboardCheck className="h-4 w-4" />
+                    Adesão/Cancelamento
+                  </TabsTrigger>
+                  <TabsTrigger value="endereco" className="flex items-center gap-1">
+                    <Home className="h-4 w-4" />
+                    Alteração Endereço
+                  </TabsTrigger>
+                  <TabsTrigger value="turno" className="flex items-center gap-1">
+                    <Replace className="h-4 w-4" />
+                    Mudança Turno
                   </TabsTrigger>
                 </TabsList>
                 
@@ -660,6 +822,318 @@ const Admin = () => {
                   ) : (
                     <p className="text-center py-10 text-muted-foreground">
                       Nenhuma solicitação de refeição encontrada.
+                    </p>
+                  )}
+                </TabsContent>
+
+                {/* Tab para Abono de Ponto */}
+                <TabsContent value="abono" className="mt-4">
+                  {filtrarSolicitacoesAbonoPonto().length > 0 ? (
+                    <div className="rounded-md border overflow-hidden">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Solicitante</TableHead>
+                            <TableHead>Data da Ocorrência</TableHead>
+                            <TableHead>Turno</TableHead>
+                            <TableHead>Motivo</TableHead>
+                            <TableHead>Data de Solicitação</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead className="w-[180px]">Ações</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filtrarSolicitacoesAbonoPonto().map((solicitacao) => (
+                            <TableRow key={solicitacao.id}>
+                              <TableCell>
+                                <SolicitanteInfo id={solicitacao.solicitante_id} />
+                              </TableCell>
+                              <TableCell>{formatarData(solicitacao.data_ocorrencia)}</TableCell>
+                              <TableCell>{solicitacao.turno}</TableCell>
+                              <TableCell>{solicitacao.motivo}</TableCell>
+                              <TableCell>{formatarTimestamp(solicitacao.created_at)}</TableCell>
+                              <TableCell>
+                                <StatusBadge status={solicitacao.status} />
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex space-x-2">
+                                  {solicitacao.status === "pendente" && (
+                                    <>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="flex-1 bg-green-50 hover:bg-green-100 text-green-600 border-green-200"
+                                        onClick={() => atualizarStatusGenerico('solicitacoes_abono_ponto', solicitacao.id, "aprovada", setSolicitacoesAbonoPonto)}
+                                      >
+                                        <CheckCircle className="h-4 w-4 mr-1" />
+                                        Aprovar
+                                      </Button>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 border-red-200"
+                                        onClick={() => atualizarStatusGenerico('solicitacoes_abono_ponto', solicitacao.id, "rejeitada", setSolicitacoesAbonoPonto)}
+                                      >
+                                        <XCircle className="h-4 w-4 mr-1" />
+                                        Rejeitar
+                                      </Button>
+                                    </>
+                                  )}
+                                  {solicitacao.status === "rejeitada" && (
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm" 
+                                      className="w-full"
+                                      onClick={() => atualizarStatusGenerico('solicitacoes_abono_ponto', solicitacao.id, "aprovada", setSolicitacoesAbonoPonto)}
+                                    >
+                                      <CheckCircle className="h-4 w-4 mr-1" />
+                                      Aprovar
+                                    </Button>
+                                  )}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  ) : (
+                    <p className="text-center py-10 text-muted-foreground">
+                      Nenhuma solicitação de abono de ponto encontrada.
+                    </p>
+                  )}
+                </TabsContent>
+
+                {/* Tab para Adesão/Cancelamento */}
+                <TabsContent value="adesao" className="mt-4">
+                  {filtrarSolicitacoesAdesaoCancelamento().length > 0 ? (
+                    <div className="rounded-md border overflow-hidden">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Solicitante</TableHead>
+                            <TableHead>Tipo</TableHead>
+                            <TableHead>Motivo</TableHead>
+                            <TableHead>Data de Solicitação</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead className="w-[180px]">Ações</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filtrarSolicitacoesAdesaoCancelamento().map((solicitacao) => (
+                            <TableRow key={solicitacao.id}>
+                              <TableCell>
+                                <SolicitanteInfo id={solicitacao.solicitante_id} />
+                              </TableCell>
+                              <TableCell>{solicitacao.tipo_solicitacao}</TableCell>
+                              <TableCell>{solicitacao.motivo}</TableCell>
+                              <TableCell>{formatarTimestamp(solicitacao.created_at)}</TableCell>
+                              <TableCell>
+                                <StatusBadge status={solicitacao.status} />
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex space-x-2">
+                                  {solicitacao.status === "pendente" && (
+                                    <>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="flex-1 bg-green-50 hover:bg-green-100 text-green-600 border-green-200"
+                                        onClick={() => atualizarStatusGenerico('solicitacoes_adesao_cancelamento', solicitacao.id, "aprovada", setSolicitacoesAdesaoCancelamento)}
+                                      >
+                                        <CheckCircle className="h-4 w-4 mr-1" />
+                                        Aprovar
+                                      </Button>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 border-red-200"
+                                        onClick={() => atualizarStatusGenerico('solicitacoes_adesao_cancelamento', solicitacao.id, "rejeitada", setSolicitacoesAdesaoCancelamento)}
+                                      >
+                                        <XCircle className="h-4 w-4 mr-1" />
+                                        Rejeitar
+                                      </Button>
+                                    </>
+                                  )}
+                                  {solicitacao.status === "rejeitada" && (
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm" 
+                                      className="w-full"
+                                      onClick={() => atualizarStatusGenerico('solicitacoes_adesao_cancelamento', solicitacao.id, "aprovada", setSolicitacoesAdesaoCancelamento)}
+                                    >
+                                      <CheckCircle className="h-4 w-4 mr-1" />
+                                      Aprovar
+                                    </Button>
+                                  )}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  ) : (
+                    <p className="text-center py-10 text-muted-foreground">
+                      Nenhuma solicitação de adesão/cancelamento encontrada.
+                    </p>
+                  )}
+                </TabsContent>
+
+                {/* Tab para Alteração de Endereço */}
+                <TabsContent value="endereco" className="mt-4">
+                  {filtrarSolicitacoesAlteracaoEndereco().length > 0 ? (
+                    <div className="rounded-md border overflow-hidden">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Solicitante</TableHead>
+                            <TableHead>Endereço Atual</TableHead>
+                            <TableHead>Novo Endereço</TableHead>
+                            <TableHead>Data de Alteração</TableHead>
+                            <TableHead>Data de Solicitação</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead className="w-[180px]">Ações</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filtrarSolicitacoesAlteracaoEndereco().map((solicitacao) => (
+                            <TableRow key={solicitacao.id}>
+                              <TableCell>
+                                <SolicitanteInfo id={solicitacao.solicitante_id} />
+                              </TableCell>
+                              <TableCell>{solicitacao.endereco_atual}</TableCell>
+                              <TableCell>{solicitacao.endereco_novo}</TableCell>
+                              <TableCell>{formatarData(solicitacao.data_alteracao)}</TableCell>
+                              <TableCell>{formatarTimestamp(solicitacao.created_at)}</TableCell>
+                              <TableCell>
+                                <StatusBadge status={solicitacao.status} />
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex space-x-2">
+                                  {solicitacao.status === "pendente" && (
+                                    <>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="flex-1 bg-green-50 hover:bg-green-100 text-green-600 border-green-200"
+                                        onClick={() => atualizarStatusGenerico('solicitacoes_alteracao_endereco', solicitacao.id, "aprovada", setSolicitacoesAlteracaoEndereco)}
+                                      >
+                                        <CheckCircle className="h-4 w-4 mr-1" />
+                                        Aprovar
+                                      </Button>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 border-red-200"
+                                        onClick={() => atualizarStatusGenerico('solicitacoes_alteracao_endereco', solicitacao.id, "rejeitada", setSolicitacoesAlteracaoEndereco)}
+                                      >
+                                        <XCircle className="h-4 w-4 mr-1" />
+                                        Rejeitar
+                                      </Button>
+                                    </>
+                                  )}
+                                  {solicitacao.status === "rejeitada" && (
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm" 
+                                      className="w-full"
+                                      onClick={() => atualizarStatusGenerico('solicitacoes_alteracao_endereco', solicitacao.id, "aprovada", setSolicitacoesAlteracaoEndereco)}
+                                    >
+                                      <CheckCircle className="h-4 w-4 mr-1" />
+                                      Aprovar
+                                    </Button>
+                                  )}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  ) : (
+                    <p className="text-center py-10 text-muted-foreground">
+                      Nenhuma solicitação de alteração de endereço encontrada.
+                    </p>
+                  )}
+                </TabsContent>
+
+                {/* Tab para Mudança de Turno */}
+                <TabsContent value="turno" className="mt-4">
+                  {filtrarSolicitacoesMudancaTurno().length > 0 ? (
+                    <div className="rounded-md border overflow-hidden">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Solicitante</TableHead>
+                            <TableHead>Turno Atual</TableHead>
+                            <TableHead>Novo Turno</TableHead>
+                            <TableHead>Data de Alteração</TableHead>
+                            <TableHead>Motivo</TableHead>
+                            <TableHead>Data de Solicitação</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead className="w-[180px]">Ações</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filtrarSolicitacoesMudancaTurno().map((solicitacao) => (
+                            <TableRow key={solicitacao.id}>
+                              <TableCell>
+                                <SolicitanteInfo id={solicitacao.solicitante_id} />
+                              </TableCell>
+                              <TableCell>{solicitacao.turno_atual}</TableCell>
+                              <TableCell>{solicitacao.turno_novo}</TableCell>
+                              <TableCell>{formatarData(solicitacao.data_alteracao)}</TableCell>
+                              <TableCell>{solicitacao.motivo}</TableCell>
+                              <TableCell>{formatarTimestamp(solicitacao.created_at)}</TableCell>
+                              <TableCell>
+                                <StatusBadge status={solicitacao.status} />
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex space-x-2">
+                                  {solicitacao.status === "pendente" && (
+                                    <>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="flex-1 bg-green-50 hover:bg-green-100 text-green-600 border-green-200"
+                                        onClick={() => atualizarStatusGenerico('solicitacoes_mudanca_turno', solicitacao.id, "aprovada", setSolicitacoesMudancaTurno)}
+                                      >
+                                        <CheckCircle className="h-4 w-4 mr-1" />
+                                        Aprovar
+                                      </Button>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 border-red-200"
+                                        onClick={() => atualizarStatusGenerico('solicitacoes_mudanca_turno', solicitacao.id, "rejeitada", setSolicitacoesMudancaTurno)}
+                                      >
+                                        <XCircle className="h-4 w-4 mr-1" />
+                                        Rejeitar
+                                      </Button>
+                                    </>
+                                  )}
+                                  {solicitacao.status === "rejeitada" && (
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm" 
+                                      className="w-full"
+                                      onClick={() => atualizarStatusGenerico('solicitacoes_mudanca_turno', solicitacao.id, "aprovada", setSolicitacoesMudancaTurno)}
+                                    >
+                                      <CheckCircle className="h-4 w-4 mr-1" />
+                                      Aprovar
+                                    </Button>
+                                  )}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  ) : (
+                    <p className="text-center py-10 text-muted-foreground">
+                      Nenhuma solicitação de mudança de turno encontrada.
                     </p>
                   )}
                 </TabsContent>
