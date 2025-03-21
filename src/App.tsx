@@ -14,6 +14,11 @@ import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
+import TransporteRota from "./pages/TransporteRota";
+import Transporte12x36 from "./pages/Transporte12x36";
+import Refeicao from "./pages/Refeicao";
+import MinhasSolicitacoes from "./pages/MinhasSolicitacoes";
+import Admin from "./pages/Admin";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -41,15 +46,11 @@ const App = () => (
                 }
               />
 
-              {/* Routes that need to be implemented */}
               <Route
                 path="/transporte-rota"
                 element={
                   <ProtectedRoute allowedTypes={["admin", "comum"]}>
-                    <div className="p-8 text-center">
-                      <h1 className="text-2xl font-bold mb-4">Solicitação de Transporte - Rota</h1>
-                      <p>Esta página será implementada em breve.</p>
-                    </div>
+                    <TransporteRota />
                   </ProtectedRoute>
                 }
               />
@@ -58,10 +59,7 @@ const App = () => (
                 path="/transporte-12x36"
                 element={
                   <ProtectedRoute allowedTypes={["admin", "comum"]}>
-                    <div className="p-8 text-center">
-                      <h1 className="text-2xl font-bold mb-4">Solicitação de Transporte - 12x36</h1>
-                      <p>Esta página será implementada em breve.</p>
-                    </div>
+                    <Transporte12x36 />
                   </ProtectedRoute>
                 }
               />
@@ -70,10 +68,7 @@ const App = () => (
                 path="/refeicao"
                 element={
                   <ProtectedRoute allowedTypes={["admin", "refeicao"]}>
-                    <div className="p-8 text-center">
-                      <h1 className="text-2xl font-bold mb-4">Solicitação de Refeição</h1>
-                      <p>Esta página será implementada em breve.</p>
-                    </div>
+                    <Refeicao />
                   </ProtectedRoute>
                 }
               />
@@ -82,10 +77,7 @@ const App = () => (
                 path="/minhas-solicitacoes"
                 element={
                   <ProtectedRoute allowedTypes={["comum", "refeicao"]}>
-                    <div className="p-8 text-center">
-                      <h1 className="text-2xl font-bold mb-4">Minhas Solicitações</h1>
-                      <p>Esta página será implementada em breve.</p>
-                    </div>
+                    <MinhasSolicitacoes />
                   </ProtectedRoute>
                 }
               />
@@ -94,10 +86,7 @@ const App = () => (
                 path="/admin"
                 element={
                   <ProtectedRoute allowedTypes={["admin"]}>
-                    <div className="p-8 text-center">
-                      <h1 className="text-2xl font-bold mb-4">Administração</h1>
-                      <p>Esta página será implementada em breve.</p>
-                    </div>
+                    <Admin />
                   </ProtectedRoute>
                 }
               />
