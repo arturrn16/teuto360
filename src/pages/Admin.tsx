@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { 
   supabase, 
-  customSupabase,
+  queryCustomTable,
+  updateCustomTable,
   BaseSolicitacao,
   SolicitacaoAbonoPonto as AbonoPontoType,
   SolicitacaoAdesaoCancelamento as AdesaoCancelamentoType,
@@ -88,7 +89,6 @@ interface SolicitacaoRefeicao extends Solicitacao {
   data_refeicao: string;
 }
 
-// Using our imported types with different names to avoid conflict
 interface SolicitacaoAbonosPonto extends Solicitacao {
   data_ocorrencia: string;
   turno: string;
@@ -167,12 +167,13 @@ const Admin = () => {
           setSolicitacoesRefeicao(dataRefeicao || []);
         }
 
-        // Update these sections to manually cast data
         try {
-          const { data: dataAbonoPonto, error: errorAbonoPonto } = await supabase
-            .from("solicitacoes_abono_ponto")
-            .select("*")
-            .order("created_at", { ascending: false });
+          const { data: dataAbonoPonto, error: errorAbonoPonto } = await queryCustomTable<any>(
+            "solicitacoes_abono_ponto",
+            {
+              order: { column: "created_at", ascending: false }
+            }
+          );
             
           if (errorAbonoPonto) {
             console.error("Erro ao buscar solicitações de abono de ponto:", errorAbonoPonto);
@@ -194,10 +195,12 @@ const Admin = () => {
         }
 
         try {
-          const { data: dataAdesaoCancelamento, error: errorAdesaoCancelamento } = await supabase
-            .from("solicitacoes_adesao_cancelamento")
-            .select("*")
-            .order("created_at", { ascending: false });
+          const { data: dataAdesaoCancelamento, error: errorAdesaoCancelamento } = await queryCustomTable<any>(
+            "solicitacoes_adesao_cancelamento",
+            {
+              order: { column: "created_at", ascending: false }
+            }
+          );
             
           if (errorAdesaoCancelamento) {
             console.error("Erro ao buscar solicitações de adesão/cancelamento:", errorAdesaoCancelamento);
@@ -218,10 +221,12 @@ const Admin = () => {
         }
 
         try {
-          const { data: dataAlteracaoEndereco, error: errorAlteracaoEndereco } = await supabase
-            .from("solicitacoes_alteracao_endereco")
-            .select("*")
-            .order("created_at", { ascending: false });
+          const { data: dataAlteracaoEndereco, error: errorAlteracaoEndereco } = await queryCustomTable<any>(
+            "solicitacoes_alteracao_endereco",
+            {
+              order: { column: "created_at", ascending: false }
+            }
+          );
             
           if (errorAlteracaoEndereco) {
             console.error("Erro ao buscar solicitações de alteração de endereço:", errorAlteracaoEndereco);
@@ -243,10 +248,12 @@ const Admin = () => {
         }
 
         try {
-          const { data: dataMudancaTurno, error: errorMudancaTurno } = await supabase
-            .from("solicitacoes_mudanca_turno")
-            .select("*")
-            .order("created_at", { ascending: false });
+          const { data: dataMudancaTurno, error: errorMudancaTurno } = await queryCustomTable<any>(
+            "solicitacoes_mudanca_turno",
+            {
+              order: { column: "created_at", ascending: false }
+            }
+          );
             
           if (errorMudancaTurno) {
             console.error("Erro ao buscar solicitações de mudança de turno:", errorMudancaTurno);
@@ -268,7 +275,6 @@ const Admin = () => {
           console.error("Erro ao processar solicitações de mudança de turno:", err);
         }
         
-        // Collect solicitante_ids properly
         const solicitanteIds = new Set<number>();
         
         [
@@ -279,11 +285,21 @@ const Admin = () => {
           if (s.solicitante_id) solicitanteIds.add(s.solicitante_id);
         });
         
-        // Add solicitante_ids from the new types
-        solicitacoesAbonoPonto.forEach(s => { if (s.solicitante_id) solicitanteIds.add(s.solicitante_id); });
-        solicitacoesAdesaoCancelamento.forEach(s => { if (s.solicitante_id) solicitanteIds.add(s.solicitante_id); });
-        solicitacoesAlteracaoEndereco.forEach(s => { if (s.solicitante_id) solicitanteIds.add(s.solicitante_id); });
-        solicitacoesMudancaTurno.forEach(s => { if (s.solicitante_id) solicitanteIds.add(s.solicitante_id); });
+        solicitacoesAbonoPonto.forEach(s => { 
+          if (s && s.solicitante_id) solicitanteIds.add(s.solicitante_id); 
+        });
+        
+        solicitacoesAdesaoCancelamento.forEach(s => { 
+          if (s && s.solicitante_id) solicitanteIds.add(s.solicitante_id); 
+        });
+        
+        solicitacoesAlteracaoEndereco.forEach(s => { 
+          if (s && s.solicitante_id) solicitanteIds.add(s.solicitante_id); 
+        });
+        
+        solicitacoesMudancaTurno.forEach(s => { 
+          if (s && s.solicitante_id) solicitanteIds.add(s.solicitante_id); 
+        });
           
         if (solicitanteIds.size > 0) {
           const { data: solicitantesData, error: solicitantesError } = await supabase
@@ -453,13 +469,13 @@ const Admin = () => {
     }
   };
 
-  // Update the generic status update function
   const atualizarStatusGenerico = async (tabela: string, id: number, status: 'aprovada' | 'rejeitada', atualizarEstado: Function) => {
     try {
-      const { error } = await supabase
-        .from(tabela)
-        .update({ status })
-        .eq('id', id);
+      const { error } = await updateCustomTable(
+        tabela,
+        { status },
+        { column: 'id', value: id }
+      );
         
       if (error) {
         console.error(`Erro ao atualizar status em ${tabela}:`, error);

@@ -23,6 +23,7 @@ export interface BaseSolicitacao {
 }
 
 export interface SolicitacaoAbonoPonto extends BaseSolicitacao {
+  tipo: 'abono_ponto';
   cidade: string;
   turno: string;
   rota: string;
@@ -32,12 +33,14 @@ export interface SolicitacaoAbonoPonto extends BaseSolicitacao {
 }
 
 export interface SolicitacaoAdesaoCancelamento extends BaseSolicitacao {
+  tipo: 'adesao_cancelamento';
   tipo_solicitacao: string;
   email: string;
   motivo: string;
 }
 
 export interface SolicitacaoAlteracaoEndereco extends BaseSolicitacao {
+  tipo: 'alteracao_endereco';
   telefone: string;
   cep: string;
   endereco: string;
@@ -54,6 +57,7 @@ export interface SolicitacaoAlteracaoEndereco extends BaseSolicitacao {
 }
 
 export interface SolicitacaoMudancaTurno extends BaseSolicitacao {
+  tipo: 'mudanca_turno';
   telefone: string;
   cep: string;
   endereco: string;
@@ -68,42 +72,104 @@ export interface SolicitacaoMudancaTurno extends BaseSolicitacao {
   data_alteracao: string;
 }
 
-// Function to handle data type conversion
+// Function to handle data type conversion for custom tables
 function transformData<T>(data: any[] | null): T[] {
   if (!data) return [];
   return data as T[];
 }
 
-// Add a more type-safe access to the tables not yet in the Database type
+// A more type-safe way to work with custom tables
 export const customSupabase = {
-  from: (table: string) => {
-    return {
-      ...supabase.from(table as any),
-      select: (columns?: string) => {
-        return {
-          ...supabase.from(table as any).select(columns),
-          eq: (column: string, value: any) => {
-            return {
-              ...supabase.from(table as any).select(columns).eq(column, value),
-              order: (column: string, options?: { ascending?: boolean }) => {
-                const query = supabase.from(table as any).select(columns).eq(column, value).order(column, options);
-                return {
-                  ...query,
-                  then: (onfulfilled: (value: any) => any) => {
-                    return query.then((result) => {
-                      // Handle the result and transform it to the expected type
-                      return onfulfilled({
-                        data: result.data ? result.data : [],
-                        error: result.error
-                      });
-                    });
-                  }
-                };
+  from: (table: string) => ({
+    select: (columns?: string) => ({
+      eq: (column: string, value: any) => ({
+        order: (column: string, options?: { ascending?: boolean }) => ({
+          then: async (onfulfilled: (result: { data: any[], error: any }) => any) => {
+            try {
+              // Use any to bypass TypeScript's type checking for tables not in the schema
+              const query = (supabase as any).from(table).select(columns);
+              
+              if (column && value) {
+                query.eq(column, value);
               }
-            };
+              
+              if (column) {
+                query.order(column, options);
+              }
+              
+              const result = await query;
+              return onfulfilled({
+                data: result.data || [],
+                error: result.error
+              });
+            } catch (error) {
+              return onfulfilled({
+                data: [],
+                error
+              });
+            }
           }
-        };
-      }
+        })
+      })
+    })
+  })
+};
+
+// A direct function for handling custom tables
+export async function queryCustomTable<T = any>(
+  tableName: string, 
+  options: {
+    select?: string;
+    eq?: { column: string; value: any };
+    order?: { column: string; ascending?: boolean };
+  } = {}
+): Promise<{ data: T[]; error: any }> {
+  try {
+    // Use any to bypass type checking
+    const query = (supabase as any).from(tableName);
+    
+    if (options.select) {
+      query.select(options.select);
+    } else {
+      query.select();
+    }
+    
+    if (options.eq) {
+      query.eq(options.eq.column, options.eq.value);
+    }
+    
+    if (options.order) {
+      query.order(options.order.column, { ascending: options.order.ascending });
+    }
+    
+    const { data, error } = await query;
+    
+    return {
+      data: (data || []) as T[],
+      error
+    };
+  } catch (error) {
+    return {
+      data: [],
+      error
     };
   }
-};
+}
+
+// Function to update a custom table
+export async function updateCustomTable(
+  tableName: string,
+  data: any,
+  condition: { column: string; value: any }
+): Promise<{ error: any }> {
+  try {
+    const { error } = await (supabase as any)
+      .from(tableName)
+      .update(data)
+      .eq(condition.column, condition.value);
+      
+    return { error };
+  } catch (error) {
+    return { error };
+  }
+}
