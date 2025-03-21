@@ -2,106 +2,56 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
-import { ChevronDown, LayoutDashboard, Map, MapPin, Truck, Home, ClipboardCheck, Clock, User, Check, Star, Phone } from "lucide-react";
-import { useState } from "react";
+import { 
+  LayoutDashboard, 
+  Route, 
+  Map, 
+  Utensils, 
+  FileText, 
+  Shield, 
+  Home, 
+  ClipboardCheck, 
+  Clock, 
+  User, 
+  CheckCircle, 
+  Star, 
+  Phone, 
+  MapPin,
+  LogOut,
+  Building2
+} from "lucide-react";
 import { 
   Sidebar, 
   SidebarContent, 
   SidebarHeader, 
-  SidebarGroup, 
-  SidebarGroupLabel, 
+  SidebarFooter,
   SidebarMenu, 
   SidebarMenuItem, 
-  SidebarMenuButton, 
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem
+  SidebarMenuButton 
 } from "@/components/ui/sidebar";
 
 // Types for user roles
 type UserType = 'admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum';
 
-// Navigation structure for comum user
+// Navigation structure
 interface NavItem {
-  name: string;
-  href?: string;
-  icon: React.ReactNode;
-  subItems?: {
-    name: string;
-    href: string;
-  }[];
-}
-
-const comumNavItems: NavItem[] = [
-  {
-    name: "Página Principal",
-    icon: <LayoutDashboard className="h-4 w-4" />,
-    subItems: [
-      {
-        name: "Dashboard",
-        href: "/dashboard"
-      }
-    ]
-  },
-  {
-    name: "Serviços",
-    icon: <Truck className="h-4 w-4" />,
-    subItems: [
-      {
-        name: "Mapa de Rotas",
-        href: "/mapa-rotas"
-      },
-      {
-        name: "Uso de Rota",
-        href: "/transporte-rota"
-      },
-      {
-        name: "Adesão/Cancelamento",
-        href: "/adesao-cancelamento"
-      },
-      {
-        name: "Mudança de Turno",
-        href: "/mudanca-turno"
-      },
-      {
-        name: "Alteração de Endereço",
-        href: "/alteracao-endereco"
-      },
-      {
-        name: "Abono de Ponto",
-        href: "/abono-ponto"
-      },
-      {
-        name: "Avaliação",
-        href: "/avaliacao"
-      },
-      {
-        name: "Plantão 24h",
-        href: "/plantao"
-      }
-    ]
-  },
-];
-
-// Navigation items for other user types
-interface RegularNavItem {
   name: string;
   href: string;
   icon: React.ReactNode;
   allowedTypes: ReadonlyArray<UserType>;
 }
 
-const regularNavItems: RegularNavItem[] = [
+const navItems: NavItem[] = [
   { 
     name: "Dashboard", 
     href: "/dashboard", 
     icon: <LayoutDashboard className="h-5 w-5" />,
-    allowedTypes: ["admin", "selecao", "refeicao", "colaborador"] as const
+    allowedTypes: ["admin", "selecao", "refeicao", "colaborador", "comum"] as const
   },
   { 
     name: "Transporte Rota", 
     href: "/transporte-rota", 
-    icon: <Truck className="h-5 w-5" />,
+    icon: <Route className="h-5 w-5" />,
     allowedTypes: ["admin", "selecao"] as const
   },
   { 
@@ -113,146 +63,138 @@ const regularNavItems: RegularNavItem[] = [
   { 
     name: "Refeição", 
     href: "/refeicao", 
-    icon: <User className="h-5 w-5" />,
+    icon: <Utensils className="h-5 w-5" />,
     allowedTypes: ["admin", "refeicao"] as const
   },
   { 
     name: "Minhas Solicitações", 
     href: "/minhas-solicitacoes", 
-    icon: <ClipboardCheck className="h-5 w-5" />,
-    allowedTypes: ["selecao", "refeicao", "colaborador"] as const
+    icon: <FileText className="h-5 w-5" />,
+    allowedTypes: ["selecao", "refeicao", "colaborador", "comum"] as const
   },
   { 
     name: "Administração", 
     href: "/admin", 
-    icon: <User className="h-5 w-5" />,
+    icon: <Shield className="h-5 w-5" />,
     allowedTypes: ["admin"] as const
+  },
+  // Items for colaborador/comum
+  { 
+    name: "Uso de Rota", 
+    href: "/transporte-rota", 
+    icon: <Route className="h-5 w-5" />,
+    allowedTypes: ["colaborador", "comum"] as const
   },
   { 
     name: "Adesão/Cancelamento", 
     href: "/adesao-cancelamento", 
     icon: <ClipboardCheck className="h-5 w-5" />,
-    allowedTypes: ["colaborador"] as const
+    allowedTypes: ["colaborador", "comum"] as const
   },
   { 
     name: "Mudança de Turno", 
     href: "/mudanca-turno", 
     icon: <Clock className="h-5 w-5" />,
-    allowedTypes: ["colaborador"] as const
+    allowedTypes: ["colaborador", "comum"] as const
   },
   { 
     name: "Alteração de Endereço", 
     href: "/alteracao-endereco", 
     icon: <Home className="h-5 w-5" />,
-    allowedTypes: ["colaborador"] as const
+    allowedTypes: ["colaborador", "comum"] as const
   },
   { 
     name: "Abono de Ponto", 
     href: "/abono-ponto", 
-    icon: <Check className="h-5 w-5" />,
-    allowedTypes: ["colaborador"] as const
+    icon: <CheckCircle className="h-5 w-5" />,
+    allowedTypes: ["colaborador", "comum"] as const
   },
   { 
     name: "Avaliação", 
     href: "/avaliacao", 
     icon: <Star className="h-5 w-5" />,
-    allowedTypes: ["colaborador"] as const
+    allowedTypes: ["colaborador", "comum"] as const
   },
   { 
     name: "Plantão 24hs", 
     href: "/plantao", 
     icon: <Phone className="h-5 w-5" />,
-    allowedTypes: ["colaborador"] as const
+    allowedTypes: ["colaborador", "comum"] as const
   },
   { 
     name: "Mapa de Rotas", 
     href: "/mapa-rotas", 
     icon: <MapPin className="h-5 w-5" />,
-    allowedTypes: ["colaborador"] as const
+    allowedTypes: ["colaborador", "comum"] as const
   },
 ];
 
-interface SubmenuState {
-  [key: string]: boolean;
-}
-
 export const AppSidebar = () => {
-  const { user, shouldShowRoute } = useAuth();
+  const { user, logout, shouldShowRoute } = useAuth();
   const location = useLocation();
-  const [openSubmenus, setOpenSubmenus] = useState<SubmenuState>({});
-
-  const toggleSubmenu = (name: string) => {
-    setOpenSubmenus(prev => ({
-      ...prev,
-      [name]: !prev[name]
-    }));
-  };
-
+  
   if (!user) return null;
   
-  // Use the comum-specific navigation for comum users
-  if (user.tipo_usuario === 'comum') {
-    return (
-      <Sidebar>
-        <SidebarHeader className="h-14 flex items-center px-4">
-          <span className="font-semibold text-lg text-primary">Teuto360®</span>
-        </SidebarHeader>
-        <SidebarContent>
-          {comumNavItems.map((category, index) => (
-            <SidebarGroup key={index}>
-              <SidebarGroupLabel className="flex justify-between items-center cursor-pointer" onClick={() => toggleSubmenu(category.name)}>
-                <div className="flex items-center gap-2">
-                  {category.icon}
-                  <span>{category.name}</span>
-                </div>
-                <ChevronDown 
-                  className={cn("h-4 w-4 transition-transform", 
-                  openSubmenus[category.name] ? "transform rotate-180" : "")} 
-                />
-              </SidebarGroupLabel>
-              
-              {category.subItems && openSubmenus[category.name] && (
-                <SidebarMenu>
-                  {category.subItems.map((item, idx) => (
-                    <SidebarMenuItem key={idx}>
-                      <SidebarMenuButton asChild isActive={location.pathname === item.href}>
-                        <Link to={item.href}>
-                          <span>{item.name}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              )}
-            </SidebarGroup>
-          ))}
-        </SidebarContent>
-      </Sidebar>
-    );
-  }
-  
-  // Regular navigation for other user types
+  // Filter links based on user type
+  const filteredLinks = navItems.filter(link => {
+    // Check if user type is in the allowed types
+    return link.allowedTypes.includes(user.tipo_usuario as UserType);
+  });
+
   return (
     <Sidebar>
-      <SidebarHeader className="h-14 flex items-center px-4">
+      <SidebarHeader className="h-16 flex items-center px-4 border-b border-gray-200 dark:border-gray-800">
+        <Building2 className="h-8 w-8 text-primary mr-2" />
         <span className="font-semibold text-lg text-primary">Teuto360®</span>
       </SidebarHeader>
+      
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarMenu>
-            {regularNavItems.filter(item => shouldShowRoute(item.allowedTypes)).map((item, index) => (
-              <SidebarMenuItem key={index}>
-                <SidebarMenuButton asChild isActive={location.pathname === item.href}>
-                  <Link to={item.href} className="flex items-center">
-                    {item.icon}
-                    <span className="ml-2">{item.name}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
-        </SidebarGroup>
+        {/* User info */}
+        <div className="p-4 mb-2 border-b border-gray-200 dark:border-gray-800">
+          <div className="flex items-center space-x-3">
+            <div className="flex-shrink-0">
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <User className="h-5 w-5 text-primary" />
+              </div>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                {user.nome}
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                {user.tipo_usuario === 'admin' ? 'Administrador' : 
+                 user.tipo_usuario === 'refeicao' ? 'Refeição' : 
+                 user.tipo_usuario === 'selecao' ? 'Seleção' :
+                 user.tipo_usuario === 'comum' ? 'Colaborador' : 'Colaborador'}
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        {/* Navigation */}
+        <SidebarMenu>
+          {filteredLinks.map((item, index) => (
+            <SidebarMenuItem key={index}>
+              <SidebarMenuButton asChild isActive={location.pathname === item.href}>
+                <Link to={item.href} className="flex items-center">
+                  {item.icon}
+                  <span className="ml-2">{item.name}</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
+        </SidebarMenu>
       </SidebarContent>
+      
+      <SidebarFooter className="p-4 border-t border-gray-200 dark:border-gray-800">
+        <button 
+          onClick={logout}
+          className="flex items-center w-full px-3 py-2 text-sm font-medium rounded-md transition-colors text-gray-600 hover:text-primary hover:bg-primary/5 dark:text-gray-300 dark:hover:text-white"
+        >
+          <LogOut className="h-5 w-5 mr-2" />
+          <span>Sair</span>
+        </button>
+      </SidebarFooter>
     </Sidebar>
   );
 };
