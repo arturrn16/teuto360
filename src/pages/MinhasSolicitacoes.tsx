@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -47,18 +46,19 @@ const MinhasSolicitacoes = () => {
       setError(null);
 
       try {
-        const tables = [
-          { table: 'solicitacoes_abono_ponto', tipo: 'Abono de Ponto' },
-          { table: 'solicitacoes_adesao_cancelamento', tipo: 'Adesão/Cancelamento' },
-          { table: 'solicitacoes_alteracao_endereco', tipo: 'Alteração de Endereço' },
-          { table: 'solicitacoes_mudanca_turno', tipo: 'Mudança de Turno' },
-        ];
+        const tables = user.tipo_usuario === 'refeicao' 
+          ? [{ table: 'solicitacoes_refeicao', tipo: 'Refeição' }]
+          : [
+              { table: 'solicitacoes_abono_ponto', tipo: 'Abono de Ponto' },
+              { table: 'solicitacoes_adesao_cancelamento', tipo: 'Adesão/Cancelamento' },
+              { table: 'solicitacoes_alteracao_endereco', tipo: 'Alteração de Endereço' },
+              { table: 'solicitacoes_mudanca_turno', tipo: 'Mudança de Turno' },
+            ];
 
         let allSolicitacoes: Solicitacao[] = [];
 
         for (const { table, tipo } of tables) {
           try {
-            // Use type assertion with any to bypass TypeScript strict checking
             const { data, error } = await (supabase as any)
               .from(table)
               .select('id, created_at, status')
@@ -85,7 +85,6 @@ const MinhasSolicitacoes = () => {
           }
         }
 
-        // Ordenar todas as solicitações por data de criação
         allSolicitacoes.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
         setSolicitacoes(allSolicitacoes);
       } catch (err: any) {
@@ -106,6 +105,46 @@ const MinhasSolicitacoes = () => {
     return <div className="text-red-500">Erro ao carregar solicitações: {error}</div>;
   }
 
+  const showButtons = () => {
+    if (!user) return null;
+    
+    if (user.tipo_usuario === 'refeicao') {
+      return (
+        <div className="mt-4">
+          <Button asChild variant="outline">
+            <Link to="/refeicao">Solicitar Refeição</Link>
+          </Button>
+        </div>
+      );
+    } else {
+      return (
+        <>
+          {user.tipo_usuario === "selecao" && (
+            <div className="mt-4">
+              <Button asChild>
+                <Link to="/cadastro-usuario">Cadastrar Usuário</Link>
+              </Button>
+            </div>
+          )}
+          <div className="mt-4 space-x-2">
+            <Button asChild variant="outline">
+              <Link to="/abono-ponto">Abono de Ponto</Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link to="/adesao-cancelamento">Adesão/Cancelamento</Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link to="/alteracao-endereco">Alteração de Endereço</Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link to="/mudanca-turno">Mudança de Turno</Link>
+            </Button>
+          </div>
+        </>
+      );
+    }
+  };
+
   return (
     <div className="container max-w-5xl py-10">
       <Card>
@@ -119,63 +158,44 @@ const MinhasSolicitacoes = () => {
           {solicitacoes.length === 0 ? (
             <div className="text-center py-6">
               <p className="text-lg">Nenhuma solicitação encontrada.</p>
-              {user && (
-                <>
-                  {user.tipo_usuario === "selecao" && (
-                    <div className="mt-4">
-                      <Button asChild>
-                        <Link to="/cadastro-usuario">Cadastrar Usuário</Link>
-                      </Button>
-                    </div>
-                  )}
-                  <div className="mt-4 space-x-2">
-                    <Button asChild variant="outline">
-                      <Link to="/abono-ponto">Abono de Ponto</Link>
-                    </Button>
-                    <Button asChild variant="outline">
-                      <Link to="/adesao-cancelamento">Adesão/Cancelamento</Link>
-                    </Button>
-                    <Button asChild variant="outline">
-                      <Link to="/alteracao-endereco">Alteração de Endereço</Link>
-                    </Button>
-                    <Button asChild variant="outline">
-                      <Link to="/mudanca-turno">Mudança de Turno</Link>
-                    </Button>
-                  </div>
-                </>
-              )}
+              {showButtons()}
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableCaption>Suas solicitações de serviços.</TableCaption>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Tipo</TableHead>
-                    <TableHead>Data de Criação</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {solicitacoes.map((solicitacao) => (
-                    <TableRow key={solicitacao.id}>
-                      <TableCell>{solicitacao.tipo}</TableCell>
-                      <TableCell>{new Date(solicitacao.created_at).toLocaleDateString()}</TableCell>
-                      <TableCell>
-                        <Badge variant="secondary">{solicitacao.status}</Badge>
+            <>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableCaption>Suas solicitações de serviços.</TableCaption>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Tipo</TableHead>
+                      <TableHead>Data de Criação</TableHead>
+                      <TableHead>Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {solicitacoes.map((solicitacao) => (
+                      <TableRow key={solicitacao.id}>
+                        <TableCell>{solicitacao.tipo}</TableCell>
+                        <TableCell>{new Date(solicitacao.created_at).toLocaleDateString()}</TableCell>
+                        <TableCell>
+                          <Badge variant="secondary">{solicitacao.status}</Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                  <TableFooter>
+                    <TableRow>
+                      <TableCell colSpan={3} className="text-center">
+                        Total de solicitações: {solicitacoes.length}
                       </TableCell>
                     </TableRow>
-                  ))}
-                </TableBody>
-                <TableFooter>
-                  <TableRow>
-                    <TableCell colSpan={3} className="text-center">
-                      Total de solicitações: {solicitacoes.length}
-                    </TableCell>
-                  </TableRow>
-                </TableFooter>
-              </Table>
-            </div>
+                  </TableFooter>
+                </Table>
+              </div>
+              <div className="mt-4">
+                {showButtons()}
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
