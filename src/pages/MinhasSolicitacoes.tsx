@@ -382,11 +382,6 @@ const MinhasSolicitacoes = () => {
     else if (user.tipo_usuario === 'selecao') {
       return (
         <div className="mt-4 space-x-2">
-          {user.tipo_usuario === "selecao" && (
-            <Button asChild className="mr-2">
-              <Link to="/cadastro-usuario">Cadastrar Usuário</Link>
-            </Button>
-          )}
           <Button asChild variant="outline">
             <Link to="/transporte-rota">Transporte Rota</Link>
           </Button>
