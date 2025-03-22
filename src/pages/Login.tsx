@@ -9,12 +9,14 @@ const Login = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log("Login page: Auth state check", { isAuthenticated, user, firstLogin: user?.first_login });
+    
     if (isAuthenticated) {
       if (user && user.first_login) {
-        // If first login, redirect to change password page
+        console.log("Redirecting to change password page");
         navigate("/change-password");
       } else {
-        // Otherwise, redirect to dashboard
+        console.log("Redirecting to dashboard");
         navigate("/dashboard");
       }
     }

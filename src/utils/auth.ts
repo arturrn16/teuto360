@@ -36,6 +36,7 @@ export const loginUser = async (username: string, password: string): Promise<Use
     }
 
     // Se tudo deu certo, retorna o usuário
+    console.log("Login successful, user data:", data.user);
     storeUser(data.user);
     return data.user;
   } catch (error) {
@@ -53,6 +54,8 @@ export const changePassword = async (newPassword: string): Promise<boolean> => {
       toast.error("Usuário não autenticado");
       return false;
     }
+    
+    console.log("Changing password for user:", user.id);
     
     // Call the edge function to change password
     const { data, error } = await supabase.functions.invoke('change-password', {
@@ -73,8 +76,10 @@ export const changePassword = async (newPassword: string): Promise<boolean> => {
       return false;
     }
     
+    console.log("Password changed successfully", data);
+    toast.success("Senha alterada com sucesso!");
+    
     // Force logout so user has to login with new password
-    logoutUser();
     return true;
   } catch (error) {
     console.error("Erro ao alterar senha:", error);

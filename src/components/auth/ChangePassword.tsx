@@ -31,7 +31,9 @@ export const ChangePasswordForm = () => {
     setIsSubmitting(true);
     
     try {
+      console.log("Submitting new password");
       const success = await changePassword(newPassword);
+      console.log("Password change result:", success);
       if (success) {
         toast.success("Senha alterada com sucesso. Por favor, faça login novamente.");
       }

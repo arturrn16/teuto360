@@ -10,10 +10,15 @@ const ChangePassword = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Add console logging to debug the component
+    console.log("ChangePassword page: Auth state check", { isAuthenticated, user, firstLogin: user?.first_login });
+    
     if (!isAuthenticated) {
+      console.log("Not authenticated, redirecting to login");
       navigate("/login");
     } else if (user && !user.first_login) {
       // If not first login, redirect to dashboard
+      console.log("Not first login, redirecting to dashboard");
       navigate("/dashboard");
     }
   }, [isAuthenticated, navigate, user]);
