@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { 
@@ -17,8 +16,17 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Download, FileText, Ticket, Filter } from "lucide-react";
+import { Download, FileText, Ticket, Filter, X } from "lucide-react";
 import { downloadTicket } from "@/services/ticketService";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -26,6 +34,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface SolicitacaoRefeicao extends BaseSolicitacao {
   tipo: string;
@@ -63,7 +77,15 @@ const MinhasSolicitacoes = () => {
   const [filteredSolicitacoes, setFilteredSolicitacoes] = useState<Solicitacao[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filtro, setFiltro] = useState<string>("todas");
+  const [filtroStatus, setFiltroStatus] = useState<string>("todas");
+  const [filtroTipo, setFiltroTipo] = useState<string>("todos");
+  
+  // Estados para o modal de detalhes
+  const [detalhesAberto, setDetalhesAberto] = useState(false);
+  const [solicitacaoSelecionada, setSolicitacaoSelecionada] = useState<Solicitacao | null>(null);
+
+  // Get distinct solicitation types
+  const tiposSolicitacao = Array.from(new Set(solicitacoes.map(s => s.tipo)));
 
   useEffect(() => {
     const fetchSolicitacoes = async () => {
@@ -101,6 +123,7 @@ const MinhasSolicitacoes = () => {
 
         for (const { table, tipo } of tables) {
           try {
+            
             if (table === 'solicitacoes_refeicao') {
               const { data, error } = await (supabase as any)
                 .from(table)
@@ -338,12 +361,21 @@ const MinhasSolicitacoes = () => {
   }, [user, isAuthenticated]);
 
   useEffect(() => {
-    if (filtro === "todas") {
-      setFilteredSolicitacoes(solicitacoes);
-    } else {
-      setFilteredSolicitacoes(solicitacoes.filter(sol => sol.status === filtro));
+    // Aplica os dois filtros (status e tipo)
+    let filtered = solicitacoes;
+    
+    // Filtro por status
+    if (filtroStatus !== "todas") {
+      filtered = filtered.filter(sol => sol.status === filtroStatus);
     }
-  }, [filtro, solicitacoes]);
+    
+    // Filtro por tipo
+    if (filtroTipo !== "todos") {
+      filtered = filtered.filter(sol => sol.tipo === filtroTipo);
+    }
+    
+    setFilteredSolicitacoes(filtered);
+  }, [filtroStatus, filtroTipo, solicitacoes]);
 
   const handleDownloadTicket = async (solicitacao: Solicitacao) => {
     if (solicitacao.status === 'aprovada') {
@@ -363,12 +395,33 @@ const MinhasSolicitacoes = () => {
     }
   };
 
+  const abrirDetalhes = (solicitacao: Solicitacao) => {
+    setSolicitacaoSelecionada(solicitacao);
+    setDetalhesAberto(true);
+  };
+
   const isRefeicaoSolicitacao = (solicitacao: Solicitacao): solicitacao is SolicitacaoRefeicao => {
     return solicitacao.tipo === 'Refeição';
   };
 
   const isTransporteSolicitacao = (solicitacao: Solicitacao): solicitacao is SolicitacaoTransporte => {
     return solicitacao.tipo === 'Transporte Rota' || solicitacao.tipo === 'Transporte 12x36' || solicitacao.tipo === 'Uso de Rota';
+  };
+
+  const isAbonoPontoSolicitacao = (solicitacao: Solicitacao): solicitacao is SolicitacaoAbonoPontoWithTipo => {
+    return solicitacao.tipo === 'Abono de Ponto';
+  };
+
+  const isAdesaoCancelamentoSolicitacao = (solicitacao: Solicitacao): solicitacao is SolicitacaoAdesaoCancelamentoWithTipo => {
+    return solicitacao.tipo === 'Adesão/Cancelamento';
+  };
+
+  const isAlteracaoEnderecoSolicitacao = (solicitacao: Solicitacao): solicitacao is SolicitacaoAlteracaoEnderecoWithTipo => {
+    return solicitacao.tipo === 'Alteração de Endereço';
+  };
+
+  const isMudancaTurnoSolicitacao = (solicitacao: Solicitacao): solicitacao is SolicitacaoMudancaTurnoWithTipo => {
+    return solicitacao.tipo === 'Mudança de Turno';
   };
 
   const formatDate = (dateString: string): string => {
@@ -406,6 +459,278 @@ const MinhasSolicitacoes = () => {
     return '';
   };
 
+  const renderDetalhes = () => {
+    if (!solicitacaoSelecionada) return null;
+    
+    // Conteúdo específico para cada tipo de solicitação
+    let detalhesConteudo = null;
+    
+    if (isRefeicaoSolicitacao(solicitacaoSelecionada)) {
+      detalhesConteudo = (
+        <>
+          <div className="grid grid-cols-2 gap-4 my-4">
+            <div>
+              <p className="text-sm text-gray-500">Tipo de Refeição</p>
+              <p className="font-medium">{solicitacaoSelecionada.tipo_refeicao}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Data da Refeição</p>
+              <p className="font-medium">{formatDate(solicitacaoSelecionada.data_refeicao)}</p>
+            </div>
+          </div>
+          <div className="mt-4">
+            <p className="text-sm text-gray-500">Colaboradores</p>
+            <ul className="list-disc list-inside mt-2">
+              {solicitacaoSelecionada.colaboradores.map((colaborador, index) => (
+                <li key={index} className="font-medium">{colaborador}</li>
+              ))}
+            </ul>
+          </div>
+        </>
+      );
+    } else if (isTransporteSolicitacao(solicitacaoSelecionada)) {
+      detalhesConteudo = (
+        <>
+          <div className="grid grid-cols-2 gap-4 my-4">
+            <div>
+              <p className="text-sm text-gray-500">Colaborador</p>
+              <p className="font-medium">{solicitacaoSelecionada.colaborador_nome}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Rota</p>
+              <p className="font-medium">{solicitacaoSelecionada.rota}</p>
+            </div>
+            {solicitacaoSelecionada.data_inicio && (
+              <div>
+                <p className="text-sm text-gray-500">Data de Início</p>
+                <p className="font-medium">{formatDate(solicitacaoSelecionada.data_inicio)}</p>
+              </div>
+            )}
+            {solicitacaoSelecionada.periodo_inicio && (
+              <div>
+                <p className="text-sm text-gray-500">Período de Início</p>
+                <p className="font-medium">{formatDate(solicitacaoSelecionada.periodo_inicio)}</p>
+              </div>
+            )}
+            {solicitacaoSelecionada.periodo_fim && (
+              <div>
+                <p className="text-sm text-gray-500">Período de Fim</p>
+                <p className="font-medium">{formatDate(solicitacaoSelecionada.periodo_fim)}</p>
+              </div>
+            )}
+          </div>
+          {solicitacaoSelecionada.motivo && (
+            <div className="mt-4">
+              <p className="text-sm text-gray-500">Motivo</p>
+              <p className="font-medium">{solicitacaoSelecionada.motivo}</p>
+            </div>
+          )}
+        </>
+      );
+    } else if (isAbonoPontoSolicitacao(solicitacaoSelecionada)) {
+      detalhesConteudo = (
+        <>
+          <div className="grid grid-cols-2 gap-4 my-4">
+            <div>
+              <p className="text-sm text-gray-500">Cidade</p>
+              <p className="font-medium">{solicitacaoSelecionada.cidade}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Turno</p>
+              <p className="font-medium">{solicitacaoSelecionada.turno}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Rota</p>
+              <p className="font-medium">{solicitacaoSelecionada.rota}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Data de Ocorrência</p>
+              <p className="font-medium">{formatDate(solicitacaoSelecionada.data_ocorrencia)}</p>
+            </div>
+          </div>
+          <div className="mt-4">
+            <p className="text-sm text-gray-500">Motivo</p>
+            <p className="font-medium">{solicitacaoSelecionada.motivo}</p>
+          </div>
+          <div className="mt-4">
+            <p className="text-sm text-gray-500">Descrição</p>
+            <p className="font-medium">{solicitacaoSelecionada.descricao}</p>
+          </div>
+        </>
+      );
+    } else if (isAdesaoCancelamentoSolicitacao(solicitacaoSelecionada)) {
+      detalhesConteudo = (
+        <>
+          <div className="grid grid-cols-2 gap-4 my-4">
+            <div>
+              <p className="text-sm text-gray-500">Tipo de Solicitação</p>
+              <p className="font-medium">{solicitacaoSelecionada.tipo_solicitacao}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Email</p>
+              <p className="font-medium">{solicitacaoSelecionada.email}</p>
+            </div>
+          </div>
+          <div className="mt-4">
+            <p className="text-sm text-gray-500">Motivo</p>
+            <p className="font-medium">{solicitacaoSelecionada.motivo}</p>
+          </div>
+        </>
+      );
+    } else if (isAlteracaoEnderecoSolicitacao(solicitacaoSelecionada)) {
+      detalhesConteudo = (
+        <>
+          <div className="grid grid-cols-2 gap-4 my-4">
+            <div>
+              <p className="text-sm text-gray-500">Telefone</p>
+              <p className="font-medium">{solicitacaoSelecionada.telefone}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">CEP</p>
+              <p className="font-medium">{solicitacaoSelecionada.cep}</p>
+            </div>
+            <div className="col-span-2">
+              <p className="text-sm text-gray-500">Endereço Atual</p>
+              <p className="font-medium">{solicitacaoSelecionada.endereco_atual}</p>
+            </div>
+            <div className="col-span-2">
+              <p className="text-sm text-gray-500">Novo Endereço</p>
+              <p className="font-medium">{solicitacaoSelecionada.endereco_novo}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Bairro</p>
+              <p className="font-medium">{solicitacaoSelecionada.bairro}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Cidade</p>
+              <p className="font-medium">{solicitacaoSelecionada.cidade}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Rota Atual</p>
+              <p className="font-medium">{solicitacaoSelecionada.rota_atual}</p>
+            </div>
+            {solicitacaoSelecionada.alterar_rota && (
+              <div>
+                <p className="text-sm text-gray-500">Nova Rota</p>
+                <p className="font-medium">{solicitacaoSelecionada.nova_rota || 'Não especificada'}</p>
+              </div>
+            )}
+          </div>
+        </>
+      );
+    } else if (isMudancaTurnoSolicitacao(solicitacaoSelecionada)) {
+      detalhesConteudo = (
+        <>
+          <div className="grid grid-cols-2 gap-4 my-4">
+            <div>
+              <p className="text-sm text-gray-500">Telefone</p>
+              <p className="font-medium">{solicitacaoSelecionada.telefone}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">CEP</p>
+              <p className="font-medium">{solicitacaoSelecionada.cep}</p>
+            </div>
+            <div className="col-span-2">
+              <p className="text-sm text-gray-500">Endereço</p>
+              <p className="font-medium">{solicitacaoSelecionada.endereco}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Bairro</p>
+              <p className="font-medium">{solicitacaoSelecionada.bairro}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Cidade</p>
+              <p className="font-medium">{solicitacaoSelecionada.cidade}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Turno Atual</p>
+              <p className="font-medium">{solicitacaoSelecionada.turno_atual}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Novo Turno</p>
+              <p className="font-medium">{solicitacaoSelecionada.turno_novo}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Nova Rota</p>
+              <p className="font-medium">{solicitacaoSelecionada.nova_rota || 'Não especificada'}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Nome do Gestor</p>
+              <p className="font-medium">{solicitacaoSelecionada.nome_gestor}</p>
+            </div>
+          </div>
+          <div className="mt-4">
+            <p className="text-sm text-gray-500">Motivo</p>
+            <p className="font-medium">{solicitacaoSelecionada.motivo}</p>
+          </div>
+        </>
+      );
+    }
+    
+    return (
+      <Dialog open={detalhesAberto} onOpenChange={setDetalhesAberto}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center justify-between">
+              <span className="text-xl">Detalhes da Solicitação</span>
+              <Badge 
+                variant={
+                  solicitacaoSelecionada.status === 'aprovada' 
+                    ? 'success' 
+                    : solicitacaoSelecionada.status === 'rejeitada' 
+                      ? 'destructive' 
+                      : 'secondary'
+                }
+                className="rounded-full px-4 py-1 text-sm font-medium"
+              >
+                {solicitacaoSelecionada.status === 'aprovada' 
+                  ? 'Aprovado' 
+                  : solicitacaoSelecionada.status === 'rejeitada' 
+                    ? 'Rejeitado' 
+                    : 'Pendente'}
+              </Badge>
+            </DialogTitle>
+            <DialogDescription>
+              <div className="flex items-center justify-between text-lg font-semibold mb-2">
+                <span>{solicitacaoSelecionada.tipo}</span>
+                <span>#{solicitacaoSelecionada.id}</span>
+              </div>
+              <div className="text-sm text-gray-500">
+                Solicitado em {formatDateTime(solicitacaoSelecionada.created_at)}
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+          
+          {detalhesConteudo}
+          
+          <DialogFooter className="flex flex-row justify-between sm:justify-between">
+            {solicitacaoSelecionada.status === 'aprovada' && 
+              (isRefeicaoSolicitacao(solicitacaoSelecionada) || 
+              (isTransporteSolicitacao(solicitacaoSelecionada) && 
+                (solicitacaoSelecionada.tipo === 'Uso de Rota' || 
+                  solicitacaoSelecionada.tipo === 'Transporte Rota' || 
+                  solicitacaoSelecionada.tipo === 'Transporte 12x36'))) && (
+              <Button 
+                variant="outline" 
+                onClick={() => handleDownloadTicket(solicitacaoSelecionada)}
+                className="flex gap-2 items-center"
+              >
+                <Ticket className="h-4 w-4" />
+                <span>Ver Ticket</span>
+              </Button>
+            )}
+            <DialogClose asChild>
+              <Button variant="default" className="flex items-center gap-2">
+                <X className="h-4 w-4" />
+                <span>Fechar</span>
+              </Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  };
+
   const showButtons = () => {
     if (!user) return null;
     
@@ -425,133 +750,4 @@ const MinhasSolicitacoes = () => {
             <Link to="/transporte-rota">Transporte Rota</Link>
           </Button>
           <Button asChild variant="outline">
-            <Link to="/transporte-12x36">Transporte 12x36</Link>
-          </Button>
-        </div>
-      );
-    } 
-    else {
-      return (
-        <div className="mt-4 space-x-2 flex flex-wrap gap-2">
-          <Button asChild variant="outline">
-            <Link to="/abono-ponto">Abono de Ponto</Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link to="/adesao-cancelamento">Adesão/Cancelamento</Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link to="/alteracao-endereco">Alteração de Endereço</Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link to="/mudanca-turno">Mudança de Turno</Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link to="/transporte-rota">Uso de Rota</Link>
-          </Button>
-        </div>
-      );
-    }
-  };
-
-  return (
-    <div className="container max-w-3xl py-4 px-4">
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold">Minhas Solicitações</h1>
-      </div>
-      
-      <div className="relative mb-4 flex items-center">
-        <Filter className="absolute left-3 h-5 w-5 text-gray-400" />
-        <Select value={filtro} onValueChange={setFiltro}>
-          <SelectTrigger className="pl-10 h-12 border rounded-full bg-white">
-            <SelectValue placeholder="Todas" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="todas">Todas</SelectItem>
-            <SelectItem value="aprovada">Aprovadas</SelectItem>
-            <SelectItem value="pendente">Pendentes</SelectItem>
-            <SelectItem value="rejeitada">Rejeitadas</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {filteredSolicitacoes.length === 0 ? (
-        <div className="text-center py-10">
-          <p className="text-lg mb-4">Nenhuma solicitação encontrada.</p>
-          {showButtons()}
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {filteredSolicitacoes.map((solicitacao) => (
-            <Card key={solicitacao.id} className="border rounded-xl overflow-hidden bg-white">
-              <CardContent className="p-0">
-                <div className="p-5">
-                  <div className="flex justify-between items-start mb-1">
-                    <h2 className="text-2xl font-bold">
-                      {isTransporteSolicitacao(solicitacao) && solicitacao.tipo === 'Uso de Rota' 
-                        ? `${solicitacao.tipo} - ${solicitacao.rota}` 
-                        : isRefeicaoSolicitacao(solicitacao) 
-                          ? `${solicitacao.tipo} - ${solicitacao.tipo_refeicao}` 
-                          : solicitacao.tipo}
-                    </h2>
-                    <Badge 
-                      variant={
-                        solicitacao.status === 'aprovada' 
-                          ? 'success' 
-                          : solicitacao.status === 'rejeitada' 
-                            ? 'destructive' 
-                            : 'secondary'
-                      }
-                      className="rounded-full px-4 py-1 text-sm font-medium"
-                    >
-                      {solicitacao.status === 'aprovada' 
-                        ? 'Aprovado' 
-                        : solicitacao.status === 'rejeitada' 
-                          ? 'Rejeitado' 
-                          : 'Pendente'}
-                    </Badge>
-                  </div>
-                  
-                  <p className="text-gray-500 text-sm mb-4">
-                    Solicitado em {formatDate(solicitacao.created_at)}
-                  </p>
-                  
-                  <p className="text-gray-800 mb-4">
-                    {getSolicitacaoDescricao(solicitacao)}
-                  </p>
-                  
-                  <div className="flex flex-wrap gap-2">
-                    <Button variant="outline" className="rounded-full" size="sm">
-                      <FileText className="mr-1 h-4 w-4" /> Detalhes
-                    </Button>
-                    
-                    {(solicitacao.status === 'aprovada' && 
-                      (isRefeicaoSolicitacao(solicitacao) || 
-                       (isTransporteSolicitacao(solicitacao) && 
-                        (solicitacao.tipo === 'Uso de Rota' || 
-                         solicitacao.tipo === 'Transporte Rota' || 
-                         solicitacao.tipo === 'Transporte 12x36')))) && (
-                      <Button 
-                        variant="outline" 
-                        className="rounded-full"
-                        size="sm"
-                        onClick={() => handleDownloadTicket(solicitacao)}
-                      >
-                        <Ticket className="mr-1 h-4 w-4" /> Ver Ticket
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
-      
-      <div className="mt-6">
-        {showButtons()}
-      </div>
-    </div>
-  );
-};
-
-export default MinhasSolicitacoes;
+            <Link
