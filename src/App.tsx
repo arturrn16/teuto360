@@ -25,6 +25,7 @@ import Transporte12x36 from "@/pages/Transporte12x36";
 import Refeicao from "@/pages/Refeicao";
 import CardapioSemana from "@/pages/CardapioSemana";
 import GerenciarCardapio from "@/pages/GerenciarCardapio";
+import SolicitacoesAdmin from "@/pages/SolicitacoesAdmin";
 
 import "./App.css";
 
@@ -125,6 +126,16 @@ function App() {
           }
         />
         <Route
+          path="/solicitacoes-admin"
+          element={
+            <ProtectedRoute allowedTypes={["admin"]}>
+              <Layout>
+                <SolicitacoesAdmin />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/admin"
           element={
             <ProtectedRoute allowedTypes={["admin"]}>
@@ -137,7 +148,7 @@ function App() {
         <Route
           path="/avaliacao"
           element={
-            <ProtectedRoute allowedTypes={["admin"]}>
+            <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador", "comum"]}>
               <Layout>
                 <Avaliacao />
               </Layout>
