@@ -4,33 +4,19 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Index = () => {
-  const { isAuthenticated, isLoading, user } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log("Index page: Auth state check", { 
-      isAuthenticated, 
-      isLoading, 
-      user, 
-      firstLogin: user?.first_login 
-    });
-    
-    // Se autenticado, redirecionar para o dashboard ou change-password (se for primeiro login)
+    // Se autenticado, redirecionar para o dashboard, caso contrário para o login
     if (!isLoading) {
       if (isAuthenticated) {
-        if (user?.first_login === true) {
-          console.log("Index: First login detected, redirecting to change password");
-          navigate("/change-password");
-        } else {
-          console.log("Index: Authenticated user, redirecting to dashboard");
-          navigate("/dashboard");
-        }
+        navigate("/dashboard");
       } else {
-        console.log("Index: Not authenticated, redirecting to login");
         navigate("/login");
       }
     }
-  }, [isAuthenticated, isLoading, navigate, user]);
+  }, [isAuthenticated, isLoading, navigate]);
 
   // Renderiza uma tela de carregamento enquanto verifica o status de autenticação
   return (

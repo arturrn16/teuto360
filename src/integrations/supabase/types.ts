@@ -511,10 +511,7 @@ export type Database = {
         Row: {
           admin: boolean | null
           cargo: string
-          cpf: string | null
           created_at: string | null
-          data_nascimento: string | null
-          first_login: boolean | null
           id: number
           matricula: string
           nome: string
@@ -527,10 +524,7 @@ export type Database = {
         Insert: {
           admin?: boolean | null
           cargo: string
-          cpf?: string | null
           created_at?: string | null
-          data_nascimento?: string | null
-          first_login?: boolean | null
           id?: number
           matricula: string
           nome: string
@@ -543,10 +537,7 @@ export type Database = {
         Update: {
           admin?: boolean | null
           cargo?: string
-          cpf?: string | null
           created_at?: string | null
-          data_nascimento?: string | null
-          first_login?: boolean | null
           id?: number
           matricula?: string
           nome?: string
@@ -563,12 +554,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      format_date_dmy: {
-        Args: {
-          date_value: string
-        }
-        Returns: string
-      }
       insert_comunicado: {
         Args: {
           p_titulo: string

@@ -6,22 +6,14 @@ import { useNavigate } from "react-router-dom";
 import { Building2 } from "lucide-react";
 
 const Login = () => {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log("Login page: Auth state check", { isAuthenticated, user, firstLogin: user?.first_login });
-    
     if (isAuthenticated) {
-      if (user && user.first_login === true) {
-        console.log("Redirecting to change password page");
-        navigate("/change-password");
-      } else {
-        console.log("Redirecting to dashboard");
-        navigate("/dashboard");
-      }
+      navigate("/dashboard");
     }
-  }, [isAuthenticated, navigate, user]);
+  }, [isAuthenticated, navigate]);
 
   return (
     <div className="min-h-screen flex flex-col justify-center items-center bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800 p-4">

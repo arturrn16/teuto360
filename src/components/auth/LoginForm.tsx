@@ -6,14 +6,12 @@ import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Lock, User } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui-components/Card";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { ResetPasswordForm } from "./ResetPasswordForm";
 
 export const LoginForm = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showResetForm, setShowResetForm] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -31,10 +29,6 @@ export const LoginForm = () => {
       setIsSubmitting(false);
     }
   };
-
-  if (showResetForm) {
-    return <ResetPasswordForm onCancel={() => setShowResetForm(false)} />;
-  }
 
   return (
     <Card className="w-full max-w-xs sm:max-w-sm md:max-w-md mx-auto glass animate-scale-in">
@@ -138,15 +132,6 @@ export const LoginForm = () => {
             )}
           </button>
         </form>
-
-        <div className="mt-4 text-center">
-          <button
-            onClick={() => setShowResetForm(true)}
-            className="text-primary hover:underline text-sm"
-          >
-            Alterar sua senha
-          </button>
-        </div>
       </CardContent>
     </Card>
   );

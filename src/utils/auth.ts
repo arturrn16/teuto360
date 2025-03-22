@@ -12,11 +12,8 @@ export interface User {
   username: string;
   admin: boolean;
   tipo_usuario: 'admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum';
-  first_login: boolean;
   created_at?: string;
   updated_at?: string;
-  cpf?: string;
-  data_nascimento?: string;
 }
 
 export const loginUser = async (username: string, password: string): Promise<User | null> => {
@@ -38,100 +35,12 @@ export const loginUser = async (username: string, password: string): Promise<Use
     }
 
     // Se tudo deu certo, retorna o usuário
-    console.log("Login successful, user data:", data.user);
     storeUser(data.user);
     return data.user;
   } catch (error) {
     console.error("Erro ao fazer login:", error);
     toast.error("Erro ao fazer login");
     return null;
-  }
-};
-
-export const resetPassword = async (
-  username: string,
-  currentPassword: string,
-  cpf: string,
-  dataNascimento: string,
-  newPassword: string
-): Promise<boolean> => {
-  try {
-    console.log("Tentando redefinir a senha para:", username);
-    
-    // Chamar a edge function de reset de senha
-    const { data, error } = await supabase.functions.invoke('reset-password', {
-      body: { 
-        username,
-        currentPassword,
-        cpf,
-        dataNascimento,
-        newPassword
-      }
-    });
-    
-    if (error) {
-      console.error("Erro na função de redefinição de senha:", error);
-      toast.error("Erro ao alterar senha");
-      return false;
-    }
-    
-    if (data.error) {
-      toast.error(data.error);
-      return false;
-    }
-    
-    console.log("Senha redefinida com sucesso");
-    toast.success("Senha alterada com sucesso!");
-    
-    // Força o logout para que o usuário faça login com a nova senha
-    logoutUser();
-    return true;
-  } catch (error) {
-    console.error("Erro ao redefinir senha:", error);
-    toast.error("Erro ao alterar senha");
-    return false;
-  }
-};
-
-export const changePassword = async (newPassword: string): Promise<boolean> => {
-  try {
-    const user = getStoredUser();
-    
-    if (!user) {
-      toast.error("Usuário não autenticado");
-      return false;
-    }
-    
-    console.log("Changing password for user:", user.id);
-    
-    // Call the edge function to change password
-    const { data, error } = await supabase.functions.invoke('change-password', {
-      body: { 
-        userId: user.id,
-        newPassword: newPassword
-      }
-    });
-    
-    if (error) {
-      console.error("Erro na função de alterar senha:", error);
-      toast.error("Erro ao alterar senha");
-      return false;
-    }
-    
-    if (data.error) {
-      toast.error(data.error);
-      return false;
-    }
-    
-    console.log("Password changed successfully", data);
-    toast.success("Senha alterada com sucesso!");
-    
-    // Force logout so user has to login with new password
-    return true;
-  } catch (error) {
-    console.error("Erro ao alterar senha:", error);
-    toast.error("Erro ao alterar senha");
-    return false;
   }
 };
 
