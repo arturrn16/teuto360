@@ -1,7 +1,7 @@
 
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
-import { Layout } from "@/components/Layout";  // Fix import - removed default
+import { Layout } from "@/components/Layout";  // Using named import
 import { ProtectedRoute } from "@/context/AuthContext";
 
 import Index from "@/pages/Index";
@@ -34,6 +34,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/login" element={<Login />} />
+        
         <Route
           path="/dashboard"
           element={
@@ -41,7 +42,10 @@ function App() {
               <Layout />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<Dashboard />} />
+        </Route>
+
         <Route
           path="/comunicados"
           element={
@@ -49,7 +53,10 @@ function App() {
               <Layout />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<Comunicados />} />
+        </Route>
+
         <Route
           path="/gerenciar-comunicados"
           element={
@@ -57,7 +64,10 @@ function App() {
               <Layout />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<GerenciarComunicados />} />
+        </Route>
+
         <Route
           path="/abono-ponto"
           element={
@@ -65,7 +75,10 @@ function App() {
               <Layout />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<AbonoPonto />} />
+        </Route>
+
         <Route
           path="/adesao-cancelamento"
           element={
@@ -73,7 +86,10 @@ function App() {
               <Layout />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<AdesaoCancelamento />} />
+        </Route>
+
         <Route
           path="/alteracao-endereco"
           element={
@@ -81,7 +97,10 @@ function App() {
               <Layout />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<AlteracaoEndereco />} />
+        </Route>
+
         <Route
           path="/mudanca-turno"
           element={
@@ -89,7 +108,10 @@ function App() {
               <Layout />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<MudancaTurno />} />
+        </Route>
+
         <Route
           path="/refeicao"
           element={
@@ -97,7 +119,10 @@ function App() {
               <Layout />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<Refeicao />} />
+        </Route>
+
         <Route
           path="/minhas-solicitacoes"
           element={
@@ -105,7 +130,10 @@ function App() {
               <Layout />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<MinhasSolicitacoes />} />
+        </Route>
+
         <Route
           path="/admin"
           element={
@@ -113,7 +141,10 @@ function App() {
               <Layout />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<Admin />} />
+        </Route>
+
         <Route
           path="/avaliacao"
           element={
@@ -121,7 +152,10 @@ function App() {
               <Layout />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<Avaliacao />} />
+        </Route>
+
         <Route
           path="/mapa-rotas"
           element={
@@ -129,7 +163,10 @@ function App() {
               <Layout />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<MapaRotas />} />
+        </Route>
+
         <Route
           path="/oferta-caronas"
           element={
@@ -137,7 +174,10 @@ function App() {
               <Layout />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<OfertaCaronas />} />
+        </Route>
+
         <Route
           path="/plantao"
           element={
@@ -145,7 +185,10 @@ function App() {
               <Layout />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<Plantao />} />
+        </Route>
+
         <Route
           path="/transporte-rota"
           element={
@@ -153,7 +196,10 @@ function App() {
               <Layout />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<TransporteRota />} />
+        </Route>
+
         <Route
           path="/transporte-12x36"
           element={
@@ -161,7 +207,9 @@ function App() {
               <Layout />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<Transporte12x36 />} />
+        </Route>
         
         {/* Refeitório Routes */}
         <Route
@@ -171,7 +219,10 @@ function App() {
               <Layout />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<CardapioSemana />} />
+        </Route>
+
         <Route
           path="/gerenciar-cardapio"
           element={
@@ -179,7 +230,9 @@ function App() {
               <Layout />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<GerenciarCardapio />} />
+        </Route>
         
         <Route path="*" element={<NotFound />} />
       </Routes>
