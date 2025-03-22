@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { format } from "date-fns";
+import { format, parse } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
@@ -41,6 +41,11 @@ export const ResetPasswordForm = ({ onCancel }: { onCancel: () => void }) => {
     }
   };
 
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Mantém o formato YYYY-MM-DD para o campo HTML
+    setDataNascimento(e.target.value);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -68,7 +73,7 @@ export const ResetPasswordForm = ({ onCancel }: { onCancel: () => void }) => {
     setIsSubmitting(true);
 
     try {
-      // Formata a data de nascimento para o formato esperado pelo backend (YYYY-MM-DD)
+      // Mantém o formato YYYY-MM-DD para enviar ao servidor
       const formattedDate = dataNascimento;
       
       const success = await resetPassword(username, currentPassword, cpf, formattedDate, newPassword);
@@ -151,10 +156,13 @@ export const ResetPasswordForm = ({ onCancel }: { onCancel: () => void }) => {
               id="dataNascimento"
               type="date"
               value={dataNascimento}
-              onChange={(e) => setDataNascimento(e.target.value)}
+              onChange={handleDateChange}
               className={cn(isMobile && "touch-target")}
               required
             />
+            <p className="text-xs text-muted-foreground mt-1">
+              Formato: DD/MM/AAAA
+            </p>
           </div>
 
           <div className="space-y-2">
