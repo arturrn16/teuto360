@@ -9,6 +9,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Car, Phone, Clock } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface OfertaCarona {
   id: number;
@@ -22,6 +29,23 @@ interface OfertaCarona {
   created_at: string;
   usuario_id: number;
 }
+
+// Define turno options
+const TURNO_OPTIONS = [
+  "Administrativo",
+  "1° Turno",
+  "2° Turno", 
+  "2° Administrativo",
+  "3° Turno",
+  "12x36 diurno par",
+  "12x36 diurno impar",
+  "12x36 noturno par",
+  "12x36 noturno impar",
+  "Adm Gyn 1",
+  "Adm Gyn 2",
+  "Gyn 1° Turno",
+  "Gyn 2° Turno"
+];
 
 const OfertaCaronas = () => {
   const { user } = useAuth();
@@ -96,6 +120,11 @@ const OfertaCaronas = () => {
   ) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Handle select change separately since it doesn't come from an event
+  const handleTurnoChange = (value: string) => {
+    setForm((prev) => ({ ...prev, turno: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -182,13 +211,21 @@ const OfertaCaronas = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="turno">Turno</Label>
-                  <Input
-                    id="turno"
-                    name="turno"
-                    value={form.turno}
-                    onChange={handleChange}
-                    placeholder="Seu turno (ex: Manhã, Tarde, Noite)"
-                  />
+                  <Select 
+                    value={form.turno} 
+                    onValueChange={handleTurnoChange}
+                  >
+                    <SelectTrigger id="turno">
+                      <SelectValue placeholder="Selecione seu turno" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TURNO_OPTIONS.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="origem">Saindo de</Label>

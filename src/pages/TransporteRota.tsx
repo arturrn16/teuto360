@@ -79,13 +79,18 @@ const TransporteRota = () => {
   // Opções dinâmicas de turno com base na cidade
   const turnoOptions = cidade === "Anápolis" 
     ? ["Administrativo", "1° Turno", "2° Turno", "3° Turno"]
-    : ["Gyn Adm 1", "Gyn Adm 2", "Gyn 1° Turno", "Gyn 2° Turno"];
+    : ["Adm Gyn 1", "Adm Gyn 2", "Gyn 1° Turno", "Gyn 2° Turno"];
     
   // Opções dinâmicas de rota com base na cidade e turno
   const getRotaOptions = () => {
     if (!turno) return [];
     
-    // Novas regras para rotas baseadas no turno
+    // Rotas para Goiânia são os próprios turnos
+    if (cidade === "Goiânia") {
+      return [turno]; // A rota para Goiânia é o próprio turno selecionado
+    }
+    
+    // Rotas para Anápolis
     if (cidade === "Anápolis") {
       if (turno === "1° Turno") {
         return Array.from({ length: 15 }, (_, i) => `P-${String(i + 1).padStart(2, '0')}`);
@@ -96,9 +101,6 @@ const TransporteRota = () => {
       } else if (turno === "Administrativo") {
         return Array.from({ length: 8 }, (_, i) => `ADM-${String(i + 1).padStart(2, '0')}`);
       }
-    } else if (cidade === "Goiânia") {
-      // Para turnos de Goiânia, use o próprio nome do turno como rota
-      return [turno];
     }
     
     return [];
@@ -112,8 +114,6 @@ const TransporteRota = () => {
   };
   
   const onSubmit = async (data: FormValues) => {
-    console.log("Form submitted with data:", data);
-    
     if (!user) {
       toast({
         variant: "destructive",
@@ -126,8 +126,7 @@ const TransporteRota = () => {
     setIsSubmitting(true);
     
     try {
-      // Certifique-se de que todos os dados necessários estão presentes
-      const submissionData = {
+      const { error } = await supabase.from("solicitacoes_transporte_rota").insert({
         solicitante_id: user.id,
         matricula: data.matricula,
         colaborador_nome: data.colaboradorNome,
@@ -137,27 +136,17 @@ const TransporteRota = () => {
         periodo_inicio: formatDate(data.periodoInicio),
         periodo_fim: formatDate(data.periodoFim),
         motivo: data.motivo,
-        status: 'pendente'
-      };
-      
-      console.log("Sending data to Supabase:", submissionData);
-      
-      const { data: insertedData, error } = await supabase
-        .from("solicitacoes_transporte_rota")
-        .insert(submissionData)
-        .select();
+      });
       
       if (error) {
         console.error("Erro ao enviar solicitação:", error);
         toast({
           variant: "destructive",
           title: "Erro",
-          description: `Erro ao enviar solicitação: ${error.message}`
+          description: "Erro ao enviar solicitação"
         });
         return;
       }
-      
-      console.log("Supabase response:", insertedData);
       
       toast({
         title: "Sucesso",
