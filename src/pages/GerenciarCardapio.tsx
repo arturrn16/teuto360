@@ -1,6 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { 
   Tabs, 
   TabsContent, 
@@ -14,6 +15,13 @@ import {
   CardHeader, 
   CardTitle 
 } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { 
   Form, 
   FormField, 
@@ -58,6 +66,7 @@ const GerenciarCardapio = () => {
   const [activeTab, setActiveTab] = useState<DiaSemana>("segunda");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const isMobile = useIsMobile();
 
   const form = useForm<CardapioFormValues>({
     defaultValues: {
@@ -94,7 +103,7 @@ const GerenciarCardapio = () => {
         // Initialize with empty data first
         diasSemanaOrdem.forEach(dia => {
           map.set(dia, {
-            diasemana: dia, // Changed from diaSemana to diasemana
+            diasemana: dia,
             itens: {
               pratosPrincipais: [],
               guarnicoes: [],
@@ -106,7 +115,7 @@ const GerenciarCardapio = () => {
         
         // Override with actual data from DB
         data.forEach(item => {
-          map.set(item.diasemana, item); // Changed from diaSemana to diasemana
+          map.set(item.diasemana, item);
         });
         
         setCardapios(map);
@@ -217,7 +226,7 @@ const GerenciarCardapio = () => {
       const map = new Map<string, Cardapio>(cardapios);
       
       data.forEach(item => {
-        map.set(item.diasemana, item); // Changed from diaSemana to diasemana
+        map.set(item.diasemana, item);
       });
       
       setCardapios(map);
@@ -240,6 +249,33 @@ const GerenciarCardapio = () => {
       setLoading(false);
     }
   };
+
+  const renderMobileSelector = () => (
+    <div className="mb-4">
+      <Select value={activeTab} onValueChange={onTabChange}>
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder="Selecione o dia" />
+        </SelectTrigger>
+        <SelectContent>
+          {diasSemanaOrdem.map(dia => (
+            <SelectItem key={dia} value={dia}>
+              {diasSemanaLabels[dia]}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+
+  const renderDesktopTabs = () => (
+    <TabsList className="w-full grid grid-cols-7">
+      {diasSemanaOrdem.map((dia) => (
+        <TabsTrigger key={dia} value={dia}>
+          {diasSemanaLabels[dia]}
+        </TabsTrigger>
+      ))}
+    </TabsList>
+  );
 
   if (loading) {
     return (
@@ -279,13 +315,10 @@ const GerenciarCardapio = () => {
         </CardHeader>
         <CardContent>
           <Tabs value={activeTab} onValueChange={onTabChange} className="w-full">
-            <TabsList className="w-full grid grid-cols-7">
-              {diasSemanaOrdem.map((dia) => (
-                <TabsTrigger key={dia} value={dia}>
-                  {diasSemanaLabels[dia]}
-                </TabsTrigger>
-              ))}
-            </TabsList>
+            {isMobile 
+              ? renderMobileSelector() 
+              : renderDesktopTabs()
+            }
             
             {diasSemanaOrdem.map((dia) => (
               <TabsContent key={dia} value={dia}>

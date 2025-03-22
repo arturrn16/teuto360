@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { getCardapioSemana } from "@/services/cardapioService";
 import { Cardapio, diasSemanaLabels, diasSemanaOrdem } from "@/models/cardapio";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Card, 
@@ -19,6 +20,13 @@ import {
   TableHeader, 
   TableRow 
 } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Utensils, Carrot, Beef, Apple } from "lucide-react";
 
 const CardapioSemana = () => {
@@ -26,6 +34,7 @@ const CardapioSemana = () => {
   const [cardapios, setCardapios] = useState<Cardapio[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<string>("segunda");
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const carregarCardapios = async () => {
@@ -39,7 +48,7 @@ const CardapioSemana = () => {
         // Initialize with empty data
         diasSemanaOrdem.forEach(dia => {
           cardapioMap.set(dia, {
-            diasemana: dia, // Changed from diaSemana to diasemana
+            diasemana: dia,
             itens: {
               pratosPrincipais: [],
               guarnicoes: [],
@@ -51,7 +60,7 @@ const CardapioSemana = () => {
         
         // Override with actual data
         data.forEach(item => {
-          cardapioMap.set(item.diasemana, item); // Changed from diaSemana to diasemana
+          cardapioMap.set(item.diasemana, item);
         });
         
         // Convert map back to array in the right order
@@ -137,6 +146,33 @@ const CardapioSemana = () => {
     );
   };
 
+  const renderMobileSelector = () => (
+    <div className="mb-4">
+      <Select value={activeTab} onValueChange={setActiveTab}>
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder="Selecione o dia" />
+        </SelectTrigger>
+        <SelectContent>
+          {diasSemanaOrdem.map(dia => (
+            <SelectItem key={dia} value={dia}>
+              {diasSemanaLabels[dia]}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+
+  const renderDesktopTabs = () => (
+    <TabsList className="w-full grid grid-cols-7">
+      {diasSemanaOrdem.map((dia) => (
+        <TabsTrigger key={dia} value={dia}>
+          {diasSemanaLabels[dia]}
+        </TabsTrigger>
+      ))}
+    </TabsList>
+  );
+
   if (loading) {
     return (
       <div className="p-6">
@@ -162,19 +198,16 @@ const CardapioSemana = () => {
         </CardHeader>
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="w-full grid grid-cols-7">
-              {diasSemanaOrdem.map((dia) => (
-                <TabsTrigger key={dia} value={dia}>
-                  {diasSemanaLabels[dia]}
-                </TabsTrigger>
-              ))}
-            </TabsList>
+            {isMobile 
+              ? renderMobileSelector() 
+              : renderDesktopTabs()
+            }
             
             {cardapios.map((cardapio) => (
-              <TabsContent key={cardapio.diasemana} value={cardapio.diasemana}> {/* Changed from diaSemana to diasemana */}
+              <TabsContent key={cardapio.diasemana} value={cardapio.diasemana}>
                 <Card>
                   <CardHeader>
-                    <CardTitle>{diasSemanaLabels[cardapio.diasemana]}</CardTitle> {/* Changed from diaSemana to diasemana */}
+                    <CardTitle>{diasSemanaLabels[cardapio.diasemana]}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     {renderCardapioContent(cardapio)}

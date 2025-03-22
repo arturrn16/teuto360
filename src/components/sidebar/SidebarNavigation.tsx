@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { ChevronDown, ChevronRight } from "lucide-react";
@@ -26,8 +25,10 @@ export const SidebarNavigation = ({ items, userType, admin = false }: SidebarNav
 
   // Filter links based on user type
   const filteredLinks = items.filter(link => {
-    // Admin should only see admin-specific cards
-    if (admin) return link.name === "Administração" || link.name === "Gerenciar Comunicados";
+    // Admin should see admin-specific pages
+    if (admin) {
+      return link.allowedTypes.includes('admin') || link.name === "Dashboard";
+    }
     
     // Otherwise, check if user type is in the allowed types
     return link.allowedTypes.includes(userType);
