@@ -118,6 +118,17 @@
     min-height: 44px;
     min-width: 44px;
   }
+  
+  /* Aumenta a área de toque para o botão de menu */
+  .menu-button-mobile {
+    min-height: 48px;
+    min-width: 100px;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 8px;
+  }
 }
 
 /* Melhorias para imagens responsivas */

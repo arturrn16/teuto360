@@ -3,7 +3,7 @@ import { useAuth } from "@/context/AuthContext";
 import { Outlet } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "./ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
-import { Menu } from "lucide-react";
+import { AlignLeft } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useEffect, useState } from "react";
 
@@ -42,8 +42,9 @@ export const Layout = () => {
           <main className="flex-1 px-2 sm:px-4 py-4 sm:py-8 animate-fade-in w-full max-w-full overflow-x-hidden">
             {isMobile && (
               <div className={`sticky top-0 z-10 mb-4 ${isScrolled ? "bg-white/90 backdrop-blur-sm shadow-sm" : ""} transition-all duration-200 py-2`}>
-                <SidebarTrigger>
-                  <Menu className="h-5 w-5 text-blue-500" />
+                <SidebarTrigger className="flex items-center gap-2 px-3 py-2 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200">
+                  <AlignLeft className="h-5 w-5 text-blue-500" />
+                  <span className="text-blue-500 font-medium">Menu</span>
                 </SidebarTrigger>
               </div>
             )}
