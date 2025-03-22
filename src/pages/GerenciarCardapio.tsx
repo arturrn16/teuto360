@@ -2,7 +2,8 @@
 import { useState, useEffect } from "react";
 import { 
   queryCustomTable, 
-  updateCustomTable 
+  updateCustomTable,
+  supabase
 } from "@/integrations/supabase/client";
 import { 
   Card, 
@@ -11,17 +12,17 @@ import {
   CardTitle, 
   CardFooter 
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { 
-  Button, 
-  Input, 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue,
-  Textarea,
-  toast
-} from "@/components/ui";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
+import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Utensils, PlusCircle, Edit, Trash2 } from "lucide-react";
 
@@ -82,7 +83,7 @@ const GerenciarCardapio = () => {
     try {
       // For new items
       if (!editingId) {
-        const { error } = await (supabase as any)
+        const { error } = await supabase
           .from("cardapio_semana")
           .insert([formData]);
           
@@ -122,7 +123,7 @@ const GerenciarCardapio = () => {
   const handleDelete = async (id: number) => {
     if (window.confirm("Tem certeza que deseja excluir este item do cardápio?")) {
       try {
-        const { error } = await (supabase as any)
+        const { error } = await supabase
           .from("cardapio_semana")
           .delete()
           .eq("id", id);
@@ -187,15 +188,18 @@ const GerenciarCardapio = () => {
               
               <div>
                 <label className="block text-sm font-medium mb-1">Tipo</label>
-                <select
+                <Select
                   value={formData.tipo}
-                  onChange={(e) => setFormData({...formData, tipo: e.target.value})}
-                  className="w-full border rounded p-2"
-                  required
+                  onValueChange={(value) => setFormData({...formData, tipo: value})}
                 >
-                  <option value="Cardápio do Dia">Cardápio do Dia</option>
-                  <option value="Cardápio de Fim de Semana">Cardápio de Fim de Semana</option>
-                </select>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Selecione o tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Cardápio do Dia">Cardápio do Dia</SelectItem>
+                    <SelectItem value="Cardápio de Fim de Semana">Cardápio de Fim de Semana</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             
