@@ -8,11 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Car, Phone } from "lucide-react";
+import { Car, Phone, Clock } from "lucide-react";
 
 interface OfertaCarona {
   id: number;
   nome: string;
+  turno: string; // New field
   origem: string;
   whatsapp: string;
   setor: string;
@@ -27,6 +28,7 @@ const OfertaCaronas = () => {
   const [ofertas, setOfertas] = useState<OfertaCarona[]>([]);
   const [form, setForm] = useState({
     nome: "",
+    turno: "", // New field
     origem: "",
     whatsapp: "",
     setor: "",
@@ -106,6 +108,7 @@ const OfertaCaronas = () => {
       // Validate form
       if (
         !form.nome ||
+        !form.turno || // Validate new field
         !form.origem ||
         !form.whatsapp ||
         !form.setor ||
@@ -119,6 +122,7 @@ const OfertaCaronas = () => {
       const { error } = await supabase.from("ofertas_caronas").insert({
         usuario_id: user.id,
         nome: form.nome,
+        turno: form.turno, // Include new field
         origem: form.origem,
         whatsapp: form.whatsapp,
         setor: form.setor,
@@ -133,6 +137,7 @@ const OfertaCaronas = () => {
       // Reset form
       setForm({
         nome: "",
+        turno: "", // Reset new field
         origem: "",
         whatsapp: "",
         setor: "",
@@ -173,6 +178,16 @@ const OfertaCaronas = () => {
                     value={form.nome}
                     onChange={handleChange}
                     placeholder="Seu nome"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="turno">Turno</Label>
+                  <Input
+                    id="turno"
+                    name="turno"
+                    value={form.turno}
+                    onChange={handleChange}
+                    placeholder="Seu turno (ex: Manhã, Tarde, Noite)"
                   />
                 </div>
                 <div className="space-y-2">
@@ -249,6 +264,11 @@ const OfertaCaronas = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
+                <div className="flex items-center">
+                  <Clock className="h-4 w-4 mr-2" />
+                  <span className="font-medium">Turno:</span>{" "}
+                  <span className="ml-1">{oferta.turno || "Não informado"}</span>
+                </div>
                 <div>
                   <span className="font-medium">Saindo de:</span> {oferta.origem}
                 </div>
