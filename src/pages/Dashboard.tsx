@@ -1,16 +1,14 @@
-
 import { useAuth } from "@/context/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui-components/Card";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
-import { Clock, FileText, Route, Map, Utensils, Shield, Home, UserCheck, Phone, Star, MapPin, ClipboardCheck, Replace, Car } from "lucide-react";
+import { Clock, FileText, Route, Map, Utensils, Shield, Home, UserCheck, Phone, Star, MapPin, ClipboardCheck, Replace, Car, CalendarDays } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const Dashboard = () => {
   const { user } = useAuth();
   const [currentTime, setCurrentTime] = useState(new Date());
 
-  // Update the clock every second
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
@@ -18,9 +16,7 @@ const Dashboard = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // Dashboard cards based on user type
   const cards = [
-    // Common user cards (now "selecao")
     {
       title: "Transporte Rota",
       description: "Solicite transporte para rotas regulares",
@@ -39,7 +35,6 @@ const Dashboard = () => {
       color: "from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20",
       textColor: "text-indigo-600 dark:text-indigo-400"
     },
-    // "Uso de Rota" card for comum users
     {
       title: "Uso de Rota",
       description: "Solicite transporte para rotas regulares",
@@ -49,7 +44,6 @@ const Dashboard = () => {
       color: "from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20",
       textColor: "text-blue-600 dark:text-blue-400"
     },
-    // Shared cards
     {
       title: "Minhas Solicitações",
       description: "Visualize todas as suas solicitações",
@@ -59,7 +53,6 @@ const Dashboard = () => {
       color: "from-violet-50 to-violet-100 dark:from-violet-900/20 dark:to-violet-800/20",
       textColor: "text-violet-600 dark:text-violet-400"
     },
-    // Meal user cards
     {
       title: "Solicitar Refeição",
       description: "Solicite refeições para colaboradores",
@@ -69,7 +62,6 @@ const Dashboard = () => {
       color: "from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20",
       textColor: "text-emerald-600 dark:text-emerald-400"
     },
-    // Admin cards
     {
       title: "Administração",
       description: "Gerencie todas as solicitações",
@@ -79,7 +71,6 @@ const Dashboard = () => {
       color: "from-rose-50 to-rose-100 dark:from-rose-900/20 dark:to-rose-800/20",
       textColor: "text-rose-600 dark:text-rose-400"
     },
-    // New card for announcements
     {
       title: "Comunicados",
       description: "Visualize os comunicados importantes",
@@ -89,7 +80,6 @@ const Dashboard = () => {
       color: "from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20",
       textColor: "text-amber-600 dark:text-amber-400"
     },
-    // New admin card for managing announcements
     {
       title: "Gerenciar Comunicados",
       description: "Publique e gerencie comunicados para colaboradores",
@@ -99,7 +89,6 @@ const Dashboard = () => {
       color: "from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20",
       textColor: "text-orange-600 dark:text-orange-400"
     },
-    // New cards for colaborador and comum
     {
       title: "Adesão/Cancelamento de Rota",
       description: "Solicite adesão ou cancelamento do transporte fretado",
@@ -163,7 +152,6 @@ const Dashboard = () => {
       color: "from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20",
       textColor: "text-red-600 dark:text-red-400"
     },
-    // New card for ride sharing
     {
       title: "Oferta de Caronas",
       description: "Compartilhe ou encontre caronas disponíveis",
@@ -173,16 +161,22 @@ const Dashboard = () => {
       color: "from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20",
       textColor: "text-purple-600 dark:text-purple-400"
     },
+    {
+      title: "Cardápio da Semana",
+      description: "Confira o cardápio do refeitório para a semana",
+      icon: <CalendarDays className="h-8 w-8 text-green-500" />,
+      to: "/cardapio-semana",
+      allowedTypes: ["selecao", "refeicao", "colaborador", "comum"],
+      color: "from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20",
+      textColor: "text-green-600 dark:text-green-400"
+    },
   ];
 
-  // Filter cards based on user type
   const filteredCards = cards.filter(card => {
     if (!user) return false;
     
-    // Admin should only see admin-specific cards
     if (user.admin) return card.title === "Administração" || card.title === "Gerenciar Comunicados";
     
-    // Otherwise, check if user type is in the allowed types
     return card.allowedTypes.includes(user.tipo_usuario);
   });
 
@@ -216,7 +210,6 @@ const Dashboard = () => {
           </Link>
         ))}
 
-        {/* Current time card - visible to all users */}
         {!user?.admin && (
           <Card glass={true} hoverEffect={true} className="overflow-hidden h-full bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 text-amber-600 dark:text-amber-400">

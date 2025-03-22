@@ -1,10 +1,15 @@
-
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { getCardapioSemana } from "@/services/cardapioService";
 import { Cardapio, diasSemanaLabels, diasSemanaOrdem } from "@/models/cardapio";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { 
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { 
   Card, 
   CardContent, 
@@ -42,10 +47,8 @@ const CardapioSemana = () => {
         setLoading(true);
         const data = await getCardapioSemana();
         
-        // Ensure we have an entry for each day of the week
         const cardapioMap = new Map<string, Cardapio>();
         
-        // Initialize with empty data
         diasSemanaOrdem.forEach(dia => {
           cardapioMap.set(dia, {
             diasemana: dia,
@@ -58,18 +61,14 @@ const CardapioSemana = () => {
           });
         });
         
-        // Override with actual data
         data.forEach(item => {
           cardapioMap.set(item.diasemana, item);
         });
         
-        // Convert map back to array in the right order
         const orderedCardapios = diasSemanaOrdem.map(dia => cardapioMap.get(dia)!);
         setCardapios(orderedCardapios);
         
-        // Set active tab to current day of week
         const hoje = new Date().getDay();
-        // Convert from JS day (0=Sunday) to our format (0=Monday)
         const diaHoje = hoje === 0 ? 'domingo' : diasSemanaOrdem[hoje - 1];
         setActiveTab(diaHoje);
       } catch (error) {
@@ -146,31 +145,44 @@ const CardapioSemana = () => {
     );
   };
 
-  const renderMobileSelector = () => (
-    <div className="mb-4">
-      <Select value={activeTab} onValueChange={setActiveTab}>
-        <SelectTrigger className="w-full">
-          <SelectValue placeholder="Selecione o dia" />
-        </SelectTrigger>
-        <SelectContent>
-          {diasSemanaOrdem.map(dia => (
-            <SelectItem key={dia} value={dia}>
-              {diasSemanaLabels[dia]}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
+  const renderMobileView = () => (
+    <Accordion type="single" collapsible value={activeTab} onValueChange={setActiveTab} className="w-full">
+      {cardapios.map((cardapio) => (
+        <AccordionItem key={cardapio.diasemana} value={cardapio.diasemana}>
+          <AccordionTrigger className="px-4 py-3">
+            {diasSemanaLabels[cardapio.diasemana]}
+          </AccordionTrigger>
+          <AccordionContent className="px-2">
+            {renderCardapioContent(cardapio)}
+          </AccordionContent>
+        </AccordionItem>
+      ))}
+    </Accordion>
   );
 
-  const renderDesktopTabs = () => (
-    <TabsList className="w-full grid grid-cols-7">
-      {diasSemanaOrdem.map((dia) => (
-        <TabsTrigger key={dia} value={dia}>
-          {diasSemanaLabels[dia]}
-        </TabsTrigger>
+  const renderDesktopView = () => (
+    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <TabsList className="w-full grid grid-cols-7">
+        {diasSemanaOrdem.map((dia) => (
+          <TabsTrigger key={dia} value={dia}>
+            {diasSemanaLabels[dia]}
+          </TabsTrigger>
+        ))}
+      </TabsList>
+      
+      {cardapios.map((cardapio) => (
+        <TabsContent key={cardapio.diasemana} value={cardapio.diasemana}>
+          <Card>
+            <CardHeader>
+              <CardTitle>{diasSemanaLabels[cardapio.diasemana]}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {renderCardapioContent(cardapio)}
+            </CardContent>
+          </Card>
+        </TabsContent>
       ))}
-    </TabsList>
+    </Tabs>
   );
 
   if (loading) {
@@ -197,25 +209,7 @@ const CardapioSemana = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            {isMobile 
-              ? renderMobileSelector() 
-              : renderDesktopTabs()
-            }
-            
-            {cardapios.map((cardapio) => (
-              <TabsContent key={cardapio.diasemana} value={cardapio.diasemana}>
-                <Card>
-                  <CardHeader>
-                    <CardTitle>{diasSemanaLabels[cardapio.diasemana]}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {renderCardapioContent(cardapio)}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            ))}
-          </Tabs>
+          {isMobile ? renderMobileView() : renderDesktopView()}
         </CardContent>
       </Card>
     </div>
