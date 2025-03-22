@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { 
@@ -750,4 +751,152 @@ const MinhasSolicitacoes = () => {
             <Link to="/transporte-rota">Transporte Rota</Link>
           </Button>
           <Button asChild variant="outline">
-            <Link
+            <Link to="/transporte-12x36">Transporte 12x36</Link>
+          </Button>
+        </div>
+      );
+    }
+    else {
+      return (
+        <div className="mt-4 space-x-2">
+          <Button asChild variant="outline">
+            <Link to="/abono-ponto">Abono de Ponto</Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link to="/alteracao-endereco">Alteração de Endereço</Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link to="/mudanca-turno">Mudança de Turno</Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link to="/adesao-cancelamento">Adesão/Cancelamento</Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link to="/transporte-rota">Uso de Rota</Link>
+          </Button>
+        </div>
+      );
+    }
+  };
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-6">Minhas Solicitações</h1>
+      
+      <div className="flex flex-col md:flex-row justify-between mb-6 gap-4">
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex-1">
+            <Select value={filtroStatus} onValueChange={setFiltroStatus}>
+              <SelectTrigger className="w-full md:w-[180px]">
+                <SelectValue placeholder="Filtrar por status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todas">Todas</SelectItem>
+                <SelectItem value="pendente">Pendentes</SelectItem>
+                <SelectItem value="aprovada">Aprovadas</SelectItem>
+                <SelectItem value="rejeitada">Rejeitadas</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="flex-1">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="w-full md:w-[180px]">
+                  <Filter className="mr-2 h-4 w-4" />
+                  <span>{filtroTipo === "todos" ? "Filtrar por tipo" : filtroTipo}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => setFiltroTipo("todos")}>
+                  Todos os tipos
+                </DropdownMenuItem>
+                {tiposSolicitacao.map((tipo) => (
+                  <DropdownMenuItem key={tipo} onClick={() => setFiltroTipo(tipo)}>
+                    {tipo}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredSolicitacoes.length === 0 ? (
+          <div className="col-span-3 text-center py-12 text-gray-500">
+            Nenhuma solicitação encontrada com os filtros selecionados.
+          </div>
+        ) : (
+          filteredSolicitacoes.map((solicitacao) => (
+            <Card key={solicitacao.id} className="shadow-sm hover:shadow-md transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h3 className="font-semibold text-lg">{solicitacao.tipo}</h3>
+                    <p className="text-sm text-gray-500">
+                      {formatDateTime(solicitacao.created_at)}
+                    </p>
+                  </div>
+                  <Badge 
+                    variant={
+                      solicitacao.status === 'aprovada' 
+                        ? 'success' 
+                        : solicitacao.status === 'rejeitada' 
+                          ? 'destructive' 
+                          : 'secondary'
+                    }
+                    className="rounded-full px-3 py-1"
+                  >
+                    {solicitacao.status === 'aprovada' 
+                      ? 'Aprovado' 
+                      : solicitacao.status === 'rejeitada' 
+                        ? 'Rejeitado' 
+                        : 'Pendente'}
+                  </Badge>
+                </div>
+                
+                <p className="text-sm mb-6">
+                  {getSolicitacaoDescricao(solicitacao)}
+                </p>
+                
+                <div className="flex justify-between">
+                  <Button
+                    variant="outline"
+                    className="text-xs flex gap-1 items-center"
+                    onClick={() => abrirDetalhes(solicitacao)}
+                  >
+                    <FileText className="h-3 w-3" />
+                    Detalhes
+                  </Button>
+                  
+                  {solicitacao.status === 'aprovada' && 
+                    (isRefeicaoSolicitacao(solicitacao) || 
+                    (isTransporteSolicitacao(solicitacao) && 
+                      (solicitacao.tipo === 'Uso de Rota' || 
+                        solicitacao.tipo === 'Transporte Rota' || 
+                        solicitacao.tipo === 'Transporte 12x36'))) && (
+                    <Button 
+                      variant="outline" 
+                      onClick={() => handleDownloadTicket(solicitacao)}
+                      className="text-xs flex gap-1 items-center"
+                    >
+                      <Download className="h-3 w-3" />
+                      Ticket
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
+      
+      {renderDetalhes()}
+      
+      {showButtons()}
+    </div>
+  );
+};
+
+export default MinhasSolicitacoes;
