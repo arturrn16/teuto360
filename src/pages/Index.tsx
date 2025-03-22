@@ -18,7 +18,7 @@ const Index = () => {
     // Se autenticado, redirecionar para o dashboard ou change-password (se for primeiro login)
     if (!isLoading) {
       if (isAuthenticated) {
-        if (user?.first_login) {
+        if (user?.first_login === true) {
           console.log("Index: First login detected, redirecting to change password");
           navigate("/change-password");
         } else {

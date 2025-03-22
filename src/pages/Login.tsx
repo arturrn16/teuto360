@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { useAuth } from "@/context/AuthContext";
@@ -12,7 +13,7 @@ const Login = () => {
     console.log("Login page: Auth state check", { isAuthenticated, user, firstLogin: user?.first_login });
     
     if (isAuthenticated) {
-      if (user && user.first_login) {
+      if (user && user.first_login === true) {
         console.log("Redirecting to change password page");
         navigate("/change-password");
       } else {

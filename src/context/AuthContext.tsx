@@ -130,7 +130,7 @@ export const ProtectedRoute: React.FC<{
       navigate("/login");
     } else if (!isLoading && isAuthenticated && user) {
       // Check if it's first login and redirect to change password
-      if (user.first_login) {
+      if (user.first_login === true) {
         console.log("ProtectedRoute: First login detected, redirecting to change password");
         navigate("/change-password");
         return;

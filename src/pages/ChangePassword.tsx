@@ -16,7 +16,7 @@ const ChangePassword = () => {
     if (!isAuthenticated) {
       console.log("Not authenticated, redirecting to login");
       navigate("/login");
-    } else if (user && !user.first_login) {
+    } else if (user && user.first_login !== true) {
       // If not first login, redirect to dashboard
       console.log("Not first login, redirecting to dashboard");
       navigate("/dashboard");
