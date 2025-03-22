@@ -6,6 +6,7 @@ import { Cardapio, diasSemanaLabels, diasSemanaOrdem } from "@/models/cardapio";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Calendar } from "lucide-react";
 import { Card } from "@/components/ui-components/Card";
+import { motion } from "framer-motion";
 
 const CardapioSemana = () => {
   const { toast } = useToast();
@@ -71,25 +72,51 @@ const CardapioSemana = () => {
     );
   };
 
-  const renderCardapioCard = (cardapio: Cardapio) => {
+  const renderCardapioCard = (cardapio: Cardapio, index: number) => {
     const { itens } = cardapio;
     
+    const container = {
+      hidden: { opacity: 0 },
+      show: {
+        opacity: 1,
+        transition: {
+          staggerChildren: 0.1,
+          delayChildren: 0.1 * index,
+        }
+      }
+    };
+    
+    const item = {
+      hidden: { opacity: 0, y: 20 },
+      show: { opacity: 1, y: 0, transition: { duration: 0.3 } }
+    };
+    
     return (
-      <Card key={cardapio.diasemana} className="mb-4 p-6 max-w-full">
-        <div className="flex items-center gap-2 mb-3">
-          <Calendar className="h-6 w-6 text-slate-500" />
-          <h2 className="text-2xl font-bold">{diasSemanaLabels[cardapio.diasemana]}</h2>
-        </div>
-        
-        <div className="text-left">
-          <p className="text-slate-500 mb-4">Cardápio do Dia</p>
-          
-          {renderCardapioItem("Prato Principal", itens.pratosPrincipais)}
-          {renderCardapioItem("Acompanhamento", itens.guarnicoes)}
-          {renderCardapioItem("Salada", itens.saladas)}
-          {renderCardapioItem("Sobremesa", itens.sobremesas)}
-        </div>
-      </Card>
+      <motion.div 
+        key={cardapio.diasemana} 
+        variants={container}
+        initial="hidden"
+        animate="show"
+        className="mb-4"
+      >
+        <motion.div variants={item}>
+          <Card className="p-6 max-w-full shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex items-center gap-2 mb-3">
+              <Calendar className="h-6 w-6 text-blue-500" />
+              <h2 className="text-2xl font-bold text-blue-700">{diasSemanaLabels[cardapio.diasemana]}</h2>
+            </div>
+            
+            <div className="text-left border-t pt-4 mt-2">
+              <p className="text-slate-500 mb-4 font-medium">Cardápio do Dia</p>
+              
+              {renderCardapioItem("Prato Principal", itens.pratosPrincipais)}
+              {renderCardapioItem("Acompanhamento", itens.guarnicoes)}
+              {renderCardapioItem("Salada", itens.saladas)}
+              {renderCardapioItem("Sobremesa", itens.sobremesas)}
+            </div>
+          </Card>
+        </motion.div>
+      </motion.div>
     );
   };
 
@@ -108,10 +135,10 @@ const CardapioSemana = () => {
   return (
     <div className="p-4 md:p-6 bg-slate-50 min-h-screen">
       <div className="max-w-screen-md mx-auto">
-        <h1 className="text-3xl font-bold mb-6">Cardápio da Semana</h1>
+        <h1 className="text-3xl font-bold mb-6 text-blue-800">Cardápio da Semana</h1>
         
         <div className="space-y-4">
-          {cardapios.map((cardapio) => renderCardapioCard(cardapio))}
+          {cardapios.map((cardapio, index) => renderCardapioCard(cardapio, index))}
         </div>
       </div>
     </div>

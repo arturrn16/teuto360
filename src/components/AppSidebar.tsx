@@ -5,7 +5,8 @@ import {
   Sidebar, 
   SidebarContent, 
   SidebarHeader, 
-  SidebarFooter 
+  SidebarFooter,
+  useSidebar
 } from "@/components/ui/sidebar";
 import { navItems, getUserRoleLabel } from "./sidebar/navigationConfig";
 import { UserProfileSection } from "./sidebar/UserProfileSection";
@@ -14,8 +15,17 @@ import { LogoutButton } from "./sidebar/LogoutButton";
 
 export const AppSidebar = () => {
   const { user, logout } = useAuth();
+  const { setOpenMobile, isMobile } = useSidebar();
   
   if (!user) return null;
+
+  // Close sidebar on mobile when clicking logout
+  const handleLogout = () => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+    logout();
+  };
 
   return (
     <Sidebar>
@@ -38,7 +48,7 @@ export const AppSidebar = () => {
       </SidebarContent>
       
       <SidebarFooter className="p-4 border-t border-gray-200 bg-white text-gray-700">
-        <LogoutButton onLogout={logout} />
+        <LogoutButton onLogout={handleLogout} />
       </SidebarFooter>
     </Sidebar>
   );

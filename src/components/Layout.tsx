@@ -1,16 +1,18 @@
 
 import { useAuth } from "@/context/AuthContext";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "./ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { AlignLeft } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
 
 export const Layout = () => {
   const { isAuthenticated, isLoading } = useAuth();
   const isMobile = useIsMobile();
   const [isScrolled, setIsScrolled] = useState(false);
+  const location = useLocation();
 
   // Detectar scroll para ajustar estilos
   useEffect(() => {
@@ -21,6 +23,11 @@ export const Layout = () => {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Scroll to top when route changes
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
 
   if (isLoading) {
     return (
@@ -41,14 +48,17 @@ export const Layout = () => {
           <AppSidebar />
           <main className="flex-1 px-0 sm:px-4 py-0 sm:py-8 animate-fade-in w-full max-w-full overflow-x-hidden">
             {isMobile && (
-              <div className={`sticky top-0 z-10 mb-0 ${isScrolled ? "bg-white/90 backdrop-blur-sm shadow-sm" : ""} transition-all duration-200 py-2 px-4`}>
+              <div className={cn(
+                "sticky top-0 z-10 mb-0 transition-all duration-200 py-2 px-4",
+                isScrolled ? "bg-white/90 backdrop-blur-sm shadow-sm" : ""
+              )}>
                 <SidebarTrigger className="flex items-center gap-2 py-2 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200">
                   <AlignLeft className="h-5 w-5 text-blue-500" />
                   <span className="text-blue-500 font-medium">Menu</span>
                 </SidebarTrigger>
               </div>
             )}
-            <div className="w-full">
+            <div className="w-full transition-all">
               <Outlet />
             </div>
           </main>

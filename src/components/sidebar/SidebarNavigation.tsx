@@ -1,8 +1,8 @@
 
 import { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { ChevronDown, ChevronRight } from "lucide-react";
-import { SidebarMenu, SidebarMenuSub } from "@/components/ui/sidebar";
+import { SidebarMenu, SidebarMenuSub, useSidebar } from "@/components/ui/sidebar";
 import { SidebarNavItem } from "./SidebarNavItem";
 import { NavItem, UserType } from "./navigationConfig";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -15,8 +15,10 @@ interface SidebarNavigationProps {
 
 export const SidebarNavigation = ({ items, userType, admin = false }: SidebarNavigationProps) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({});
   const isMobile = useIsMobile();
+  const { setOpenMobile } = useSidebar();
 
   // Verifica a rota atual e expande automaticamente o menu pai
   useEffect(() => {
@@ -49,6 +51,16 @@ export const SidebarNavigation = ({ items, userType, admin = false }: SidebarNav
     }));
   };
 
+  // Handle navigation and close sidebar on mobile
+  const handleNavigation = (href: string) => {
+    if (href === "#") return;
+    
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+    navigate(href);
+  };
+
   // Filter links based on user type
   const filteredLinks = items.filter(link => {
     // Admin should see admin-specific pages
@@ -78,7 +90,7 @@ export const SidebarNavigation = ({ items, userType, admin = false }: SidebarNav
           icon={item.icon}
           name={item.name}
           isActive={isActive || isChildActive}
-          onClick={hasChildren ? () => toggleSubmenu(item.name) : undefined}
+          onClick={hasChildren ? () => toggleSubmenu(item.name) : () => handleNavigation(item.href)}
           suffix={hasChildren ? 
             (isExpanded ? <ChevronDown className="h-4 w-4 transition-transform" /> : <ChevronRight className="h-4 w-4 transition-transform" />) 
             : undefined
@@ -96,6 +108,7 @@ export const SidebarNavigation = ({ items, userType, admin = false }: SidebarNav
                 icon={child.icon}
                 name={child.name}
                 isActive={location.pathname === child.href}
+                onClick={() => handleNavigation(child.href)}
                 className={isMobile ? 'py-2.5' : ''}
               />
             ))}

@@ -1,5 +1,4 @@
 
-import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
 
@@ -10,7 +9,7 @@ interface SidebarNavItemProps {
   isActive: boolean;
   onClick?: () => void;
   suffix?: React.ReactNode;
-  className?: string; // Add this property to the interface
+  className?: string;
 }
 
 export const SidebarNavItem = ({ 
@@ -33,31 +32,19 @@ export const SidebarNavItem = ({
   return (
     <SidebarMenuItem>
       <SidebarMenuButton 
-        asChild={!onClick} 
+        asChild={false} 
         isActive={isActive}
         onClick={onClick}
-        className={className} // Pass the className prop to SidebarMenuButton
+        className={className}
       >
-        {onClick ? (
-          <button 
-            className={cn(
-              "flex items-center w-full text-gray-700 hover:text-blue-500",
-              isActive && "text-blue-500 bg-blue-50"
-            )}
-          >
-            {content}
-          </button>
-        ) : (
-          <Link 
-            to={href} 
-            className={cn(
-              "flex items-center text-gray-700 hover:text-blue-500",
-              isActive && "text-blue-500 bg-blue-50"
-            )}
-          >
-            {content}
-          </Link>
-        )}
+        <button 
+          className={cn(
+            "flex items-center w-full text-gray-700 hover:text-blue-500",
+            isActive && "text-blue-500 bg-blue-50"
+          )}
+        >
+          {content}
+        </button>
       </SidebarMenuButton>
     </SidebarMenuItem>
   );
