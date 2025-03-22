@@ -12,6 +12,7 @@ export interface User {
   username: string;
   admin: boolean;
   tipo_usuario: 'admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum';
+  first_login: boolean;
   created_at?: string;
   updated_at?: string;
 }
@@ -62,6 +63,26 @@ export const storeUser = (user: User): void => {
   localStorage.setItem("hrUser", JSON.stringify(user));
   // Em uma implementação real, armazenariamos um JWT token
   localStorage.setItem("hrToken", "mock-jwt-token");
+};
+
+export const updateUserPassword = async (userId: number, newPassword: string): Promise<boolean> => {
+  try {
+    const { data, error } = await supabase.functions.invoke('change-password', {
+      body: { userId, newPassword }
+    });
+
+    if (error || data.error) {
+      console.error("Erro ao atualizar senha:", error || data.error);
+      toast.error("Erro ao atualizar senha");
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Erro ao atualizar senha:", error);
+    toast.error("Erro ao atualizar senha");
+    return false;
+  }
 };
 
 export const checkUserPermission = (
