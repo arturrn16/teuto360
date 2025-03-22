@@ -1,7 +1,7 @@
 
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
-import { Layout } from "@/components/Layout";
+import { Layout } from "@/components/Layout";  // Fix import - removed default
 import { ProtectedRoute } from "@/context/AuthContext";
 
 import Index from "@/pages/Index";
@@ -38,9 +38,7 @@ function App() {
           path="/dashboard"
           element={
             <ProtectedRoute allowedTypes={["admin", "selecao", "refeicao", "colaborador", "comum"]}>
-              <Layout>
-                <Dashboard />
-              </Layout>
+              <Layout />
             </ProtectedRoute>
           }
         />
@@ -48,9 +46,7 @@ function App() {
           path="/comunicados"
           element={
             <ProtectedRoute allowedTypes={["admin", "selecao", "refeicao", "colaborador", "comum"]}>
-              <Layout>
-                <Comunicados />
-              </Layout>
+              <Layout />
             </ProtectedRoute>
           }
         />
@@ -58,9 +54,7 @@ function App() {
           path="/gerenciar-comunicados"
           element={
             <ProtectedRoute allowedTypes={["admin"]}>
-              <Layout>
-                <GerenciarComunicados />
-              </Layout>
+              <Layout />
             </ProtectedRoute>
           }
         />
@@ -68,9 +62,7 @@ function App() {
           path="/abono-ponto"
           element={
             <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador", "comum"]}>
-              <Layout>
-                <AbonoPonto />
-              </Layout>
+              <Layout />
             </ProtectedRoute>
           }
         />
@@ -78,9 +70,7 @@ function App() {
           path="/adesao-cancelamento"
           element={
             <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador", "comum"]}>
-              <Layout>
-                <AdesaoCancelamento />
-              </Layout>
+              <Layout />
             </ProtectedRoute>
           }
         />
@@ -88,9 +78,7 @@ function App() {
           path="/alteracao-endereco"
           element={
             <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador", "comum"]}>
-              <Layout>
-                <AlteracaoEndereco />
-              </Layout>
+              <Layout />
             </ProtectedRoute>
           }
         />
@@ -98,9 +86,7 @@ function App() {
           path="/mudanca-turno"
           element={
             <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador", "comum"]}>
-              <Layout>
-                <MudancaTurno />
-              </Layout>
+              <Layout />
             </ProtectedRoute>
           }
         />
@@ -108,9 +94,7 @@ function App() {
           path="/refeicao"
           element={
             <ProtectedRoute allowedTypes={["admin", "selecao", "refeicao", "colaborador", "comum"]}>
-              <Layout>
-                <Refeicao />
-              </Layout>
+              <Layout />
             </ProtectedRoute>
           }
         />
@@ -118,9 +102,7 @@ function App() {
           path="/minhas-solicitacoes"
           element={
             <ProtectedRoute allowedTypes={["admin", "selecao", "refeicao", "colaborador", "comum"]}>
-              <Layout>
-                <MinhasSolicitacoes />
-              </Layout>
+              <Layout />
             </ProtectedRoute>
           }
         />
@@ -128,9 +110,7 @@ function App() {
           path="/admin"
           element={
             <ProtectedRoute allowedTypes={["admin"]}>
-              <Layout>
-                <Admin />
-              </Layout>
+              <Layout />
             </ProtectedRoute>
           }
         />
@@ -138,9 +118,7 @@ function App() {
           path="/avaliacao"
           element={
             <ProtectedRoute allowedTypes={["admin"]}>
-              <Layout>
-                <Avaliacao />
-              </Layout>
+              <Layout />
             </ProtectedRoute>
           }
         />
@@ -148,9 +126,7 @@ function App() {
           path="/mapa-rotas"
           element={
             <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador", "comum"]}>
-              <Layout>
-                <MapaRotas />
-              </Layout>
+              <Layout />
             </ProtectedRoute>
           }
         />
@@ -158,9 +134,7 @@ function App() {
           path="/oferta-caronas"
           element={
             <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador", "comum"]}>
-              <Layout>
-                <OfertaCaronas />
-              </Layout>
+              <Layout />
             </ProtectedRoute>
           }
         />
@@ -168,9 +142,7 @@ function App() {
           path="/plantao"
           element={
             <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador", "comum"]}>
-              <Layout>
-                <Plantao />
-              </Layout>
+              <Layout />
             </ProtectedRoute>
           }
         />
@@ -178,9 +150,7 @@ function App() {
           path="/transporte-rota"
           element={
             <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador", "comum"]}>
-              <Layout>
-                <TransporteRota />
-              </Layout>
+              <Layout />
             </ProtectedRoute>
           }
         />
@@ -188,9 +158,7 @@ function App() {
           path="/transporte-12x36"
           element={
             <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador", "comum"]}>
-              <Layout>
-                <Transporte12x36 />
-              </Layout>
+              <Layout />
             </ProtectedRoute>
           }
         />
@@ -200,9 +168,7 @@ function App() {
           path="/cardapio-semana"
           element={
             <ProtectedRoute allowedTypes={["comum"]}>
-              <Layout>
-                <CardapioSemana />
-              </Layout>
+              <Layout />
             </ProtectedRoute>
           }
         />
@@ -210,9 +176,7 @@ function App() {
           path="/gerenciar-cardapio"
           element={
             <ProtectedRoute allowedTypes={["admin"]}>
-              <Layout>
-                <GerenciarCardapio />
-              </Layout>
+              <Layout />
             </ProtectedRoute>
           }
         />
