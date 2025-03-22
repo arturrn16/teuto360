@@ -126,16 +126,27 @@ const TransporteRota = () => {
     setIsSubmitting(true);
     
     try {
-      const { error } = await supabase.from("solicitacoes_transporte_rota").insert({
+      console.log("Enviando dados:", {
         solicitante_id: user.id,
-        matricula: data.matricula,
-        colaborador_nome: data.colaboradorNome,
         cidade: data.cidade,
         turno: data.turno,
         rota: data.rota,
         periodo_inicio: formatDate(data.periodoInicio),
         periodo_fim: formatDate(data.periodoFim),
         motivo: data.motivo,
+        colaborador_nome: data.colaboradorNome,
+      });
+      
+      const { error } = await supabase.from("solicitacoes_transporte_rota").insert({
+        solicitante_id: user.id,
+        cidade: data.cidade,
+        turno: data.turno,
+        rota: data.rota,
+        periodo_inicio: formatDate(data.periodoInicio),
+        periodo_fim: formatDate(data.periodoFim),
+        motivo: data.motivo,
+        colaborador_nome: data.colaboradorNome,
+        // Não estamos enviando o campo matricula, pois ele não existe na tabela
       });
       
       if (error) {
@@ -143,7 +154,7 @@ const TransporteRota = () => {
         toast({
           variant: "destructive",
           title: "Erro",
-          description: "Erro ao enviar solicitação"
+          description: `Erro ao enviar solicitação: ${error.message}`
         });
         return;
       }
