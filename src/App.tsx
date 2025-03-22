@@ -1,7 +1,7 @@
 
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
-import Layout from "@/components/Layout";
+import { Layout } from "@/components/Layout";
 import { ProtectedRoute } from "@/context/AuthContext";
 
 import Index from "@/pages/Index";
@@ -37,7 +37,7 @@ function App() {
         <Route
           path="/dashboard"
           element={
-            <ProtectedRoute allowedTypes={["admin", "selecao", "refeicao", "colaborador"]}>
+            <ProtectedRoute allowedTypes={["admin", "selecao", "refeicao", "colaborador", "comum"]}>
               <Layout>
                 <Dashboard />
               </Layout>
@@ -47,7 +47,7 @@ function App() {
         <Route
           path="/comunicados"
           element={
-            <ProtectedRoute allowedTypes={["admin", "selecao", "refeicao", "colaborador"]}>
+            <ProtectedRoute allowedTypes={["admin", "selecao", "refeicao", "colaborador", "comum"]}>
               <Layout>
                 <Comunicados />
               </Layout>
@@ -67,7 +67,7 @@ function App() {
         <Route
           path="/abono-ponto"
           element={
-            <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador"]}>
+            <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador", "comum"]}>
               <Layout>
                 <AbonoPonto />
               </Layout>
@@ -77,7 +77,7 @@ function App() {
         <Route
           path="/adesao-cancelamento"
           element={
-            <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador"]}>
+            <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador", "comum"]}>
               <Layout>
                 <AdesaoCancelamento />
               </Layout>
@@ -87,7 +87,7 @@ function App() {
         <Route
           path="/alteracao-endereco"
           element={
-            <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador"]}>
+            <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador", "comum"]}>
               <Layout>
                 <AlteracaoEndereco />
               </Layout>
@@ -97,7 +97,7 @@ function App() {
         <Route
           path="/mudanca-turno"
           element={
-            <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador"]}>
+            <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador", "comum"]}>
               <Layout>
                 <MudancaTurno />
               </Layout>
@@ -107,7 +107,7 @@ function App() {
         <Route
           path="/refeicao"
           element={
-            <ProtectedRoute allowedTypes={["admin", "selecao", "refeicao", "colaborador"]}>
+            <ProtectedRoute allowedTypes={["admin", "selecao", "refeicao", "colaborador", "comum"]}>
               <Layout>
                 <Refeicao />
               </Layout>
@@ -117,7 +117,7 @@ function App() {
         <Route
           path="/minhas-solicitacoes"
           element={
-            <ProtectedRoute allowedTypes={["admin", "selecao", "refeicao", "colaborador"]}>
+            <ProtectedRoute allowedTypes={["admin", "selecao", "refeicao", "colaborador", "comum"]}>
               <Layout>
                 <MinhasSolicitacoes />
               </Layout>
@@ -147,7 +147,7 @@ function App() {
         <Route
           path="/mapa-rotas"
           element={
-            <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador"]}>
+            <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador", "comum"]}>
               <Layout>
                 <MapaRotas />
               </Layout>
@@ -157,7 +157,7 @@ function App() {
         <Route
           path="/oferta-caronas"
           element={
-            <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador"]}>
+            <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador", "comum"]}>
               <Layout>
                 <OfertaCaronas />
               </Layout>
@@ -167,7 +167,7 @@ function App() {
         <Route
           path="/plantao"
           element={
-            <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador"]}>
+            <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador", "comum"]}>
               <Layout>
                 <Plantao />
               </Layout>
@@ -177,7 +177,7 @@ function App() {
         <Route
           path="/transporte-rota"
           element={
-            <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador"]}>
+            <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador", "comum"]}>
               <Layout>
                 <TransporteRota />
               </Layout>
@@ -187,7 +187,7 @@ function App() {
         <Route
           path="/transporte-12x36"
           element={
-            <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador"]}>
+            <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador", "comum"]}>
               <Layout>
                 <Transporte12x36 />
               </Layout>
@@ -195,11 +195,11 @@ function App() {
           }
         />
         
-        {/* New Refeitório Routes */}
+        {/* Refeitório Routes */}
         <Route
           path="/cardapio-semana"
           element={
-            <ProtectedRoute allowedTypes={["admin", "selecao", "refeicao", "colaborador"]}>
+            <ProtectedRoute allowedTypes={["comum"]}>
               <Layout>
                 <CardapioSemana />
               </Layout>

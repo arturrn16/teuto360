@@ -45,3 +45,5 @@ export const Layout = () => {
     </SidebarProvider>
   );
 };
+
+export default Layout;
