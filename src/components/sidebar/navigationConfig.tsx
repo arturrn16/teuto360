@@ -1,7 +1,26 @@
 
 import { BarChart2, CalendarCheck, FileText, MessageSquare, Users, Bus, FileEdit, Calendar, CheckSquare, Home, Briefcase, MapPin, Map, CarFront, Utensils } from "lucide-react";
+import { ReactNode } from "react";
 
-export const navigationConfig = [
+// Define types for navigation
+export type UserType = 'admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum';
+
+export interface NavItem {
+  title: string;
+  href: string;
+  icon: ReactNode;
+  allowedTypes: ReadonlyArray<UserType>;
+  children?: NavItem[];
+  name?: string; // For backward compatibility
+}
+
+export interface NavSection {
+  title: string;
+  items: NavItem[];
+  name?: string; // For backward compatibility
+}
+
+export const navigationConfig: NavSection[] = [
   {
     title: "Principal",
     items: [
@@ -129,4 +148,24 @@ export const navigationConfig = [
       },
     ] as const,
   },
-] as const;
+];
+
+// Export navItems for compatibility with existing code
+export const navItems = navigationConfig;
+
+// Function to get the user role label for display
+export const getUserRoleLabel = (role: UserType): string => {
+  switch (role) {
+    case 'admin':
+      return 'Administrador';
+    case 'selecao':
+      return 'Seleção';
+    case 'refeicao':
+      return 'Refeição';
+    case 'colaborador':
+    case 'comum':
+      return 'Colaborador';
+    default:
+      return 'Usuário';
+  }
+};
