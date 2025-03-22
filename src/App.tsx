@@ -1,231 +1,193 @@
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider, ProtectedRoute } from "@/context/AuthContext";
+import { AuthProvider, ProtectedRoute } from "./context/AuthContext";
+import { Toaster } from "./components/ui/sonner";
+import { SidebarProvider } from "./components/ui/sidebar";
+import { ThemeProvider } from "./components/ThemeProvider";
 
-// Import layout
-import { Layout } from "@/components/Layout";
+// Layouts
+import Layout from "./components/Layout";
 
-// Import pages
+// Pages
 import Index from "./pages/Index";
 import Login from "./pages/Login";
+import ChangePassword from "./pages/ChangePassword";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
+import Comunicados from "./pages/Comunicados";
+import CardapioSemana from "./pages/CardapioSemana";
+import OfertaCaronas from "./pages/OfertaCaronas";
+import Avaliacao from "./pages/Avaliacao";
+import MapaRotas from "./pages/MapaRotas";
+import Plantao from "./pages/Plantao";
+// Admin pages
+import Admin from "./pages/Admin";
+import GerenciarComunicados from "./pages/GerenciarComunicados";
+import GerenciarCardapio from "./pages/GerenciarCardapio";
+// Formulários
+import AbonoPonto from "./pages/AbonoPonto";
+import AdesaoCancelamento from "./pages/AdesaoCancelamento";
+import AlteracaoEndereco from "./pages/AlteracaoEndereco";
+import MudancaTurno from "./pages/MudancaTurno";
 import TransporteRota from "./pages/TransporteRota";
 import Transporte12x36 from "./pages/Transporte12x36";
 import Refeicao from "./pages/Refeicao";
 import MinhasSolicitacoes from "./pages/MinhasSolicitacoes";
-import Admin from "./pages/Admin";
-import Comunicados from "./pages/Comunicados";
-import GerenciarComunicados from "./pages/GerenciarComunicados";
 
-// Import cafeteria pages
-import CardapioSemana from "./pages/CardapioSemana";
-import GerenciarCardapio from "./pages/GerenciarCardapio";
+import "./App.css";
 
-// Import new pages for collaborators
-import AdesaoCancelamento from "./pages/AdesaoCancelamento";
-import MudancaTurno from "./pages/MudancaTurno";
-import AlteracaoEndereco from "./pages/AlteracaoEndereco";
-import AbonoPonto from "./pages/AbonoPonto";
-import Avaliacao from "./pages/Avaliacao";
-import Plantao from "./pages/Plantao";
-import MapaRotas from "./pages/MapaRotas";
-import OfertaCaronas from "./pages/OfertaCaronas";
-
-// Create a client
-const queryClient = new QueryClient();
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
+function App() {
+  return (
+    <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
       <BrowserRouter>
         <AuthProvider>
-          <Routes>
-            <Route path="/" element={<Layout />}>
-              {/* Public routes */}
-              <Route index element={<Index />} />
+          <SidebarProvider>
+            <Routes>
+              <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
-              
-              {/* Protected routes */}
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute>
+              <Route path="/change-password" element={<ChangePassword />} />
+              <Route path="/dashboard" element={
+                <ProtectedRoute>
+                  <Layout>
                     <Dashboard />
-                  </ProtectedRoute>
-                }
-              />
+                  </Layout>
+                </ProtectedRoute>
+              } />
 
-              <Route
-                path="/transporte-rota"
-                element={
-                  <ProtectedRoute allowedTypes={["admin", "selecao", "comum"]}>
-                    <TransporteRota />
-                  </ProtectedRoute>
-                }
-              />
-
-              <Route
-                path="/transporte-12x36"
-                element={
-                  <ProtectedRoute allowedTypes={["admin", "selecao"]}>
-                    <Transporte12x36 />
-                  </ProtectedRoute>
-                }
-              />
-
-              <Route
-                path="/refeicao"
-                element={
-                  <ProtectedRoute allowedTypes={["admin", "refeicao"]}>
-                    <Refeicao />
-                  </ProtectedRoute>
-                }
-              />
-
-              <Route
-                path="/minhas-solicitacoes"
-                element={
-                  <ProtectedRoute allowedTypes={["selecao", "refeicao", "colaborador", "comum"]}>
-                    <MinhasSolicitacoes />
-                  </ProtectedRoute>
-                }
-              />
-
-              <Route
-                path="/admin"
-                element={
-                  <ProtectedRoute allowedTypes={["admin"]}>
-                    <Admin />
-                  </ProtectedRoute>
-                }
-              />
-              
-              {/* New routes for announcements */}
-              <Route
-                path="/comunicados"
-                element={
-                  <ProtectedRoute allowedTypes={["selecao", "refeicao", "colaborador", "comum"]}>
+              {/* Functionality routes */}
+              <Route path="/comunicados" element={
+                <ProtectedRoute>
+                  <Layout>
                     <Comunicados />
-                  </ProtectedRoute>
-                }
-              />
-
-              <Route
-                path="/gerenciar-comunicados"
-                element={
-                  <ProtectedRoute allowedTypes={["admin"]}>
-                    <GerenciarComunicados />
-                  </ProtectedRoute>
-                }
-              />
-              
-              {/* New routes for cafeteria menu */}
-              <Route
-                path="/cardapio-semana"
-                element={
-                  <ProtectedRoute allowedTypes={["selecao", "refeicao", "colaborador", "comum"]}>
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/cardapio" element={
+                <ProtectedRoute>
+                  <Layout>
                     <CardapioSemana />
-                  </ProtectedRoute>
-                }
-              />
-
-              <Route
-                path="/gerenciar-cardapio"
-                element={
-                  <ProtectedRoute allowedTypes={["admin"]}>
-                    <GerenciarCardapio />
-                  </ProtectedRoute>
-                }
-              />
-              
-              {/* Routes for collaborators and comum users */}
-              <Route
-                path="/adesao-cancelamento"
-                element={
-                  <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
-                    <AdesaoCancelamento />
-                  </ProtectedRoute>
-                }
-              />
-              
-              <Route
-                path="/mudanca-turno"
-                element={
-                  <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
-                    <MudancaTurno />
-                  </ProtectedRoute>
-                }
-              />
-              
-              <Route
-                path="/alteracao-endereco"
-                element={
-                  <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
-                    <AlteracaoEndereco />
-                  </ProtectedRoute>
-                }
-              />
-              
-              <Route
-                path="/abono-ponto"
-                element={
-                  <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
-                    <AbonoPonto />
-                  </ProtectedRoute>
-                }
-              />
-              
-              <Route
-                path="/avaliacao"
-                element={
-                  <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
-                    <Avaliacao />
-                  </ProtectedRoute>
-                }
-              />
-              
-              <Route
-                path="/plantao"
-                element={
-                  <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
-                    <Plantao />
-                  </ProtectedRoute>
-                }
-              />
-              
-              <Route
-                path="/mapa-rotas"
-                element={
-                  <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
-                    <MapaRotas />
-                  </ProtectedRoute>
-                }
-              />
-              
-              <Route
-                path="/oferta-caronas"
-                element={
-                  <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/ofertas-caronas" element={
+                <ProtectedRoute>
+                  <Layout>
                     <OfertaCaronas />
-                  </ProtectedRoute>
-                }
-              />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/avaliacao" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Avaliacao />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/mapa-rotas" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <MapaRotas />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/plantao" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Plantao />
+                  </Layout>
+                </ProtectedRoute>
+              } />
 
-              {/* Catch-all route */}
+              {/* Form routes */}
+              <Route path="/abono-ponto" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <AbonoPonto />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/adesao-cancelamento" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <AdesaoCancelamento />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/alteracao-endereco" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <AlteracaoEndereco />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/mudanca-turno" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <MudancaTurno />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/transporte-rota" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <TransporteRota />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/transporte-12x36" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Transporte12x36 />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/refeicao" element={
+                <ProtectedRoute allowedTypes={["admin", "refeicao"]}>
+                  <Layout>
+                    <Refeicao />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/minhas-solicitacoes" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <MinhasSolicitacoes />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+
+              {/* Admin routes */}
+              <Route path="/admin" element={
+                <ProtectedRoute allowedTypes={["admin"]}>
+                  <Layout>
+                    <Admin />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/gerenciar-comunicados" element={
+                <ProtectedRoute allowedTypes={["admin"]}>
+                  <Layout>
+                    <GerenciarComunicados />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/gerenciar-cardapio" element={
+                <ProtectedRoute allowedTypes={["admin"]}>
+                  <Layout>
+                    <GerenciarCardapio />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+
+              {/* 404 */}
               <Route path="*" element={<NotFound />} />
-            </Route>
-          </Routes>
+            </Routes>
+            <Toaster />
+          </SidebarProvider>
         </AuthProvider>
       </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+    </ThemeProvider>
+  );
+}
 
 export default App;

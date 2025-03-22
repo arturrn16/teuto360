@@ -512,6 +512,7 @@ export type Database = {
           admin: boolean | null
           cargo: string
           created_at: string | null
+          first_login: boolean | null
           id: number
           matricula: string
           nome: string
@@ -525,6 +526,7 @@ export type Database = {
           admin?: boolean | null
           cargo: string
           created_at?: string | null
+          first_login?: boolean | null
           id?: number
           matricula: string
           nome: string
@@ -538,6 +540,7 @@ export type Database = {
           admin?: boolean | null
           cargo?: string
           created_at?: string | null
+          first_login?: boolean | null
           id?: number
           matricula?: string
           nome?: string

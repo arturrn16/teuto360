@@ -1,80 +1,77 @@
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { corsHeaders } from "../_shared/cors.ts"
+import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { corsHeaders } from "../_shared/cors.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 
-console.log("Iniciando edge function de alteração de senha.")
+console.log("Change password function started");
 
-const handler = async (req: Request): Promise<Response> => {
-  console.log("Recebendo requisição de alteração de senha")
-  
-  // Lidar com requisições OPTIONS para CORS
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
   }
 
   try {
-    // Criar um cliente Supabase para acessar o banco de dados
-    const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
-    const supabase = createClient(supabaseUrl, supabaseKey);
-    
-    // Extrair dados da requisição
     const { userId, newPassword } = await req.json();
-    
+
+    // Create a Supabase client with the service role key
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Basic validation
     if (!userId || !newPassword) {
-      console.log("Erro: Dados incompletos para alteração de senha")
       return new Response(
-        JSON.stringify({ error: "Dados incompletos para alteração de senha" }),
-        { 
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 400 
-        }
+        JSON.stringify({ 
+          error: "User ID and new password are required" 
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
       );
     }
-    
-    console.log(`Tentando alterar senha para o usuário ID: ${userId}`)
-    
-    // Atualizar a senha do usuário e definir first_login como false
-    const { data, error } = await supabase
+
+    if (newPassword.length < 6) {
+      return new Response(
+        JSON.stringify({ 
+          error: "Password must be at least 6 characters" 
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
+      );
+    }
+
+    // Update user password and set first_login to false
+    const { error } = await supabase
       .from('usuarios')
       .update({ 
-        password: newPassword,
-        first_login: false
+        password: newPassword, 
+        first_login: false,
+        updated_at: new Date().toISOString()
       })
       .eq('id', userId);
-    
+
     if (error) {
-      console.log("Erro ao atualizar senha:", error)
+      console.error("Error updating password:", error);
       return new Response(
-        JSON.stringify({ error: "Erro ao atualizar senha" }),
-        { 
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 500 
-        }
+        JSON.stringify({ 
+          error: "Failed to update password" 
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
       );
     }
-    
-    console.log("Senha alterada com sucesso")
-    
-    // Retorna sucesso
+
+    // Return success response
     return new Response(
-      JSON.stringify({ success: true }),
-      { 
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200 
-      }
+      JSON.stringify({ 
+        message: "Password updated successfully" 
+      }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
-    console.error("Erro no processamento da alteração de senha:", error)
+    console.error("Change password error:", error);
     return new Response(
-      JSON.stringify({ error: "Erro no processamento da alteração de senha" }),
-      { 
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 500 
-      }
+      JSON.stringify({ 
+        error: "Internal server error" 
+      }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
     );
   }
-}
-
-serve(handler);
+});
