@@ -112,6 +112,8 @@ const TransporteRota = () => {
   };
   
   const onSubmit = async (data: FormValues) => {
+    console.log("Form submitted with data:", data);
+    
     if (!user) {
       toast({
         variant: "destructive",
@@ -124,7 +126,8 @@ const TransporteRota = () => {
     setIsSubmitting(true);
     
     try {
-      const { error } = await supabase.from("solicitacoes_transporte_rota").insert({
+      // Certifique-se de que todos os dados necessários estão presentes
+      const submissionData = {
         solicitante_id: user.id,
         matricula: data.matricula,
         colaborador_nome: data.colaboradorNome,
@@ -134,17 +137,27 @@ const TransporteRota = () => {
         periodo_inicio: formatDate(data.periodoInicio),
         periodo_fim: formatDate(data.periodoFim),
         motivo: data.motivo,
-      });
+        status: 'pendente'
+      };
+      
+      console.log("Sending data to Supabase:", submissionData);
+      
+      const { data: insertedData, error } = await supabase
+        .from("solicitacoes_transporte_rota")
+        .insert(submissionData)
+        .select();
       
       if (error) {
         console.error("Erro ao enviar solicitação:", error);
         toast({
           variant: "destructive",
           title: "Erro",
-          description: "Erro ao enviar solicitação"
+          description: `Erro ao enviar solicitação: ${error.message}`
         });
         return;
       }
+      
+      console.log("Supabase response:", insertedData);
       
       toast({
         title: "Sucesso",
