@@ -18,9 +18,6 @@ import {
   Megaphone,
   Car,
   CalendarDays,
-  DollarSign,
-  Heart,
-  Briefcase,
   Bell
 } from "lucide-react";
 import React from "react";
@@ -127,34 +124,10 @@ export const navItems: NavItem[] = [
     allowedTypes: ["colaborador", "comum"] as const
   },
   { 
-    name: "Empréstimo Consignado", 
-    href: "#", 
-    icon: <DollarSign className="h-5 w-5" />,
-    allowedTypes: ["colaborador", "comum"] as const
-  },
-  { 
-    name: "Plano de Saúde/Odonto", 
-    href: "#", 
-    icon: <Heart className="h-5 w-5" />,
-    allowedTypes: ["colaborador", "comum"] as const
-  },
-  { 
-    name: "Departamento Pessoal", 
-    href: "#", 
-    icon: <Briefcase className="h-5 w-5" />,
-    allowedTypes: ["colaborador", "comum"] as const
-  },
-  { 
     name: "Avisos", 
     href: "/comunicados", 
     icon: <Bell className="h-5 w-5" />,
     allowedTypes: ["colaborador", "comum", "selecao", "refeicao"] as const
-  },
-  { 
-    name: "Seleção Interna", 
-    href: "#", 
-    icon: <Briefcase className="h-5 w-5" />,
-    allowedTypes: ["colaborador", "comum"] as const
   },
   // Admin sections
   { 
