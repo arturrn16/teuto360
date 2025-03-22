@@ -70,6 +70,12 @@ export const navItems: NavItem[] = [
     allowedTypes: ["selecao", "refeicao", "colaborador", "comum"] as const
   },
   { 
+    name: "Oferta de Caronas", 
+    href: "/oferta-caronas", 
+    icon: <Car className="h-5 w-5" />,
+    allowedTypes: ["comum"] as const
+  },
+  { 
     name: "Administração", 
     href: "/admin", 
     icon: <Shield className="h-5 w-5" />,

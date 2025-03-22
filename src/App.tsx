@@ -21,6 +21,7 @@ import MinhasSolicitacoes from "./pages/MinhasSolicitacoes";
 import Admin from "./pages/Admin";
 import Comunicados from "./pages/Comunicados";
 import GerenciarComunicados from "./pages/GerenciarComunicados";
+import OfertaCaronas from "./pages/OfertaCaronas";
 
 // Import new pages for collaborators
 import AdesaoCancelamento from "./pages/AdesaoCancelamento";
@@ -181,6 +182,16 @@ const App = () => (
                 element={
                   <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
                     <MapaRotas />
+                  </ProtectedRoute>
+                }
+              />
+              
+              {/* New route for "Oferta de Caronas" */}
+              <Route
+                path="/oferta-caronas"
+                element={
+                  <ProtectedRoute allowedTypes={["comum"]}>
+                    <OfertaCaronas />
                   </ProtectedRoute>
                 }
               />
