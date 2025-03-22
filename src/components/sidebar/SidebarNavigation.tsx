@@ -1,17 +1,17 @@
+
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { SidebarMenu, SidebarMenuSub } from "@/components/ui/sidebar";
 import { SidebarNavItem } from "./SidebarNavItem";
-import { NavItem, UserType, navItems } from "./navigationConfig";
+import { NavItem, UserType, commonUserNavigation, adminNavigation } from "./navigationConfig";
 
 interface SidebarNavigationProps {
-  items: typeof navItems;
   userType: UserType;
   admin?: boolean;
 }
 
-export const SidebarNavigation = ({ items, userType, admin = false }: SidebarNavigationProps) => {
+export const SidebarNavigation = ({ userType, admin = false }: SidebarNavigationProps) => {
   const location = useLocation();
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({});
 
@@ -23,17 +23,8 @@ export const SidebarNavigation = ({ items, userType, admin = false }: SidebarNav
     }));
   };
 
-  // Filter links based on user type
-  const filteredLinks = items.filter(section => {
-    // Show section if any item in it is allowed for the user
-    return section.items.some(item => {
-      // Admin should see everything
-      if (admin) return true;
-      
-      // Otherwise, check if user type is in the allowed types
-      return item.allowedTypes.includes(userType);
-    });
-  });
+  // Use admin navigation for admin users, common navigation for others
+  const navigationToShow = admin ? adminNavigation : commonUserNavigation;
 
   // Render menu item recursively to handle submenus
   const renderMenuItem = (item: NavItem, index: number) => {
@@ -80,18 +71,12 @@ export const SidebarNavigation = ({ items, userType, admin = false }: SidebarNav
 
   return (
     <SidebarMenu>
-      {filteredLinks.map((section, sectionIndex) => (
+      {navigationToShow.map((section, sectionIndex) => (
         <div key={sectionIndex} className="mb-4">
           <h3 className="px-4 text-xs font-medium uppercase text-gray-500 mb-2">
             {section.title}
           </h3>
-          {section.items.map((item, itemIndex) => {
-            // Skip items not allowed for the user type (unless admin)
-            if (!admin && !item.allowedTypes.includes(userType)) {
-              return null;
-            }
-            return renderMenuItem(item, itemIndex);
-          })}
+          {section.items.map((item, itemIndex) => renderMenuItem(item, itemIndex))}
         </div>
       ))}
     </SidebarMenu>
