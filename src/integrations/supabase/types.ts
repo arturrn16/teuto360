@@ -9,6 +9,42 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      cardapio_semana: {
+        Row: {
+          acompanhamento: string
+          created_at: string | null
+          dia_semana: string
+          id: number
+          prato_principal: string
+          salada: string
+          sobremesa: string
+          tipo: string
+          updated_at: string | null
+        }
+        Insert: {
+          acompanhamento: string
+          created_at?: string | null
+          dia_semana: string
+          id?: number
+          prato_principal: string
+          salada: string
+          sobremesa: string
+          tipo: string
+          updated_at?: string | null
+        }
+        Update: {
+          acompanhamento?: string
+          created_at?: string | null
+          dia_semana?: string
+          id?: number
+          prato_principal?: string
+          salada?: string
+          sobremesa?: string
+          tipo?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       comunicados: {
         Row: {
           arquivado: boolean | null
