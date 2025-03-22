@@ -1,6 +1,7 @@
 
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import * as bcrypt from "bcryptjs";
 
 // Define user types
 export interface User {
@@ -12,6 +13,7 @@ export interface User {
   username: string;
   admin: boolean;
   tipo_usuario: 'admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum';
+  primeiro_acesso: boolean;
   created_at?: string;
   updated_at?: string;
 }
@@ -41,6 +43,45 @@ export const loginUser = async (username: string, password: string): Promise<Use
     console.error("Erro ao fazer login:", error);
     toast.error("Erro ao fazer login");
     return null;
+  }
+};
+
+export const changePassword = async (userId: number, newPassword: string): Promise<boolean> => {
+  try {
+    // Criptografa a nova senha
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    // Chama a edge function para alterar a senha
+    const { data, error } = await supabase.functions.invoke('change-password', {
+      body: { userId, hashedPassword }
+    });
+
+    if (error) {
+      console.error("Erro ao alterar senha:", error);
+      toast.error("Erro ao alterar senha");
+      return false;
+    }
+
+    if (data.error) {
+      toast.error(data.error);
+      return false;
+    }
+
+    toast.success("Senha alterada com sucesso!");
+    
+    // Atualiza o usuário armazenado localmente para refletir o primeiro acesso como concluído
+    const user = getStoredUser();
+    if (user) {
+      user.primeiro_acesso = false;
+      storeUser(user);
+    }
+    
+    return true;
+  } catch (error) {
+    console.error("Erro ao alterar senha:", error);
+    toast.error("Erro ao alterar senha");
+    return false;
   }
 };
 

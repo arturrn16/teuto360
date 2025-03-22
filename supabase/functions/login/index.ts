@@ -2,6 +2,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { corsHeaders } from "../_shared/cors.ts"
+import * as bcrypt from 'https://esm.sh/bcryptjs@2.4.3'
 
 console.log("Iniciando edge function de login.")
 
@@ -35,26 +36,14 @@ const handler = async (req: Request): Promise<Response> => {
     
     console.log(`Tentando login para o usuário: ${username}`)
     
-    // Chamar função RPC que verifica credenciais
-    const { data, error } = await supabase
-      .rpc('verify_user_credentials', { 
-        p_username: username, 
-        p_password: password 
-      });
+    // Buscar o usuário pelo nome de usuário
+    const { data: users, error: userError } = await supabase
+      .from('usuarios')
+      .select('*')
+      .eq('username', username);
     
-    if (error) {
-      console.log("Erro ao verificar credenciais:", error)
-      return new Response(
-        JSON.stringify({ error: "Erro ao verificar credenciais" }),
-        { 
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 500 
-        }
-      );
-    }
-    
-    if (!data || data.length === 0) {
-      console.log("Credenciais inválidas")
+    if (userError || !users || users.length === 0) {
+      console.log("Usuário não encontrado")
       return new Response(
         JSON.stringify({ error: "Usuário ou senha incorretos" }),
         { 
@@ -64,11 +53,48 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
     
-    console.log("Login bem-sucedido", { userId: data[0].id })
+    const user = users[0];
+    
+    // Verificar se a senha está em formato hash ou em texto plano (para compatibilidade)
+    let passwordMatches = false;
+    
+    if (user.password.startsWith('$2a$') || user.password.startsWith('$2b$') || user.password.startsWith('$2y$')) {
+      // Senha já está em formato hash, usar bcrypt para verificar
+      passwordMatches = await bcrypt.compare(password, user.password);
+    } else {
+      // Senha em texto plano para compatibilidade com contas existentes
+      passwordMatches = (password === user.password);
+    }
+    
+    if (!passwordMatches) {
+      console.log("Senha incorreta")
+      return new Response(
+        JSON.stringify({ error: "Usuário ou senha incorretos" }),
+        { 
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 401 
+        }
+      );
+    }
+    
+    console.log("Login bem-sucedido", { userId: user.id })
+    
+    // Prepare user data to return (excluding password)
+    const userData = {
+      id: user.id,
+      matricula: user.matricula,
+      nome: user.nome,
+      cargo: user.cargo,
+      setor: user.setor,
+      username: user.username,
+      admin: user.admin,
+      tipo_usuario: user.tipo_usuario,
+      primeiro_acesso: user.primeiro_acesso
+    };
     
     // Retorna os dados do usuário (exceto a senha)
     return new Response(
-      JSON.stringify({ user: data[0] }),
+      JSON.stringify({ user: userData }),
       { 
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200 
