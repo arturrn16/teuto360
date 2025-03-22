@@ -7,7 +7,7 @@ import {
   SidebarHeader, 
   SidebarFooter 
 } from "@/components/ui/sidebar";
-import { getUserRoleLabel } from "./sidebar/navigationConfig";
+import { navItems, getUserRoleLabel } from "./sidebar/navigationConfig";
 import { UserProfileSection } from "./sidebar/UserProfileSection";
 import { SidebarNavigation } from "./sidebar/SidebarNavigation";
 import { LogoutButton } from "./sidebar/LogoutButton";
@@ -16,8 +16,6 @@ export const AppSidebar = () => {
   const { user, logout } = useAuth();
   
   if (!user) return null;
-
-  const isAdmin = user.admin || user.tipo_usuario === 'admin';
 
   return (
     <Sidebar>
@@ -33,8 +31,9 @@ export const AppSidebar = () => {
         />
         
         <SidebarNavigation 
+          items={navItems} 
           userType={user.tipo_usuario as any}
-          admin={isAdmin}
+          admin={user.admin}
         />
       </SidebarContent>
       

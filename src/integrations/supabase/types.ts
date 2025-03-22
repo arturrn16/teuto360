@@ -9,42 +9,6 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      cardapio_semana: {
-        Row: {
-          acompanhamento: string
-          created_at: string | null
-          dia_semana: string
-          id: number
-          prato_principal: string
-          salada: string
-          sobremesa: string
-          tipo: string
-          updated_at: string | null
-        }
-        Insert: {
-          acompanhamento: string
-          created_at?: string | null
-          dia_semana: string
-          id?: number
-          prato_principal: string
-          salada: string
-          sobremesa: string
-          tipo: string
-          updated_at?: string | null
-        }
-        Update: {
-          acompanhamento?: string
-          created_at?: string | null
-          dia_semana?: string
-          id?: number
-          prato_principal?: string
-          salada?: string
-          sobremesa?: string
-          tipo?: string
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
       comunicados: {
         Row: {
           arquivado: boolean | null
@@ -86,56 +50,6 @@ export type Database = {
           {
             foreignKeyName: "comunicados_autor_id_fkey"
             columns: ["autor_id"]
-            isOneToOne: false
-            referencedRelation: "usuarios"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      ofertas_caronas: {
-        Row: {
-          created_at: string | null
-          id: number
-          nome: string
-          observacoes: string | null
-          origem: string
-          setor: string
-          turno: string | null
-          updated_at: string | null
-          usuario_id: number | null
-          valor_mensal: number
-          whatsapp: string
-        }
-        Insert: {
-          created_at?: string | null
-          id?: number
-          nome: string
-          observacoes?: string | null
-          origem: string
-          setor: string
-          turno?: string | null
-          updated_at?: string | null
-          usuario_id?: number | null
-          valor_mensal: number
-          whatsapp: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: number
-          nome?: string
-          observacoes?: string | null
-          origem?: string
-          setor?: string
-          turno?: string | null
-          updated_at?: string | null
-          usuario_id?: number | null
-          valor_mensal?: number
-          whatsapp?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "ofertas_caronas_usuario_id_fkey"
-            columns: ["usuario_id"]
             isOneToOne: false
             referencedRelation: "usuarios"
             referencedColumns: ["id"]

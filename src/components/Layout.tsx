@@ -6,7 +6,7 @@ import { AppSidebar } from "./AppSidebar";
 import { Menu } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-export const Layout = ({ children }: { children: React.ReactNode }) => {
+export const Layout = () => {
   const { isAuthenticated, isLoading } = useAuth();
   const isMobile = useIsMobile();
 
@@ -19,7 +19,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
   }
 
   if (!isAuthenticated) {
-    return children ? <>{children}</> : <Outlet />;
+    return <Outlet />;
   }
 
   return (
@@ -35,7 +35,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                 </SidebarTrigger>
               </div>
             )}
-            {children ? children : <Outlet />}
+            <Outlet />
           </main>
         </div>
         <footer className="py-4 px-4 bg-white border-t border-gray-200 text-center text-gray-600 text-sm">
@@ -45,6 +45,3 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
     </SidebarProvider>
   );
 };
-
-// Let's also add a default export to support both import styles
-export default Layout;

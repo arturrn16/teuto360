@@ -1,185 +1,161 @@
 
-import { BarChart2, CalendarCheck, FileText, MessageSquare, Users, Bus, FileEdit, Calendar, CheckSquare, Home, Briefcase, MapPin, Map, CarFront, Utensils } from "lucide-react";
-import { ReactNode } from "react";
+import { 
+  LayoutDashboard, 
+  Route, 
+  Map, 
+  Utensils, 
+  FileText, 
+  Shield, 
+  Home, 
+  ClipboardCheck, 
+  Clock, 
+  User, 
+  CheckCircle, 
+  Star, 
+  Phone, 
+  MapPin,
+  Replace,
+  Megaphone,
+  Car
+} from "lucide-react";
+import React from "react";
 
-// Define types for navigation
+// Types for user roles
 export type UserType = 'admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum';
 
+// Navigation structure with support for nested items
 export interface NavItem {
-  title: string;
+  name: string;
   href: string;
-  icon: ReactNode;
+  icon: React.ReactNode;
   allowedTypes: ReadonlyArray<UserType>;
   children?: NavItem[];
-  name?: string; // For backward compatibility
 }
 
-export interface NavSection {
-  title: string;
-  items: NavItem[];
-  name?: string; // For backward compatibility
-}
-
-// Configuration for common users
-export const commonUserNavigation: NavSection[] = [
-  {
-    title: "Principal",
-    items: [
-      {
-        title: "Dashboard",
-        href: "/dashboard",
+export const navItems: NavItem[] = [
+  { 
+    name: "Dashboard", 
+    href: "/dashboard", 
+    icon: <LayoutDashboard className="h-5 w-5" />,
+    allowedTypes: ["selecao", "refeicao", "colaborador", "comum"] as const
+  },
+  { 
+    name: "Transporte Rota", 
+    href: "/transporte-rota", 
+    icon: <Route className="h-5 w-5" />,
+    allowedTypes: ["selecao"] as const
+  },
+  { 
+    name: "Transporte 12x36", 
+    href: "/transporte-12x36", 
+    icon: <Map className="h-5 w-5" />,
+    allowedTypes: ["selecao"] as const
+  },
+  { 
+    name: "Refeição", 
+    href: "/refeicao", 
+    icon: <Utensils className="h-5 w-5" />,
+    allowedTypes: ["refeicao"] as const
+  },
+  { 
+    name: "Minhas Solicitações", 
+    href: "/minhas-solicitacoes", 
+    icon: <FileText className="h-5 w-5" />,
+    allowedTypes: ["selecao", "refeicao", "colaborador", "comum"] as const
+  },
+  { 
+    name: "Comunicados", 
+    href: "/comunicados", 
+    icon: <Megaphone className="h-5 w-5" />,
+    allowedTypes: ["selecao", "refeicao", "colaborador", "comum"] as const
+  },
+  { 
+    name: "Administração", 
+    href: "/admin", 
+    icon: <Shield className="h-5 w-5" />,
+    allowedTypes: ["admin"] as const
+  },
+  { 
+    name: "Gerenciar Comunicados", 
+    href: "/gerenciar-comunicados", 
+    icon: <Megaphone className="h-5 w-5" />,
+    allowedTypes: ["admin"] as const
+  },
+  // New cascading menu for Transporte items
+  { 
+    name: "Transporte", 
+    href: "#", // No direct link
+    icon: <Car className="h-5 w-5" />,
+    allowedTypes: ["colaborador", "comum"] as const,
+    children: [
+      { 
+        name: "Mapa de Rotas", 
+        href: "/mapa-rotas", 
+        icon: <MapPin className="h-5 w-5" />,
+        allowedTypes: ["colaborador", "comum"] as const
+      },
+      { 
+        name: "Uso de Rota", 
+        href: "/transporte-rota", 
+        icon: <Route className="h-5 w-5" />,
+        allowedTypes: ["colaborador", "comum"] as const
+      },
+      { 
+        name: "Mudança de Turno", 
+        href: "/mudanca-turno", 
+        icon: <Clock className="h-5 w-5" />,
+        allowedTypes: ["colaborador", "comum"] as const
+      },
+      { 
+        name: "Alteração de Endereço", 
+        href: "/alteracao-endereco", 
         icon: <Home className="h-5 w-5" />,
-        allowedTypes: ["selecao", "refeicao", "colaborador", "comum"] as const,
+        allowedTypes: ["colaborador", "comum"] as const
       },
-      {
-        title: "Comunicados",
-        href: "/comunicados",
-        icon: <MessageSquare className="h-5 w-5" />,
-        allowedTypes: ["selecao", "refeicao", "colaborador", "comum"] as const,
+      { 
+        name: "Adesão/Cancelamento", 
+        href: "/adesao-cancelamento", 
+        icon: <ClipboardCheck className="h-5 w-5" />,
+        allowedTypes: ["colaborador", "comum"] as const
       },
-      {
-        title: "Minhas Solicitações",
-        href: "/minhas-solicitacoes",
-        icon: <FileText className="h-5 w-5" />,
-        allowedTypes: ["selecao", "refeicao", "colaborador", "comum"] as const,
+      { 
+        name: "Abono de Ponto", 
+        href: "/abono-ponto", 
+        icon: <CheckCircle className="h-5 w-5" />,
+        allowedTypes: ["colaborador", "comum"] as const
       },
-    ] as const,
-  },
-  {
-    title: "Transporte",
-    items: [
-      {
-        title: "Transporte",
-        href: "/transporte",
-        icon: <Bus className="h-5 w-5" />,
-        allowedTypes: ["selecao", "colaborador", "comum"] as const,
-        children: [
-          {
-            title: "Mapa de Rotas",
-            href: "/mapa-rotas",
-            icon: <MapPin className="h-5 w-5" />,
-            allowedTypes: ["selecao", "colaborador", "comum"] as const,
-          },
-          {
-            title: "Uso de Rota",
-            href: "/transporte-rota",
-            icon: <Map className="h-5 w-5" />,
-            allowedTypes: ["selecao", "colaborador", "comum"] as const,
-          },
-          {
-            title: "Mudança de Turno",
-            href: "/mudanca-turno",
-            icon: <Calendar className="h-5 w-5" />,
-            allowedTypes: ["selecao", "colaborador", "comum"] as const,
-          },
-          {
-            title: "Alteração de Endereço",
-            href: "/alteracao-endereco",
-            icon: <MapPin className="h-5 w-5" />,
-            allowedTypes: ["selecao", "colaborador", "comum"] as const,
-          },
-          {
-            title: "Adesão/Cancelamento",
-            href: "/adesao-cancelamento",
-            icon: <FileEdit className="h-5 w-5" />,
-            allowedTypes: ["selecao", "colaborador", "comum"] as const,
-          },
-          {
-            title: "Abono de Ponto",
-            href: "/abono-ponto",
-            icon: <CheckSquare className="h-5 w-5" />,
-            allowedTypes: ["selecao", "colaborador", "comum"] as const,
-          },
-          {
-            title: "Plantão",
-            href: "/plantao",
-            icon: <CalendarCheck className="h-5 w-5" />,
-            allowedTypes: ["selecao", "colaborador", "comum"] as const,
-          },
-        ]
+      { 
+        name: "Plantão 24hs", 
+        href: "/plantao", 
+        icon: <Phone className="h-5 w-5" />,
+        allowedTypes: ["colaborador", "comum"] as const
       },
-      {
-        title: "Avaliação",
-        href: "/avaliacao",
-        icon: <BarChart2 className="h-5 w-5" />,
-        allowedTypes: ["selecao", "colaborador", "comum"] as const,
+      { 
+        name: "Avaliação", 
+        href: "/avaliacao", 
+        icon: <Star className="h-5 w-5" />,
+        allowedTypes: ["colaborador", "comum"] as const
       },
-      {
-        title: "Oferta de Caronas",
-        href: "/oferta-caronas",
-        icon: <CarFront className="h-5 w-5" />,
-        allowedTypes: ["selecao", "colaborador", "comum"] as const,
-      },
-    ] as const,
-  },
-  {
-    title: "Refeitório",
-    items: [
-      {
-        title: "Refeição",
-        href: "/refeicao",
-        icon: <Utensils className="h-5 w-5" />,
-        allowedTypes: ["selecao", "refeicao", "colaborador", "comum"] as const,
-        children: [
-          {
-            title: "Cardápio da Semana",
-            href: "/cardapio-semana",
-            icon: <Utensils className="h-5 w-5" />,
-            allowedTypes: ["selecao", "refeicao", "colaborador", "comum"] as const,
-          },
-        ]
-      },
-    ] as const,
+    ]
   },
 ];
 
-// Configuration for admin users - Administration section with Solicitações
-export const adminNavigation: NavSection[] = [
-  {
-    title: "Administração",
-    items: [
-      {
-        title: "Gerenciar Comunicados",
-        href: "/gerenciar-comunicados",
-        icon: <MessageSquare className="h-5 w-5" />,
-        allowedTypes: ["admin"] as const,
-      },
-      {
-        title: "Gerenciar Cardápio",
-        href: "/gerenciar-cardapio",
-        icon: <Utensils className="h-5 w-5" />,
-        allowedTypes: ["admin"] as const,
-      },
-      {
-        title: "Solicitações",
-        href: "/solicitacoes-admin",
-        icon: <FileText className="h-5 w-5" />,
-        allowedTypes: ["admin"] as const,
-      },
-    ] as const,
-  },
-];
+// Remove individual menu items for common users since they're now in the dropdown
+// These were the individual items that are now in the Transporte cascading menu:
+// Uso de Rota, Adesão/Cancelamento, Mudança de Turno, Alteração de Endereço, 
+// Abono de Ponto, Avaliação, Plantão 24hs, Mapa de Rotas
 
-// Use this for backward compatibility
-export const navigationConfig = [...commonUserNavigation, ...adminNavigation];
-
-// Export navItems for compatibility with existing code
-export const navItems = navigationConfig;
-
-// Function to get the user role label for display
-export const getUserRoleLabel = (role: UserType): string => {
-  switch (role) {
+export const getUserRoleLabel = (roleType: string): string => {
+  switch (roleType) {
     case 'admin':
       return 'Administrador';
-    case 'selecao':
-      return 'Seleção';
     case 'refeicao':
       return 'Refeição';
-    case 'colaborador':
-      return 'Colaborador';
+    case 'selecao':
+      return 'Seleção';
     case 'comum':
-      return 'Colaborador';
+    case 'colaborador':
     default:
-      return 'Usuário';
+      return 'Colaborador';
   }
 };
