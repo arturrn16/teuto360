@@ -511,7 +511,9 @@ export type Database = {
         Row: {
           admin: boolean | null
           cargo: string
+          cpf: string | null
           created_at: string | null
+          data_nascimento: string | null
           first_login: boolean | null
           id: number
           matricula: string
@@ -525,7 +527,9 @@ export type Database = {
         Insert: {
           admin?: boolean | null
           cargo: string
+          cpf?: string | null
           created_at?: string | null
+          data_nascimento?: string | null
           first_login?: boolean | null
           id?: number
           matricula: string
@@ -539,7 +543,9 @@ export type Database = {
         Update: {
           admin?: boolean | null
           cargo?: string
+          cpf?: string | null
           created_at?: string | null
+          data_nascimento?: string | null
           first_login?: boolean | null
           id?: number
           matricula?: string

@@ -15,6 +15,8 @@ export interface User {
   first_login: boolean;
   created_at?: string;
   updated_at?: string;
+  cpf?: string;
+  data_nascimento?: string;
 }
 
 export const loginUser = async (username: string, password: string): Promise<User | null> => {
@@ -43,6 +45,51 @@ export const loginUser = async (username: string, password: string): Promise<Use
     console.error("Erro ao fazer login:", error);
     toast.error("Erro ao fazer login");
     return null;
+  }
+};
+
+export const resetPassword = async (
+  username: string,
+  currentPassword: string,
+  cpf: string,
+  dataNascimento: string,
+  newPassword: string
+): Promise<boolean> => {
+  try {
+    console.log("Tentando redefinir a senha para:", username);
+    
+    // Chamar a edge function de reset de senha
+    const { data, error } = await supabase.functions.invoke('reset-password', {
+      body: { 
+        username,
+        currentPassword,
+        cpf,
+        dataNascimento,
+        newPassword
+      }
+    });
+    
+    if (error) {
+      console.error("Erro na função de redefinição de senha:", error);
+      toast.error("Erro ao alterar senha");
+      return false;
+    }
+    
+    if (data.error) {
+      toast.error(data.error);
+      return false;
+    }
+    
+    console.log("Senha redefinida com sucesso");
+    toast.success("Senha alterada com sucesso!");
+    
+    // Força o logout para que o usuário faça login com a nova senha
+    logoutUser();
+    return true;
+  } catch (error) {
+    console.error("Erro ao redefinir senha:", error);
+    toast.error("Erro ao alterar senha");
+    return false;
   }
 };
 
