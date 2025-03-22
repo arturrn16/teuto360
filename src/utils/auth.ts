@@ -20,6 +20,7 @@ export interface User {
 
 export const loginUser = async (username: string, password: string): Promise<User | null> => {
   try {
+    console.log("Tentando login para:", username);
     // Chama a edge function de login
     const { data, error } = await supabase.functions.invoke('login', {
       body: { username, password }
@@ -37,6 +38,7 @@ export const loginUser = async (username: string, password: string): Promise<Use
     }
 
     // Se tudo deu certo, retorna o usuário
+    console.log("Login bem-sucedido para:", username, "Dados:", data.user);
     storeUser(data.user);
     return data.user;
   } catch (error) {
@@ -48,6 +50,7 @@ export const loginUser = async (username: string, password: string): Promise<Use
 
 export const changePassword = async (userId: number, newPassword: string): Promise<boolean> => {
   try {
+    console.log("Alterando senha para usuário ID:", userId);
     // Criptografa a nova senha
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(newPassword, salt);
@@ -63,11 +66,13 @@ export const changePassword = async (userId: number, newPassword: string): Promi
       return false;
     }
 
-    if (data.error) {
+    if (data && data.error) {
+      console.error("Erro retornado pela função change-password:", data.error);
       toast.error(data.error);
       return false;
     }
 
+    console.log("Senha alterada com sucesso para usuário ID:", userId);
     toast.success("Senha alterada com sucesso!");
     
     // Atualiza o usuário armazenado localmente para refletir o primeiro acesso como concluído

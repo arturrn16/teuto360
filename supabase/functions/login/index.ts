@@ -54,16 +54,41 @@ const handler = async (req: Request): Promise<Response> => {
     }
     
     const user = users[0];
+    console.log("Usuário encontrado, verificando senha...");
     
     // Verificar se a senha está em formato hash ou em texto plano (para compatibilidade)
     let passwordMatches = false;
     
     if (user.password.startsWith('$2a$') || user.password.startsWith('$2b$') || user.password.startsWith('$2y$')) {
       // Senha já está em formato hash, usar bcrypt para verificar
+      console.log("Verificando senha com bcrypt");
       passwordMatches = await bcrypt.compare(password, user.password);
     } else {
       // Senha em texto plano para compatibilidade com contas existentes
+      console.log("Verificando senha em texto plano");
       passwordMatches = (password === user.password);
+      
+      // Se a senha é válida mas está em texto plano, vamos atualizá-la para usar hash
+      if (passwordMatches) {
+        console.log("Senha em texto plano válida, atualizando para hash...");
+        try {
+          const salt = await bcrypt.genSalt(10);
+          const hashedPassword = await bcrypt.hash(password, salt);
+          
+          const { error: updateError } = await supabase
+            .from('usuarios')
+            .update({ password: hashedPassword })
+            .eq('id', user.id);
+            
+          if (updateError) {
+            console.log("Erro ao atualizar senha para hash:", updateError);
+          } else {
+            console.log("Senha atualizada para formato hash com sucesso");
+          }
+        } catch (hashError) {
+          console.error("Erro ao gerar hash da senha:", hashError);
+        }
+      }
     }
     
     if (!passwordMatches) {
@@ -103,7 +128,7 @@ const handler = async (req: Request): Promise<Response> => {
   } catch (error) {
     console.error("Erro no processamento do login:", error)
     return new Response(
-      JSON.stringify({ error: "Erro no processamento do login" }),
+      JSON.stringify({ error: "Erro no processamento do login", details: error.message }),
       { 
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 500 

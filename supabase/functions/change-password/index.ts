@@ -36,7 +36,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`Tentando alterar senha para o usuário ID: ${userId}`)
     
     // Atualiza a senha e marca como não sendo mais o primeiro acesso
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('usuarios')
       .update({ 
         password: hashedPassword,
@@ -48,7 +48,7 @@ const handler = async (req: Request): Promise<Response> => {
     if (error) {
       console.log("Erro ao alterar senha:", error)
       return new Response(
-        JSON.stringify({ error: "Erro ao alterar senha" }),
+        JSON.stringify({ error: "Erro ao alterar senha", details: error.message }),
         { 
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 500 
@@ -68,7 +68,7 @@ const handler = async (req: Request): Promise<Response> => {
   } catch (error) {
     console.error("Erro no processamento da alteração de senha:", error)
     return new Response(
-      JSON.stringify({ error: "Erro no processamento da alteração de senha" }),
+      JSON.stringify({ error: "Erro no processamento da alteração de senha", details: error.message }),
       { 
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 500 

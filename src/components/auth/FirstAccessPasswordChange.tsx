@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 export const FirstAccessPasswordChange = () => {
   const [newPassword, setNewPassword] = useState("");
@@ -14,6 +15,7 @@ export const FirstAccessPasswordChange = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,12 +39,22 @@ export const FirstAccessPasswordChange = () => {
     setIsSubmitting(true);
 
     try {
+      console.log("Iniciando alteração de senha para usuário:", user.id);
       const success = await changePassword(user.id, newPassword);
-      if (!success) {
-        // Mensagem de erro já é mostrada na função changePassword
-        return;
+      
+      if (success) {
+        console.log("Senha alterada com sucesso, redirecionando para dashboard");
+        // Aguardar um momento para permitir que o toast de sucesso seja exibido
+        setTimeout(() => {
+          // Forçar um recarregamento da página para atualizar o estado da aplicação
+          window.location.href = "/dashboard";
+        }, 1500);
+      } else {
+        console.error("Falha ao alterar senha");
+        setIsSubmitting(false);
       }
-    } finally {
+    } catch (error) {
+      console.error("Erro ao processar alteração de senha:", error);
       setIsSubmitting(false);
     }
   };
