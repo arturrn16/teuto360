@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Utensils, CalendarIcon } from "lucide-react";
+import { queryCustomTable } from "@/integrations/supabase/client";
 
 interface CardapioItem {
   id: number;
@@ -22,17 +23,17 @@ const CardapioSemana = () => {
   useEffect(() => {
     const fetchCardapio = async () => {
       try {
-        const { data, error } = await supabase
-          .from("cardapio_semana")
-          .select("*")
-          .order("id");
+        // Using the customized query function for tables not in the auto-generated types
+        const { data, error } = await queryCustomTable<CardapioItem>("cardapio_semana", {
+          order: { column: "id" }
+        });
 
         if (error) {
           console.error("Erro ao buscar o cardápio:", error);
           return;
         }
 
-        setCardapio(data || []);
+        setCardapio(data as CardapioItem[]);
       } catch (error) {
         console.error("Erro ao buscar o cardápio:", error);
       } finally {

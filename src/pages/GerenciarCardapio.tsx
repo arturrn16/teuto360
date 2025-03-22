@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/select";
 import { Utensils, Save } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { queryCustomTable, updateCustomTable } from "@/integrations/supabase/client";
 
 interface CardapioItem {
   id: number;
@@ -62,17 +63,17 @@ const GerenciarCardapio = () => {
   useEffect(() => {
     const fetchCardapio = async () => {
       try {
-        const { data, error } = await supabase
-          .from("cardapio_semana")
-          .select("*")
-          .order("id");
+        // Using the customized query function for tables not in the auto-generated types
+        const { data, error } = await queryCustomTable<CardapioItem>("cardapio_semana", {
+          order: { column: "id" }
+        });
 
         if (error) {
           console.error("Erro ao buscar o cardápio:", error);
           return;
         }
 
-        setCardapio(data || []);
+        setCardapio(data as CardapioItem[]);
       } catch (error) {
         console.error("Erro ao buscar o cardápio:", error);
       } finally {
@@ -104,16 +105,18 @@ const GerenciarCardapio = () => {
     setSubmitting(true);
 
     try {
-      const { error } = await supabase
-        .from("cardapio_semana")
-        .update({
+      // Use the updateCustomTable function for tables not in the auto-generated types
+      const { error } = await updateCustomTable(
+        "cardapio_semana",
+        {
           prato_principal: values.prato_principal,
           acompanhamento: values.acompanhamento,
           salada: values.salada,
           sobremesa: values.sobremesa,
           updated_at: new Date().toISOString(),
-        })
-        .eq("id", selectedItem.id);
+        },
+        { column: "id", value: selectedItem.id }
+      );
 
       if (error) {
         toast.error("Erro ao atualizar o cardápio");
