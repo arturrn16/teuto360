@@ -6,13 +6,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 import { supabase, queryCustomTable } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { FormLayout } from "@/components/FormLayout";
 import {
   Form,
   FormControl,
@@ -30,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface FormValues {
   cidade: "Anápolis" | "Goiânia";
@@ -43,6 +38,7 @@ const AbonoPonto = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isMobile = useIsMobile();
   
   const form = useForm<FormValues>({
     defaultValues: {
@@ -117,170 +113,292 @@ const AbonoPonto = () => {
     }
   };
   
+  const renderFormContent = () => (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        {!isMobile ? (
+          <>
+            <div className="grid grid-cols-2 gap-6">
+              <FormItem>
+                <FormLabel>Matrícula</FormLabel>
+                <FormControl>
+                  <Input value={user?.matricula || ""} disabled />
+                </FormControl>
+              </FormItem>
+              
+              <FormItem>
+                <FormLabel>Nome</FormLabel>
+                <FormControl>
+                  <Input value={user?.nome || ""} disabled />
+                </FormControl>
+              </FormItem>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-6">
+              <FormItem>
+                <FormLabel>Cargo</FormLabel>
+                <FormControl>
+                  <Input value={user?.cargo || ""} disabled />
+                </FormControl>
+              </FormItem>
+              
+              <FormItem>
+                <FormLabel>Setor</FormLabel>
+                <FormControl>
+                  <Input value={user?.setor || ""} disabled />
+                </FormControl>
+              </FormItem>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="mb-4">
+              <label className="form-field-label">Matrícula</label>
+              <input 
+                type="text" 
+                className="form-field-input bg-gray-100" 
+                value={user?.matricula || ""} 
+                disabled 
+              />
+              
+              <label className="form-field-label">Nome</label>
+              <input 
+                type="text" 
+                className="form-field-input bg-gray-100" 
+                value={user?.nome || ""} 
+                disabled 
+              />
+              
+              <label className="form-field-label">Cargo</label>
+              <input 
+                type="text" 
+                className="form-field-input bg-gray-100" 
+                value={user?.cargo || ""} 
+                disabled 
+              />
+              
+              <label className="form-field-label">Setor</label>
+              <input 
+                type="text" 
+                className="form-field-input bg-gray-100" 
+                value={user?.setor || ""} 
+                disabled 
+              />
+            </div>
+          </>
+        )}
+        
+        {isMobile ? (
+          <>
+            <div>
+              <label className="form-field-label">Cidade</label>
+              <select 
+                className="form-select-input" 
+                value={cidade}
+                onChange={(e) => {
+                  form.setValue("cidade", e.target.value as "Anápolis" | "Goiânia");
+                  form.setValue("turno", "");
+                  form.setValue("rota", "");
+                }}
+              >
+                <option value="Anápolis">Anápolis</option>
+                <option value="Goiânia">Goiânia</option>
+              </select>
+              
+              <label className="form-field-label">Turno</label>
+              <select 
+                className="form-select-input"
+                value={turno}
+                onChange={(e) => {
+                  form.setValue("turno", e.target.value);
+                  form.setValue("rota", "");
+                }}
+                disabled={!cidade}
+              >
+                <option value="" disabled>Selecione o turno</option>
+                {turnoOptions.map((option) => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
+              
+              <label className="form-field-label">Rota</label>
+              <select 
+                className="form-select-input"
+                value={form.watch("rota")}
+                onChange={(e) => form.setValue("rota", e.target.value)}
+                disabled={!turno}
+              >
+                <option value="" disabled>Selecione a rota</option>
+                {rotaOptions.map((option) => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
+              
+              <label className="form-field-label">Descreva o ocorrido</label>
+              <textarea 
+                className="form-field-input"
+                rows={5}
+                placeholder="Descreva o problema ou atraso com o transporte fretado"
+                {...form.register("descricao", { required: "Descrição é obrigatória" })}
+              />
+              {form.formState.errors.descricao && (
+                <p className="text-red-500 -mt-4 mb-4">{form.formState.errors.descricao.message}</p>
+              )}
+            </div>
+            
+            <Button type="submit" className="w-full py-4 text-lg rounded-xl" disabled={isSubmitting}>
+              {isSubmitting ? "Enviando..." : "Enviar Solicitação"}
+            </Button>
+          </>
+        ) : (
+          <>
+            <FormField
+              control={form.control}
+              name="cidade"
+              rules={{ required: "Cidade é obrigatória" }}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Cidade</FormLabel>
+                  <Select 
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      // Redefina o turno ao mudar a cidade
+                      form.setValue("turno", "");
+                      form.setValue("rota", "");
+                    }}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione a cidade" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="Anápolis">Anápolis</SelectItem>
+                      <SelectItem value="Goiânia">Goiânia</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="turno"
+              rules={{ required: "Turno é obrigatório" }}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Turno</FormLabel>
+                  <Select 
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      // Redefina a rota ao mudar o turno
+                      form.setValue("rota", "");
+                    }}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o turno" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {turnoOptions.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="rota"
+              rules={{ required: "Rota é obrigatória" }}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Rota</FormLabel>
+                  <Select 
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                    disabled={!turno} // Desabilita até que o turno seja selecionado
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione a rota" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {rotaOptions.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="descricao"
+              rules={{ required: "Descrição é obrigatória" }}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Descreva o ocorrido</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Descreva o problema ou atraso com o transporte fretado"
+                      rows={5}
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? "Enviando..." : "Enviar Solicitação"}
+            </Button>
+          </>
+        )}
+      </form>
+    </Form>
+  );
+  
+  if (isMobile) {
+    return (
+      <FormLayout
+        title="Solicitação de Abono de Ponto"
+        description="Preencha o formulário para solicitar abono de ponto"
+        infoMessage="O abono só será realizado por motivos de problemas/atrasos com o transporte fretado."
+      >
+        {renderFormContent()}
+      </FormLayout>
+    );
+  }
+  
   return (
     <div className="container max-w-3xl py-10">
-      <Card>
-        <CardHeader>
-          <CardTitle>Solicitação de Abono de Ponto</CardTitle>
-          <CardDescription>
+      <div className="bg-white rounded-lg border shadow">
+        <div className="p-6 border-b">
+          <h2 className="text-xl font-semibold">Solicitação de Abono de Ponto</h2>
+          <p className="text-gray-500 mt-1">
             O abono só será realizado por motivos de problemas/atrasos com o transporte fretado.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <div className="grid grid-cols-2 gap-6">
-                <FormItem>
-                  <FormLabel>Matrícula</FormLabel>
-                  <FormControl>
-                    <Input value={user?.matricula || ""} disabled />
-                  </FormControl>
-                </FormItem>
-                
-                <FormItem>
-                  <FormLabel>Nome</FormLabel>
-                  <FormControl>
-                    <Input value={user?.nome || ""} disabled />
-                  </FormControl>
-                </FormItem>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-6">
-                <FormItem>
-                  <FormLabel>Cargo</FormLabel>
-                  <FormControl>
-                    <Input value={user?.cargo || ""} disabled />
-                  </FormControl>
-                </FormItem>
-                
-                <FormItem>
-                  <FormLabel>Setor</FormLabel>
-                  <FormControl>
-                    <Input value={user?.setor || ""} disabled />
-                  </FormControl>
-                </FormItem>
-              </div>
-              
-              <FormField
-                control={form.control}
-                name="cidade"
-                rules={{ required: "Cidade é obrigatória" }}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Cidade</FormLabel>
-                    <Select 
-                      onValueChange={(value) => {
-                        field.onChange(value);
-                        // Redefina o turno ao mudar a cidade
-                        form.setValue("turno", "");
-                        form.setValue("rota", "");
-                      }}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione a cidade" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="Anápolis">Anápolis</SelectItem>
-                        <SelectItem value="Goiânia">Goiânia</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="turno"
-                rules={{ required: "Turno é obrigatório" }}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Turno</FormLabel>
-                    <Select 
-                      onValueChange={(value) => {
-                        field.onChange(value);
-                        // Redefina a rota ao mudar o turno
-                        form.setValue("rota", "");
-                      }}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione o turno" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {turnoOptions.map((option) => (
-                          <SelectItem key={option} value={option}>
-                            {option}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="rota"
-                rules={{ required: "Rota é obrigatória" }}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Rota</FormLabel>
-                    <Select 
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      disabled={!turno} // Desabilita até que o turno seja selecionado
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione a rota" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {rotaOptions.map((option) => (
-                          <SelectItem key={option} value={option}>
-                            {option}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="descricao"
-                rules={{ required: "Descrição é obrigatória" }}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Descreva o ocorrido</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="Descreva o problema ou atraso com o transporte fretado"
-                        rows={5}
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? "Enviando..." : "Enviar Solicitação"}
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+          </p>
+        </div>
+        <div className="p-6">
+          {renderFormContent()}
+        </div>
+      </div>
     </div>
   );
 };

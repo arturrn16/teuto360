@@ -37,6 +37,12 @@
     --ring: 215 60% 50%;
 
     --radius: 0.5rem;
+    
+    /* Cores para alertas/notificações */
+    --warning: 38 92% 50%;
+    --warning-foreground: 210 40% 98%;
+    --info: 200 98% 39%;
+    --info-foreground: 210 40% 98%;
   }
 
   .dark {
@@ -70,6 +76,12 @@
     --border: 217 33% 18%;
     --input: 217 33% 18%;
     --ring: 215 60% 50%;
+    
+    /* Cores para alertas/notificações */
+    --warning: 38 92% 50%;
+    --warning-foreground: 210 40% 98%;
+    --info: 200 98% 39%;
+    --info-foreground: 210 40% 98%;
   }
 }
 
@@ -166,6 +178,47 @@
   
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+
+  /* Novas classes para o layout de formulários no mobile */
+  .form-page-title {
+    @apply text-3xl font-bold text-gray-900 mb-2;
+  }
+  
+  .form-page-description {
+    @apply text-lg text-gray-600 mb-6;
+  }
+  
+  .form-info-alert {
+    @apply bg-amber-50 border border-amber-200 rounded-xl p-4 mb-8 flex items-start gap-3;
+  }
+  
+  .form-info-alert-icon {
+    @apply text-amber-700 flex-shrink-0 mt-1;
+  }
+  
+  .form-info-alert-text {
+    @apply text-amber-800 text-base;
+  }
+  
+  .form-field-label {
+    @apply text-lg font-medium text-gray-800 mb-2 block;
+  }
+  
+  .form-field-input {
+    @apply w-full p-4 border border-gray-300 rounded-xl text-lg mb-6;
+  }
+
+  .form-select-input {
+    @apply w-full py-4 px-4 border border-gray-300 rounded-xl text-lg mb-6 bg-white;
+  }
+
+  .form-date-input {
+    @apply w-full py-4 px-4 border border-gray-300 rounded-xl text-lg mb-6 flex items-center gap-3 text-gray-500;
+  }
+  
+  .form-info-text {
+    @apply text-base text-gray-500 mb-6;
   }
   
   /* Suporte para dispositivos com diferentes densidades de pixels */
