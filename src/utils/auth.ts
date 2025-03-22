@@ -12,6 +12,7 @@ export interface User {
   username: string;
   admin: boolean;
   tipo_usuario: 'admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum';
+  first_login: boolean;
   created_at?: string;
   updated_at?: string;
 }
@@ -41,6 +42,44 @@ export const loginUser = async (username: string, password: string): Promise<Use
     console.error("Erro ao fazer login:", error);
     toast.error("Erro ao fazer login");
     return null;
+  }
+};
+
+export const changePassword = async (newPassword: string): Promise<boolean> => {
+  try {
+    const user = getStoredUser();
+    
+    if (!user) {
+      toast.error("Usuário não autenticado");
+      return false;
+    }
+    
+    // Call the edge function to change password
+    const { data, error } = await supabase.functions.invoke('change-password', {
+      body: { 
+        userId: user.id,
+        newPassword: newPassword
+      }
+    });
+    
+    if (error) {
+      console.error("Erro na função de alterar senha:", error);
+      toast.error("Erro ao alterar senha");
+      return false;
+    }
+    
+    if (data.error) {
+      toast.error(data.error);
+      return false;
+    }
+    
+    // Force logout so user has to login with new password
+    logoutUser();
+    return true;
+  } catch (error) {
+    console.error("Erro ao alterar senha:", error);
+    toast.error("Erro ao alterar senha");
+    return false;
   }
 };
 

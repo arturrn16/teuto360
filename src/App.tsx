@@ -12,6 +12,7 @@ import { Layout } from "@/components/Layout";
 // Import pages
 import Index from "./pages/Index";
 import Login from "./pages/Login";
+import ChangePassword from "./pages/ChangePassword";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import TransporteRota from "./pages/TransporteRota";
@@ -51,6 +52,7 @@ const App = () => (
               {/* Public routes */}
               <Route index element={<Index />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/change-password" element={<ChangePassword />} />
               
               {/* Protected routes */}
               <Route

@@ -1,22 +1,20 @@
+
 import { useEffect } from "react";
-import { LoginForm } from "@/components/auth/LoginForm";
+import { ChangePasswordForm } from "@/components/auth/ChangePassword";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Building2 } from "lucide-react";
 
-const Login = () => {
-  const { isAuthenticated, user } = useAuth();
+const ChangePassword = () => {
+  const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isAuthenticated) {
-      if (user && user.first_login) {
-        // If first login, redirect to change password page
-        navigate("/change-password");
-      } else {
-        // Otherwise, redirect to dashboard
-        navigate("/dashboard");
-      }
+    if (!isAuthenticated) {
+      navigate("/login");
+    } else if (user && !user.first_login) {
+      // If not first login, redirect to dashboard
+      navigate("/dashboard");
     }
   }, [isAuthenticated, navigate, user]);
 
@@ -30,7 +28,7 @@ const Login = () => {
         <p className="text-gray-600 dark:text-gray-300 mt-2">Simplificando Processos, Ampliando Oportunidades</p>
       </div>
       
-      <LoginForm />
+      <ChangePasswordForm />
       
       <div className="mt-8 text-center text-gray-500 dark:text-gray-400 text-sm animate-fade-in">
         <p>© {new Date().getFullYear()} Teuto360 - Todos os direitos reservados</p>
@@ -39,4 +37,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default ChangePassword;
