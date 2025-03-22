@@ -38,7 +38,6 @@ const Dashboard = () => {
       color: "from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20",
       textColor: "text-indigo-600 dark:text-indigo-400"
     },
-    // "Uso de Rota" card for comum users
     {
       title: "Uso de Rota",
       description: "Solicite transporte para rotas regulares",
@@ -48,7 +47,6 @@ const Dashboard = () => {
       color: "from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20",
       textColor: "text-blue-600 dark:text-blue-400"
     },
-    // Shared cards
     {
       title: "Minhas Solicitações",
       description: "Visualize todas as suas solicitações",
@@ -58,7 +56,6 @@ const Dashboard = () => {
       color: "from-violet-50 to-violet-100 dark:from-violet-900/20 dark:to-violet-800/20",
       textColor: "text-violet-600 dark:text-violet-400"
     },
-    // Meal user cards
     {
       title: "Solicitar Refeição",
       description: "Solicite refeições para colaboradores",
@@ -68,7 +65,6 @@ const Dashboard = () => {
       color: "from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20",
       textColor: "text-emerald-600 dark:text-emerald-400"
     },
-    // Admin cards
     {
       title: "Administração",
       description: "Gerencie todas as solicitações",
@@ -78,7 +74,6 @@ const Dashboard = () => {
       color: "from-rose-50 to-rose-100 dark:from-rose-900/20 dark:to-rose-800/20",
       textColor: "text-rose-600 dark:text-rose-400"
     },
-    // New card for announcements
     {
       title: "Comunicados",
       description: "Visualize os comunicados importantes",
@@ -88,7 +83,6 @@ const Dashboard = () => {
       color: "from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20",
       textColor: "text-amber-600 dark:text-amber-400"
     },
-    // New admin card for managing announcements
     {
       title: "Gerenciar Comunicados",
       description: "Publique e gerencie comunicados para colaboradores",
@@ -98,7 +92,6 @@ const Dashboard = () => {
       color: "from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20",
       textColor: "text-orange-600 dark:text-orange-400"
     },
-    // New cards for colaborador and comum
     {
       title: "Adesão/Cancelamento de Rota",
       description: "Solicite adesão ou cancelamento do transporte fretado",
