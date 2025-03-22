@@ -94,7 +94,7 @@ const GerenciarCardapio = () => {
         // Initialize with empty data first
         diasSemanaOrdem.forEach(dia => {
           map.set(dia, {
-            diaSemana: dia,
+            diasemana: dia, // Changed from diaSemana to diasemana
             itens: {
               pratosPrincipais: [],
               guarnicoes: [],
@@ -106,7 +106,7 @@ const GerenciarCardapio = () => {
         
         // Override with actual data from DB
         data.forEach(item => {
-          map.set(item.diaSemana, item);
+          map.set(item.diasemana, item); // Changed from diaSemana to diasemana
         });
         
         setCardapios(map);
@@ -217,7 +217,7 @@ const GerenciarCardapio = () => {
       const map = new Map<string, Cardapio>(cardapios);
       
       data.forEach(item => {
-        map.set(item.diaSemana, item);
+        map.set(item.diasemana, item); // Changed from diaSemana to diasemana
       });
       
       setCardapios(map);

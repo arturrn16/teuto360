@@ -39,7 +39,7 @@ const CardapioSemana = () => {
         // Initialize with empty data
         diasSemanaOrdem.forEach(dia => {
           cardapioMap.set(dia, {
-            diaSemana: dia,
+            diasemana: dia, // Changed from diaSemana to diasemana
             itens: {
               pratosPrincipais: [],
               guarnicoes: [],
@@ -51,7 +51,7 @@ const CardapioSemana = () => {
         
         // Override with actual data
         data.forEach(item => {
-          cardapioMap.set(item.diaSemana, item);
+          cardapioMap.set(item.diasemana, item); // Changed from diaSemana to diasemana
         });
         
         // Convert map back to array in the right order
@@ -171,10 +171,10 @@ const CardapioSemana = () => {
             </TabsList>
             
             {cardapios.map((cardapio) => (
-              <TabsContent key={cardapio.diaSemana} value={cardapio.diaSemana}>
+              <TabsContent key={cardapio.diasemana} value={cardapio.diasemana}> {/* Changed from diaSemana to diasemana */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>{diasSemanaLabels[cardapio.diaSemana]}</CardTitle>
+                    <CardTitle>{diasSemanaLabels[cardapio.diasemana]}</CardTitle> {/* Changed from diaSemana to diasemana */}
                   </CardHeader>
                   <CardContent>
                     {renderCardapioContent(cardapio)}

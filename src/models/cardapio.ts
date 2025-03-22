@@ -10,7 +10,7 @@ export interface ItemCardapio {
 
 export interface Cardapio {
   id?: number;
-  diaSemana: DiaSemana;
+  diasemana: DiaSemana; // Changed from diaSemana to diasemana to match DB column name
   data?: string; // ISO date string
   itens: ItemCardapio;
 }

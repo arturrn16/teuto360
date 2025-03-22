@@ -26,7 +26,7 @@ export const getCardapioPorDia = async (diaSemana: DiaSemana): Promise<Cardapio 
     const { data, error } = await supabase
       .from('cardapio')
       .select('*')
-      .eq('diaSemana', diaSemana)
+      .eq('diasemana', diaSemana) // Changed from diaSemana to diasemana
       .single();
       
     if (error && error.code !== 'PGRST116') { // Ignore "No rows returned" error
@@ -44,7 +44,7 @@ export const getCardapioPorDia = async (diaSemana: DiaSemana): Promise<Cardapio 
 export const salvarCardapio = async (cardapio: Cardapio): Promise<Cardapio> => {
   try {
     // Check if cardapio for this day already exists
-    const existingCardapio = await getCardapioPorDia(cardapio.diaSemana);
+    const existingCardapio = await getCardapioPorDia(cardapio.diasemana);
     
     let result;
     if (existingCardapio) {
@@ -55,7 +55,7 @@ export const salvarCardapio = async (cardapio: Cardapio): Promise<Cardapio> => {
           itens: cardapio.itens,
           data: cardapio.data || new Date().toISOString()
         })
-        .eq('diaSemana', cardapio.diaSemana)
+        .eq('diasemana', cardapio.diasemana) // Changed from diaSemana to diasemana
         .select()
         .single();
         
@@ -70,7 +70,7 @@ export const salvarCardapio = async (cardapio: Cardapio): Promise<Cardapio> => {
       const { data, error } = await supabase
         .from('cardapio')
         .insert({
-          diaSemana: cardapio.diaSemana,
+          diasemana: cardapio.diasemana, // Changed from diaSemana to diasemana
           itens: cardapio.itens,
           data: cardapio.data || new Date().toISOString()
         })
@@ -101,9 +101,9 @@ export const inicializarCardapioSemana = async (): Promise<void> => {
     // Check if we already have entries for all days
     const { data: existingData } = await supabase
       .from('cardapio')
-      .select('diaSemana');
+      .select('diasemana'); // Changed from diaSemana to diasemana
       
-    const existingDays = new Set(existingData?.map(item => item.diaSemana));
+    const existingDays = new Set(existingData?.map(item => item.diasemana));
     
     // Only create entries for days that don't exist yet
     const diasParaCriar = diasSemana.filter(dia => !existingDays.has(dia));
@@ -119,8 +119,8 @@ export const inicializarCardapioSemana = async (): Promise<void> => {
       sobremesas: []
     };
     
-    const newEntries = diasParaCriar.map(diaSemana => ({
-      diaSemana,
+    const newEntries = diasParaCriar.map(diasemana => ({
+      diasemana, // Changed from diaSemana to diasemana
       itens: emptyItems,
       data: new Date().toISOString()
     }));
