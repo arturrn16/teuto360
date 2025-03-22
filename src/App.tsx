@@ -6,7 +6,7 @@ import { SidebarProvider } from "./components/ui/sidebar";
 import { ThemeProvider } from "./components/ThemeProvider";
 
 // Layouts
-import Layout from "./components/Layout";
+import { Layout } from "./components/Layout";
 
 // Pages
 import Index from "./pages/Index";
