@@ -16,7 +16,8 @@ import {
   MapPin,
   Replace,
   Megaphone,
-  Car
+  Car,
+  CalendarDays
 } from "lucide-react";
 import React from "react";
 
@@ -79,6 +80,13 @@ export const navItems: NavItem[] = [
     name: "Gerenciar Comunicados", 
     href: "/gerenciar-comunicados", 
     icon: <Megaphone className="h-5 w-5" />,
+    allowedTypes: ["admin"] as const
+  },
+  // Add admin menu for editing cafeteria menu
+  { 
+    name: "Gerenciar Cardápio", 
+    href: "/gerenciar-cardapio", 
+    icon: <Utensils className="h-5 w-5" />,
     allowedTypes: ["admin"] as const
   },
   // New cascading menu for Transporte items
@@ -150,6 +158,21 @@ export const navItems: NavItem[] = [
     href: "/oferta-caronas", 
     icon: <Car className="h-5 w-5" />,
     allowedTypes: ["colaborador", "comum"] as const
+  },
+  // Add the new Refeitório menu with submenu
+  { 
+    name: "Refeitório", 
+    href: "#", // No direct link
+    icon: <Utensils className="h-5 w-5" />,
+    allowedTypes: ["colaborador", "comum", "selecao", "refeicao"] as const,
+    children: [
+      { 
+        name: "Cardápio da Semana", 
+        href: "/cardapio-semana", 
+        icon: <CalendarDays className="h-5 w-5" />,
+        allowedTypes: ["colaborador", "comum", "selecao", "refeicao"] as const
+      }
+    ]
   },
 ];
 

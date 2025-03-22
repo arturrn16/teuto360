@@ -22,6 +22,10 @@ import Admin from "./pages/Admin";
 import Comunicados from "./pages/Comunicados";
 import GerenciarComunicados from "./pages/GerenciarComunicados";
 
+// Import cafeteria pages
+import CardapioSemana from "./pages/CardapioSemana";
+import GerenciarCardapio from "./pages/GerenciarCardapio";
+
 // Import new pages for collaborators
 import AdesaoCancelamento from "./pages/AdesaoCancelamento";
 import MudancaTurno from "./pages/MudancaTurno";
@@ -122,6 +126,25 @@ const App = () => (
                 }
               />
               
+              {/* New routes for cafeteria menu */}
+              <Route
+                path="/cardapio-semana"
+                element={
+                  <ProtectedRoute allowedTypes={["selecao", "refeicao", "colaborador", "comum"]}>
+                    <CardapioSemana />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/gerenciar-cardapio"
+                element={
+                  <ProtectedRoute allowedTypes={["admin"]}>
+                    <GerenciarCardapio />
+                  </ProtectedRoute>
+                }
+              />
+              
               {/* Routes for collaborators and comum users */}
               <Route
                 path="/adesao-cancelamento"
@@ -186,7 +209,6 @@ const App = () => (
                 }
               />
               
-              {/* New route for ride sharing */}
               <Route
                 path="/oferta-caronas"
                 element={
