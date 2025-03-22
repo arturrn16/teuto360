@@ -1,7 +1,7 @@
 
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
-import { Layout } from "@/components/Layout";  // Using named import
+import Layout from "@/components/Layout";
 import { ProtectedRoute } from "@/context/AuthContext";
 
 import Index from "@/pages/Index";
@@ -34,205 +34,188 @@ function App() {
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/login" element={<Login />} />
-        
         <Route
           path="/dashboard"
           element={
-            <ProtectedRoute allowedTypes={["admin", "selecao", "refeicao", "colaborador", "comum"]}>
-              <Layout />
+            <ProtectedRoute allowedTypes={["admin", "selecao", "refeicao", "colaborador"]}>
+              <Layout>
+                <Dashboard />
+              </Layout>
             </ProtectedRoute>
           }
-        >
-          <Route index element={<Dashboard />} />
-        </Route>
-
+        />
         <Route
           path="/comunicados"
           element={
-            <ProtectedRoute allowedTypes={["admin", "selecao", "refeicao", "colaborador", "comum"]}>
-              <Layout />
+            <ProtectedRoute allowedTypes={["admin", "selecao", "refeicao", "colaborador"]}>
+              <Layout>
+                <Comunicados />
+              </Layout>
             </ProtectedRoute>
           }
-        >
-          <Route index element={<Comunicados />} />
-        </Route>
-
+        />
         <Route
           path="/gerenciar-comunicados"
           element={
             <ProtectedRoute allowedTypes={["admin"]}>
-              <Layout />
+              <Layout>
+                <GerenciarComunicados />
+              </Layout>
             </ProtectedRoute>
           }
-        >
-          <Route index element={<GerenciarComunicados />} />
-        </Route>
-
+        />
         <Route
           path="/abono-ponto"
           element={
-            <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador", "comum"]}>
-              <Layout />
+            <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador"]}>
+              <Layout>
+                <AbonoPonto />
+              </Layout>
             </ProtectedRoute>
           }
-        >
-          <Route index element={<AbonoPonto />} />
-        </Route>
-
+        />
         <Route
           path="/adesao-cancelamento"
           element={
-            <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador", "comum"]}>
-              <Layout />
+            <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador"]}>
+              <Layout>
+                <AdesaoCancelamento />
+              </Layout>
             </ProtectedRoute>
           }
-        >
-          <Route index element={<AdesaoCancelamento />} />
-        </Route>
-
+        />
         <Route
           path="/alteracao-endereco"
           element={
-            <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador", "comum"]}>
-              <Layout />
+            <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador"]}>
+              <Layout>
+                <AlteracaoEndereco />
+              </Layout>
             </ProtectedRoute>
           }
-        >
-          <Route index element={<AlteracaoEndereco />} />
-        </Route>
-
+        />
         <Route
           path="/mudanca-turno"
           element={
-            <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador", "comum"]}>
-              <Layout />
+            <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador"]}>
+              <Layout>
+                <MudancaTurno />
+              </Layout>
             </ProtectedRoute>
           }
-        >
-          <Route index element={<MudancaTurno />} />
-        </Route>
-
+        />
         <Route
           path="/refeicao"
           element={
-            <ProtectedRoute allowedTypes={["admin", "selecao", "refeicao", "colaborador", "comum"]}>
-              <Layout />
+            <ProtectedRoute allowedTypes={["admin", "selecao", "refeicao", "colaborador"]}>
+              <Layout>
+                <Refeicao />
+              </Layout>
             </ProtectedRoute>
           }
-        >
-          <Route index element={<Refeicao />} />
-        </Route>
-
+        />
         <Route
           path="/minhas-solicitacoes"
           element={
-            <ProtectedRoute allowedTypes={["admin", "selecao", "refeicao", "colaborador", "comum"]}>
-              <Layout />
+            <ProtectedRoute allowedTypes={["admin", "selecao", "refeicao", "colaborador"]}>
+              <Layout>
+                <MinhasSolicitacoes />
+              </Layout>
             </ProtectedRoute>
           }
-        >
-          <Route index element={<MinhasSolicitacoes />} />
-        </Route>
-
+        />
         <Route
           path="/admin"
           element={
             <ProtectedRoute allowedTypes={["admin"]}>
-              <Layout />
+              <Layout>
+                <Admin />
+              </Layout>
             </ProtectedRoute>
           }
-        >
-          <Route index element={<Admin />} />
-        </Route>
-
+        />
         <Route
           path="/avaliacao"
           element={
             <ProtectedRoute allowedTypes={["admin"]}>
-              <Layout />
+              <Layout>
+                <Avaliacao />
+              </Layout>
             </ProtectedRoute>
           }
-        >
-          <Route index element={<Avaliacao />} />
-        </Route>
-
+        />
         <Route
           path="/mapa-rotas"
           element={
-            <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador", "comum"]}>
-              <Layout />
+            <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador"]}>
+              <Layout>
+                <MapaRotas />
+              </Layout>
             </ProtectedRoute>
           }
-        >
-          <Route index element={<MapaRotas />} />
-        </Route>
-
+        />
         <Route
           path="/oferta-caronas"
           element={
-            <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador", "comum"]}>
-              <Layout />
+            <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador"]}>
+              <Layout>
+                <OfertaCaronas />
+              </Layout>
             </ProtectedRoute>
           }
-        >
-          <Route index element={<OfertaCaronas />} />
-        </Route>
-
+        />
         <Route
           path="/plantao"
           element={
-            <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador", "comum"]}>
-              <Layout />
+            <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador"]}>
+              <Layout>
+                <Plantao />
+              </Layout>
             </ProtectedRoute>
           }
-        >
-          <Route index element={<Plantao />} />
-        </Route>
-
+        />
         <Route
           path="/transporte-rota"
           element={
-            <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador", "comum"]}>
-              <Layout />
+            <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador"]}>
+              <Layout>
+                <TransporteRota />
+              </Layout>
             </ProtectedRoute>
           }
-        >
-          <Route index element={<TransporteRota />} />
-        </Route>
-
+        />
         <Route
           path="/transporte-12x36"
           element={
-            <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador", "comum"]}>
-              <Layout />
+            <ProtectedRoute allowedTypes={["admin", "selecao", "colaborador"]}>
+              <Layout>
+                <Transporte12x36 />
+              </Layout>
             </ProtectedRoute>
           }
-        >
-          <Route index element={<Transporte12x36 />} />
-        </Route>
+        />
         
-        {/* Refeitório Routes */}
+        {/* New Refeitório Routes */}
         <Route
           path="/cardapio-semana"
           element={
-            <ProtectedRoute allowedTypes={["comum"]}>
-              <Layout />
+            <ProtectedRoute allowedTypes={["admin", "selecao", "refeicao", "colaborador"]}>
+              <Layout>
+                <CardapioSemana />
+              </Layout>
             </ProtectedRoute>
           }
-        >
-          <Route index element={<CardapioSemana />} />
-        </Route>
-
+        />
         <Route
           path="/gerenciar-cardapio"
           element={
             <ProtectedRoute allowedTypes={["admin"]}>
-              <Layout />
+              <Layout>
+                <GerenciarCardapio />
+              </Layout>
             </ProtectedRoute>
           }
-        >
-          <Route index element={<GerenciarCardapio />} />
-        </Route>
+        />
         
         <Route path="*" element={<NotFound />} />
       </Routes>

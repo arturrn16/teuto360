@@ -3,16 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Utensils } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/context/AuthContext";
 
 const RefeitorioDashboardCard = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
-
-  // Only show for comum users
-  if (!user || user.tipo_usuario !== 'comum') {
-    return null;
-  }
 
   return (
     <Card className="hover:shadow-md transition-all duration-200">

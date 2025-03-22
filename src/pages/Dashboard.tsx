@@ -1,6 +1,5 @@
-
 import { useAuth } from "@/context/AuthContext";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import RefeitorioDashboardCard from "@/components/dashboard/RefeitorioDashboardCard";
@@ -61,7 +60,7 @@ const Dashboard = () => {
           </CardFooter>
         </Card>
 
-        {/* Refeitório - Only shown based on the component's internal logic */}
+        {/* Refeitório */}
         <RefeitorioDashboardCard />
 
         {/* Seção de Recursos Humanos */}
