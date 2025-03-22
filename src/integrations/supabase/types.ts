@@ -9,6 +9,33 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      cardapio: {
+        Row: {
+          created_at: string | null
+          data: string | null
+          diasemana: string
+          id: number
+          itens: Json
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          data?: string | null
+          diasemana: string
+          id?: number
+          itens: Json
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          data?: string | null
+          diasemana?: string
+          id?: number
+          itens?: Json
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       comunicados: {
         Row: {
           arquivado: boolean | null
