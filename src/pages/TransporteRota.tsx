@@ -1,8 +1,7 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -34,8 +33,10 @@ import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useToast } from "@/hooks/use-toast";
 
 interface FormValues {
+  matricula: string;
   colaboradorNome: string;
   cidade: "Anápolis" | "Goiânia";
   turno: string;
@@ -49,18 +50,28 @@ const TransporteRota = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
   
   const form = useForm<FormValues>({
     defaultValues: {
-      colaboradorNome: "",
+      matricula: user?.matricula || "",
+      colaboradorNome: user?.nome || "",
       cidade: "Anápolis",
       turno: "",
       rota: "",
       periodoInicio: new Date(),
       periodoFim: new Date(),
-      motivo: "Integração", // Valor fixo
+      motivo: "", // Campo aberto para o usuário preencher
     },
   });
+  
+  // Atualiza os campos de matrícula e nome quando o user é carregado
+  useEffect(() => {
+    if (user) {
+      form.setValue("matricula", user.matricula);
+      form.setValue("colaboradorNome", user.nome);
+    }
+  }, [user, form]);
   
   const cidade = form.watch("cidade");
   const turno = form.watch("turno");
@@ -90,7 +101,11 @@ const TransporteRota = () => {
   
   const onSubmit = async (data: FormValues) => {
     if (!user) {
-      toast.error("Você precisa estar logado para enviar uma solicitação");
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: "Você precisa estar logado para enviar uma solicitação"
+      });
       return;
     }
     
@@ -99,6 +114,7 @@ const TransporteRota = () => {
     try {
       const { error } = await supabase.from("solicitacoes_transporte_rota").insert({
         solicitante_id: user.id,
+        matricula: data.matricula,
         colaborador_nome: data.colaboradorNome,
         cidade: data.cidade,
         turno: data.turno,
@@ -110,15 +126,26 @@ const TransporteRota = () => {
       
       if (error) {
         console.error("Erro ao enviar solicitação:", error);
-        toast.error("Erro ao enviar solicitação");
+        toast({
+          variant: "destructive",
+          title: "Erro",
+          description: "Erro ao enviar solicitação"
+        });
         return;
       }
       
-      toast.success("Solicitação enviada com sucesso!");
+      toast({
+        title: "Sucesso",
+        description: "Solicitação enviada com sucesso!"
+      });
       navigate("/minhas-solicitacoes");
     } catch (error) {
       console.error("Erro ao enviar solicitação:", error);
-      toast.error("Erro ao enviar solicitação");
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: "Erro ao enviar solicitação"
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -136,20 +163,37 @@ const TransporteRota = () => {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="colaboradorNome"
-                rules={{ required: "Nome do colaborador é obrigatório" }}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nome do Colaborador</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Digite o nome completo" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="matricula"
+                  rules={{ required: "Matrícula é obrigatória" }}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Matrícula</FormLabel>
+                      <FormControl>
+                        <Input readOnly {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="colaboradorNome"
+                  rules={{ required: "Nome do colaborador é obrigatório" }}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nome do Colaborador</FormLabel>
+                      <FormControl>
+                        <Input readOnly {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
@@ -334,11 +378,12 @@ const TransporteRota = () => {
               <FormField
                 control={form.control}
                 name="motivo"
+                rules={{ required: "Motivo é obrigatório" }}
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Motivo</FormLabel>
                     <FormControl>
-                      <Input value="Integração" readOnly {...field} />
+                      <Textarea placeholder="Descreva o motivo da solicitação" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

@@ -98,8 +98,7 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
     
-    // Simular a geração de um ticket (em uma implementação real, seria gerado um JPEG)
-    // Aqui retornamos apenas os dados que seriam usados para gerar o ticket
+    // Retornar dados para gerar o ticket
     return new Response(
       JSON.stringify({ 
         success: true,
