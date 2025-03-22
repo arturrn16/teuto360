@@ -1,9 +1,11 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { SidebarMenu, SidebarMenuSub } from "@/components/ui/sidebar";
 import { SidebarNavItem } from "./SidebarNavItem";
 import { NavItem, UserType } from "./navigationConfig";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SidebarNavigationProps {
   items: NavItem[];
@@ -14,6 +16,30 @@ interface SidebarNavigationProps {
 export const SidebarNavigation = ({ items, userType, admin = false }: SidebarNavigationProps) => {
   const location = useLocation();
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({});
+  const isMobile = useIsMobile();
+
+  // Verifica a rota atual e expande automaticamente o menu pai
+  useEffect(() => {
+    // Encontrar qual submenu deve ser expandido com base na rota atual
+    const autoExpandMenus: Record<string, boolean> = {};
+    
+    items.forEach(item => {
+      if (item.children) {
+        const hasActiveChild = item.children.some(child => location.pathname === child.href);
+        if (hasActiveChild) {
+          autoExpandMenus[item.name] = true;
+        }
+      }
+    });
+    
+    // Atualizar apenas se encontrou novos menus para expandir
+    if (Object.keys(autoExpandMenus).length > 0) {
+      setExpandedMenus(prev => ({
+        ...prev,
+        ...autoExpandMenus
+      }));
+    }
+  }, [location.pathname, items]);
 
   // Toggle submenu expansion
   const toggleSubmenu = (name: string) => {
@@ -46,7 +72,7 @@ export const SidebarNavigation = ({ items, userType, admin = false }: SidebarNav
     );
 
     return (
-      <div key={index}>
+      <div key={index} className="group">
         <SidebarNavItem 
           href={hasChildren ? "#" : item.href}
           icon={item.icon}
@@ -54,9 +80,10 @@ export const SidebarNavigation = ({ items, userType, admin = false }: SidebarNav
           isActive={isActive || isChildActive}
           onClick={hasChildren ? () => toggleSubmenu(item.name) : undefined}
           suffix={hasChildren ? 
-            (isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />) 
+            (isExpanded ? <ChevronDown className="h-4 w-4 transition-transform" /> : <ChevronRight className="h-4 w-4 transition-transform" />) 
             : undefined
           }
+          className={`transition-all duration-200 ${isMobile ? 'py-3' : ''}`}
         />
         
         {/* Render children if expanded */}
@@ -69,6 +96,7 @@ export const SidebarNavigation = ({ items, userType, admin = false }: SidebarNav
                 icon={child.icon}
                 name={child.name}
                 isActive={location.pathname === child.href}
+                className={isMobile ? 'py-2.5' : ''}
               />
             ))}
           </SidebarMenuSub>
@@ -78,7 +106,7 @@ export const SidebarNavigation = ({ items, userType, admin = false }: SidebarNav
   };
 
   return (
-    <SidebarMenu>
+    <SidebarMenu className="px-1 sm:px-2">
       {filteredLinks.map((item, index) => renderMenuItem(item, index))}
     </SidebarMenu>
   );
