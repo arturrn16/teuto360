@@ -61,7 +61,7 @@ const TransporteRota = () => {
       rota: "",
       periodoInicio: new Date(),
       periodoFim: new Date(),
-      motivo: "", // Campo aberto para o usuário preencher
+      motivo: "",
     },
   });
   
@@ -83,13 +83,25 @@ const TransporteRota = () => {
     
   // Opções dinâmicas de rota com base na cidade e turno
   const getRotaOptions = () => {
-    if (cidade === "Anápolis" && turno === "Administrativo") {
-      return Array.from({ length: 8 }, (_, i) => `ADM-${String(i + 1).padStart(2, '0')}`);
-    } else if (cidade === "Anápolis") {
-      return Array.from({ length: 15 }, (_, i) => `ROTA-${String(i + 1).padStart(2, '0')}`);
-    } else {
-      return Array.from({ length: 10 }, (_, i) => `GYN-${String(i + 1).padStart(2, '0')}`);
+    if (!turno) return [];
+    
+    // Novas regras para rotas baseadas no turno
+    if (cidade === "Anápolis") {
+      if (turno === "1° Turno") {
+        return Array.from({ length: 15 }, (_, i) => `P-${String(i + 1).padStart(2, '0')}`);
+      } else if (turno === "2° Turno") {
+        return Array.from({ length: 12 }, (_, i) => `S-${String(i + 1).padStart(2, '0')}`);
+      } else if (turno === "3° Turno") {
+        return Array.from({ length: 8 }, (_, i) => `T-${String(i + 1).padStart(2, '0')}`);
+      } else if (turno === "Administrativo") {
+        return Array.from({ length: 8 }, (_, i) => `ADM-${String(i + 1).padStart(2, '0')}`);
+      }
+    } else if (cidade === "Goiânia") {
+      // Para turnos de Goiânia, use o próprio nome do turno como rota
+      return [turno];
     }
+    
+    return [];
   };
   
   const rotaOptions = getRotaOptions();
@@ -239,6 +251,11 @@ const TransporteRota = () => {
                           field.onChange(value);
                           // Redefina a rota ao mudar o turno
                           form.setValue("rota", "");
+                          
+                          // Se for Goiânia, seleciona automaticamente a única opção de rota (o próprio turno)
+                          if (cidade === "Goiânia" && value) {
+                            form.setValue("rota", value);
+                          }
                         }}
                         defaultValue={field.value}
                       >
@@ -271,7 +288,7 @@ const TransporteRota = () => {
                     <Select 
                       onValueChange={field.onChange}
                       defaultValue={field.value}
-                      disabled={!turno} // Desabilita até que o turno seja selecionado
+                      disabled={!turno || (cidade === "Goiânia")} // Desabilita se não tiver turno ou se for Goiânia
                     >
                       <FormControl>
                         <SelectTrigger>
