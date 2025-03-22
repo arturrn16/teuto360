@@ -9,8 +9,18 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
-// Create the typed client
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+// Create the typed client with realtime options enabled
+export const supabase = createClient<Database>(
+  SUPABASE_URL, 
+  SUPABASE_PUBLISHABLE_KEY,
+  {
+    realtime: {
+      params: {
+        eventsPerSecond: 10,
+      },
+    },
+  }
+);
 
 // Base types for custom tables not in the Database type
 export interface BaseSolicitacao {
