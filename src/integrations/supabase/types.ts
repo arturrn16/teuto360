@@ -563,6 +563,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      format_date_dmy: {
+        Args: {
+          date_value: string
+        }
+        Returns: string
+      }
       insert_comunicado: {
         Args: {
           p_titulo: string

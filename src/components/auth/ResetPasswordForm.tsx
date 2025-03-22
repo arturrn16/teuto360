@@ -16,6 +16,7 @@ export const ResetPasswordForm = ({ onCancel }: { onCancel: () => void }) => {
   const [currentPassword, setCurrentPassword] = useState("");
   const [cpf, setCpf] = useState("");
   const [dataNascimento, setDataNascimento] = useState("");
+  const [displayDate, setDisplayDate] = useState(""); // For display in DD/MM/YYYY
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
@@ -31,9 +32,12 @@ export const ResetPasswordForm = ({ onCancel }: { onCancel: () => void }) => {
 
   const formatDate = (date: string) => {
     try {
-      const parts = date.split("-");
-      if (parts.length === 3) {
-        return format(new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2])), "dd/MM/yyyy", { locale: ptBR });
+      // Converter de YYYY-MM-DD para DD/MM/YYYY
+      if (date) {
+        const parts = date.split("-");
+        if (parts.length === 3) {
+          return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
       }
       return date;
     } catch (error) {
@@ -41,9 +45,40 @@ export const ResetPasswordForm = ({ onCancel }: { onCancel: () => void }) => {
     }
   };
 
+  const parseToIsoDate = (displayDate: string) => {
+    try {
+      // Converter de DD/MM/YYYY para YYYY-MM-DD
+      if (displayDate) {
+        const parts = displayDate.split("/");
+        if (parts.length === 3) {
+          return `${parts[2]}-${parts[1]}-${parts[0]}`;
+        }
+      }
+      return displayDate;
+    } catch (error) {
+      return displayDate;
+    }
+  };
+
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Mantém o formato YYYY-MM-DD para o campo HTML
-    setDataNascimento(e.target.value);
+    const value = e.target.value;
+    
+    // Para input type="date", o valor já está em YYYY-MM-DD
+    setDataNascimento(value);
+    
+    // Atualiza a versão formatada para exibição
+    setDisplayDate(formatDate(value));
+  };
+
+  const handleDisplayDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setDisplayDate(value);
+    
+    // Tenta converter para o formato ISO (YYYY-MM-DD)
+    const isoDate = parseToIsoDate(value);
+    if (isoDate) {
+      setDataNascimento(isoDate);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -73,7 +108,7 @@ export const ResetPasswordForm = ({ onCancel }: { onCancel: () => void }) => {
     setIsSubmitting(true);
 
     try {
-      // Mantém o formato YYYY-MM-DD para enviar ao servidor
+      // Garante que a data está no formato YYYY-MM-DD para o backend
       const formattedDate = dataNascimento;
       
       const success = await resetPassword(username, currentPassword, cpf, formattedDate, newPassword);
@@ -153,12 +188,20 @@ export const ResetPasswordForm = ({ onCancel }: { onCancel: () => void }) => {
           <div className="space-y-2">
             <Label htmlFor="dataNascimento">Data de Nascimento</Label>
             <Input
+              id="displayDate"
+              type="text"
+              value={displayDate}
+              onChange={handleDisplayDateChange}
+              placeholder="DD/MM/AAAA"
+              className={cn(isMobile && "touch-target")}
+              required
+            />
+            <Input
               id="dataNascimento"
               type="date"
               value={dataNascimento}
               onChange={handleDateChange}
-              className={cn(isMobile && "touch-target")}
-              required
+              className="hidden" // Oculto, mas mantido para funcionalidade de seleção de data
             />
             <p className="text-xs text-muted-foreground mt-1">
               Formato: DD/MM/AAAA
