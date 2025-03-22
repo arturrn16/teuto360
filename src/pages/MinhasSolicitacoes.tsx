@@ -45,6 +45,7 @@ interface SolicitacaoTransporte extends BaseSolicitacao {
   data_inicio?: string;
   periodo_inicio?: string;
   periodo_fim?: string;
+  motivo?: string;
 }
 
 type SolicitacaoAbonoPontoWithTipo = SolicitacaoAbonoPonto & { tipo: string };
@@ -94,6 +95,7 @@ const MinhasSolicitacoes = () => {
             { table: 'solicitacoes_adesao_cancelamento', tipo: 'Adesão/Cancelamento' },
             { table: 'solicitacoes_alteracao_endereco', tipo: 'Alteração de Endereço' },
             { table: 'solicitacoes_mudanca_turno', tipo: 'Mudança de Turno' },
+            { table: 'solicitacoes_transporte_rota', tipo: 'Uso de Rota' },
           ];
         }
 
@@ -131,7 +133,7 @@ const MinhasSolicitacoes = () => {
             else if (table === 'solicitacoes_transporte_rota') {
               const { data, error } = await (supabase as any)
                 .from(table)
-                .select('id, created_at, status, colaborador_nome, rota, periodo_inicio, periodo_fim')
+                .select('id, created_at, status, colaborador_nome, rota, periodo_inicio, periodo_fim, motivo')
                 .eq('solicitante_id', user.id)
                 .order('created_at', { ascending: false });
 
@@ -150,6 +152,7 @@ const MinhasSolicitacoes = () => {
                   rota: item.rota,
                   periodo_inicio: item.periodo_inicio,
                   periodo_fim: item.periodo_fim,
+                  motivo: item.motivo,
                   solicitante_id: user.id,
                   updated_at: item.updated_at || item.created_at,
                 }));
@@ -336,8 +339,18 @@ const MinhasSolicitacoes = () => {
   }, [user, isAuthenticated]);
 
   const handleDownloadTicket = async (solicitacao: Solicitacao) => {
-    if (solicitacao.tipo === 'Refeição' && solicitacao.status === 'aprovada') {
-      await downloadTicket({ id: solicitacao.id, tipo: 'refeicao' });
+    if (solicitacao.status === 'aprovada') {
+      let ticketType = '';
+      
+      if (solicitacao.tipo === 'Refeição') {
+        ticketType = 'refeicao';
+      } else if (solicitacao.tipo === 'Uso de Rota' || solicitacao.tipo === 'Transporte Rota') {
+        ticketType = 'transporte';
+      }
+      
+      if (ticketType) {
+        await downloadTicket({ id: solicitacao.id, tipo: ticketType });
+      }
     }
   };
 
@@ -393,7 +406,7 @@ const MinhasSolicitacoes = () => {
     } 
     else {
       return (
-        <div className="mt-4 space-x-2">
+        <div className="mt-4 space-x-2 flex flex-wrap gap-2">
           <Button asChild variant="outline">
             <Link to="/abono-ponto">Abono de Ponto</Link>
           </Button>
@@ -405,6 +418,9 @@ const MinhasSolicitacoes = () => {
           </Button>
           <Button asChild variant="outline">
             <Link to="/mudanca-turno">Mudança de Turno</Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link to="/transporte-rota">Uso de Rota</Link>
           </Button>
         </div>
       );
