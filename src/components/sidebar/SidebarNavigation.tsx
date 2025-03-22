@@ -72,6 +72,11 @@ export const SidebarNavigation = ({ items, userType, admin = false }: SidebarNav
     return link.allowedTypes.includes(userType);
   });
 
+  // Check if icon is empty (for transport sub-menu items)
+  const isEmptyIcon = (icon: React.ReactNode): boolean => {
+    return React.isValidElement(icon) && React.Children.count(icon.props.children) === 0;
+  };
+
   // Render menu item recursively to handle submenus
   const renderMenuItem = (item: NavItem, index: number) => {
     const hasChildren = item.children && item.children.length > 0;
@@ -105,7 +110,7 @@ export const SidebarNavigation = ({ items, userType, admin = false }: SidebarNav
               <SidebarNavItem 
                 key={childIndex}
                 href={child.href}
-                icon={child.icon}
+                icon={isEmptyIcon(child.icon) ? null : child.icon}
                 name={child.name}
                 isActive={location.pathname === child.href}
                 onClick={() => handleNavigation(child.href)}

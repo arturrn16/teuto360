@@ -1,3 +1,4 @@
+
 import React from "react";
 
 // Types for user roles
@@ -34,49 +35,49 @@ export const navItems: NavItem[] = [
       { 
         name: "Mapa de Rotas", 
         href: "/mapa-rotas", 
-        icon: <span className="text-red-500 text-xl">📍</span>,
+        icon: <></>,
         allowedTypes: ["colaborador", "comum"] as const
       },
       { 
         name: "Uso de Rota", 
         href: "/transporte-rota", 
-        icon: <span className="text-indigo-500 text-xl">🚏</span>,
+        icon: <></>,
         allowedTypes: ["colaborador", "comum"] as const
       },
       { 
         name: "Mudança de Turno", 
         href: "/mudanca-turno", 
-        icon: <span className="text-amber-500 text-xl">⏰</span>,
+        icon: <></>,
         allowedTypes: ["colaborador", "comum"] as const
       },
       { 
         name: "Alteração de Endereço", 
         href: "/alteracao-endereco", 
-        icon: <span className="text-cyan-500 text-xl">🏠</span>,
+        icon: <></>,
         allowedTypes: ["colaborador", "comum"] as const
       },
       { 
         name: "Adesão/Cancelamento", 
         href: "/adesao-cancelamento", 
-        icon: <span className="text-teal-500 text-xl">✅</span>,
+        icon: <></>,
         allowedTypes: ["colaborador", "comum"] as const
       },
       { 
         name: "Abono de Ponto", 
         href: "/abono-ponto", 
-        icon: <span className="text-lime-500 text-xl">✓</span>,
+        icon: <></>,
         allowedTypes: ["colaborador", "comum"] as const
       },
       { 
         name: "Plantão 24hs", 
         href: "/plantao", 
-        icon: <span className="text-orange-500 text-xl">📞</span>,
+        icon: <></>,
         allowedTypes: ["colaborador", "comum"] as const
       },
       { 
         name: "Avaliação", 
         href: "/avaliacao", 
-        icon: <span className="text-yellow-500 text-xl">⭐</span>,
+        icon: <></>,
         allowedTypes: ["colaborador", "comum"] as const
       },
     ]
