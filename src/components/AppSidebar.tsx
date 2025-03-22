@@ -1,5 +1,4 @@
 
-import { Users } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { 
   Sidebar, 
@@ -29,9 +28,9 @@ export const AppSidebar = () => {
 
   return (
     <Sidebar>
-      <SidebarHeader className="h-16 flex items-center px-4 border-b border-gray-200 bg-white">
-        <Users className="h-6 w-6 text-purple-500 mr-2" />
-        <span className="font-semibold text-lg text-purple-500">Teuto360®</span>
+      <SidebarHeader className="h-16 flex flex-col justify-center px-4 border-b border-gray-200 bg-white">
+        <h1 className="font-bold text-lg text-blue-900">Portal de</h1>
+        <h1 className="font-bold text-lg text-blue-900">Benefícios</h1>
       </SidebarHeader>
       
       <SidebarContent className="bg-white text-gray-700">

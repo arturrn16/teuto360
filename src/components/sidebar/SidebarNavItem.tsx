@@ -21,14 +21,6 @@ export const SidebarNavItem = ({
   suffix,
   className
 }: SidebarNavItemProps) => {
-  const content = (
-    <>
-      {icon}
-      <span className="ml-2">{name}</span>
-      {suffix && <span className="ml-auto">{suffix}</span>}
-    </>
-  );
-
   return (
     <SidebarMenuItem>
       <SidebarMenuButton 
@@ -43,7 +35,9 @@ export const SidebarNavItem = ({
             isActive && "text-blue-500 bg-blue-50"
           )}
         >
-          {content}
+          <span className="flex items-center justify-center w-6 h-6 mr-2">{icon}</span>
+          <span className="ml-2 text-[15px]">{name}</span>
+          {suffix && <span className="ml-auto">{suffix}</span>}
         </button>
       </SidebarMenuButton>
     </SidebarMenuItem>
