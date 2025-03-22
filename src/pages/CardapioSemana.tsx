@@ -1,10 +1,9 @@
 
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { queryCustomTable } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Utensils, CalendarIcon } from "lucide-react";
-import { queryCustomTable } from "@/integrations/supabase/client";
 
 interface CardapioItem {
   id: number;

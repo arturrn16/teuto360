@@ -1,38 +1,29 @@
 
 import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/context/AuthContext";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  CardFooter,
+import { 
+  queryCustomTable, 
+  updateCustomTable 
+} from "@/integrations/supabase/client";
+import { 
+  Card, 
+  CardContent, 
+  CardHeader, 
+  CardTitle, 
+  CardFooter 
 } from "@/components/ui/card";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
+import { 
+  Button, 
+  Input, 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
   SelectValue,
-} from "@/components/ui/select";
-import { Utensils, Save } from "lucide-react";
+  Textarea,
+  toast
+} from "@/components/ui";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { queryCustomTable, updateCustomTable } from "@/integrations/supabase/client";
+import { Utensils, PlusCircle, Edit, Trash2 } from "lucide-react";
 
 interface CardapioItem {
   id: number;
@@ -45,107 +36,120 @@ interface CardapioItem {
 }
 
 const GerenciarCardapio = () => {
-  const { user } = useAuth();
   const [cardapio, setCardapio] = useState<CardapioItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<CardapioItem | null>(null);
-
-  const form = useForm({
-    defaultValues: {
-      prato_principal: "",
-      acompanhamento: "",
-      salada: "",
-      sobremesa: "",
-    },
+  
+  // Add any state variables needed for form handling
+  const [formData, setFormData] = useState({
+    dia_semana: "",
+    tipo: "Cardápio do Dia",
+    prato_principal: "",
+    acompanhamento: "",
+    salada: "",
+    sobremesa: ""
   });
-
+  
+  const [editingId, setEditingId] = useState<number | null>(null);
+  
   useEffect(() => {
-    const fetchCardapio = async () => {
-      try {
-        // Using the customized query function for tables not in the auto-generated types
-        const { data, error } = await queryCustomTable<CardapioItem>("cardapio_semana", {
-          order: { column: "id" }
-        });
-
-        if (error) {
-          console.error("Erro ao buscar o cardápio:", error);
-          return;
-        }
-
-        setCardapio(data as CardapioItem[]);
-      } catch (error) {
-        console.error("Erro ao buscar o cardápio:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchCardapio();
   }, []);
-
-  useEffect(() => {
-    if (selectedItem) {
-      form.reset({
-        prato_principal: selectedItem.prato_principal,
-        acompanhamento: selectedItem.acompanhamento,
-        salada: selectedItem.salada,
-        sobremesa: selectedItem.sobremesa,
-      });
-    }
-  }, [selectedItem, form]);
-
-  const handleSelectItem = (item: CardapioItem) => {
-    setSelectedItem(item);
-  };
-
-  const onSubmit = async (values: any) => {
-    if (!selectedItem || !user) return;
-
-    setSubmitting(true);
-
+  
+  const fetchCardapio = async () => {
     try {
-      // Use the updateCustomTable function for tables not in the auto-generated types
-      const { error } = await updateCustomTable(
-        "cardapio_semana",
-        {
-          prato_principal: values.prato_principal,
-          acompanhamento: values.acompanhamento,
-          salada: values.salada,
-          sobremesa: values.sobremesa,
-          updated_at: new Date().toISOString(),
-        },
-        { column: "id", value: selectedItem.id }
-      );
+      setLoading(true);
+      // Using the customized query function for tables not in the auto-generated types
+      const { data, error } = await queryCustomTable<CardapioItem>("cardapio_semana", {
+        order: { column: "id" }
+      });
 
       if (error) {
-        toast.error("Erro ao atualizar o cardápio");
-        console.error("Erro ao atualizar o cardápio:", error);
+        console.error("Erro ao buscar o cardápio:", error);
         return;
       }
 
-      // Update local state
-      setCardapio((prev) =>
-        prev.map((item) =>
-          item.id === selectedItem.id
-            ? { ...item, ...values }
-            : item
-        )
-      );
-
-      toast.success("Cardápio atualizado com sucesso!");
+      setCardapio(data as CardapioItem[]);
     } catch (error) {
-      console.error("Erro ao atualizar o cardápio:", error);
-      toast.error("Erro ao atualizar o cardápio");
+      console.error("Erro ao buscar o cardápio:", error);
     } finally {
-      setSubmitting(false);
+      setLoading(false);
     }
   };
-
-  // Separar cardápios por tipo
-  const cardapioDoDia = cardapio.filter(item => item.tipo === "Cardápio do Dia");
-  const cardapioFimDeSemana = cardapio.filter(item => item.tipo === "Cardápio de Fim de Semana");
-
+  
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      // For new items
+      if (!editingId) {
+        const { error } = await (supabase as any)
+          .from("cardapio_semana")
+          .insert([formData]);
+          
+        if (error) throw error;
+        toast.success("Cardápio adicionado com sucesso!");
+      } 
+      // For updating existing items
+      else {
+        const { error } = await updateCustomTable(
+          "cardapio_semana",
+          formData,
+          { column: "id", value: editingId }
+        );
+        
+        if (error) throw error;
+        toast.success("Cardápio atualizado com sucesso!");
+        setEditingId(null);
+      }
+      
+      // Reset form and refresh data
+      setFormData({
+        dia_semana: "",
+        tipo: "Cardápio do Dia",
+        prato_principal: "",
+        acompanhamento: "",
+        salada: "",
+        sobremesa: ""
+      });
+      
+      fetchCardapio();
+    } catch (error) {
+      console.error("Erro ao salvar cardápio:", error);
+      toast.error("Erro ao salvar o cardápio");
+    }
+  };
+  
+  const handleDelete = async (id: number) => {
+    if (window.confirm("Tem certeza que deseja excluir este item do cardápio?")) {
+      try {
+        const { error } = await (supabase as any)
+          .from("cardapio_semana")
+          .delete()
+          .eq("id", id);
+          
+        if (error) throw error;
+        
+        toast.success("Item excluído com sucesso!");
+        fetchCardapio();
+      } catch (error) {
+        console.error("Erro ao excluir item:", error);
+        toast.error("Erro ao excluir o item");
+      }
+    }
+  };
+  
+  const handleEdit = (item: CardapioItem) => {
+    setFormData({
+      dia_semana: item.dia_semana,
+      tipo: item.tipo,
+      prato_principal: item.prato_principal,
+      acompanhamento: item.acompanhamento,
+      salada: item.salada,
+      sobremesa: item.sobremesa
+    });
+    setEditingId(item.id);
+  };
+  
   if (loading) {
     return (
       <div className="container py-10">
@@ -155,164 +159,183 @@ const GerenciarCardapio = () => {
       </div>
     );
   }
-
+  
   return (
     <div className="container py-10">
       <div className="flex items-center mb-6">
         <Utensils className="h-8 w-8 mr-2 text-primary" />
-        <h1 className="text-3xl font-bold">Gerenciar Cardápio da Semana</h1>
+        <h1 className="text-3xl font-bold">Gerenciar Cardápio</h1>
       </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-1">
-          <Card>
-            <CardHeader>
-              <CardTitle>Selecione o Dia</CardTitle>
-              <CardDescription>
-                Escolha o dia da semana para editar o cardápio
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Tabs defaultValue="dias-semana">
-                <TabsList className="mb-4 w-full">
-                  <TabsTrigger value="dias-semana">Segunda a Sexta</TabsTrigger>
-                  <TabsTrigger value="fim-semana">Fim de Semana</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="dias-semana">
-                  <div className="space-y-2">
-                    {cardapioDoDia.map((item) => (
-                      <Button
-                        key={item.id}
-                        variant={selectedItem?.id === item.id ? "default" : "outline"}
-                        className="w-full justify-start"
-                        onClick={() => handleSelectItem(item)}
-                      >
-                        {item.dia_semana}
-                      </Button>
-                    ))}
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="fim-semana">
-                  <div className="space-y-2">
-                    {cardapioFimDeSemana.map((item) => (
-                      <Button
-                        key={item.id}
-                        variant={selectedItem?.id === item.id ? "default" : "outline"}
-                        className="w-full justify-start"
-                        onClick={() => handleSelectItem(item)}
-                      >
-                        {item.dia_semana}
-                      </Button>
-                    ))}
-                  </div>
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="md:col-span-2">
-          {selectedItem ? (
-            <Card>
-              <CardHeader>
-                <CardTitle>Editar Cardápio: {selectedItem.dia_semana}</CardTitle>
-                <CardDescription>
-                  Altere os itens do cardápio para {selectedItem.dia_semana}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Form {...form}>
-                  <form
-                    onSubmit={form.handleSubmit(onSubmit)}
-                    className="space-y-6"
-                  >
-                    <FormField
-                      control={form.control}
-                      name="prato_principal"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Prato Principal</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="acompanhamento"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Acompanhamento</FormLabel>
-                          <FormControl>
-                            <Textarea {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="salada"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Salada</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="sobremesa"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Sobremesa</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <Button
-                      type="submit"
-                      className="w-full"
-                      disabled={submitting}
-                    >
-                      {submitting ? (
-                        "Salvando..."
-                      ) : (
-                        <>
-                          <Save className="mr-2 h-4 w-4" />
-                          Salvar Alterações
-                        </>
-                      )}
-                    </Button>
-                  </form>
-                </Form>
-              </CardContent>
-            </Card>
-          ) : (
-            <Card>
-              <CardContent className="flex items-center justify-center h-[300px]">
-                <p className="text-muted-foreground">
-                  Selecione um dia para editar o cardápio
-                </p>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-      </div>
+      
+      {/* Form for adding/editing items */}
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle>{editingId ? "Editar Item do Cardápio" : "Adicionar Novo Item ao Cardápio"}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Form fields would go here - simplified for this example */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Dia da Semana</label>
+                <Input 
+                  value={formData.dia_semana}
+                  onChange={(e) => setFormData({...formData, dia_semana: e.target.value})}
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Tipo</label>
+                <select
+                  value={formData.tipo}
+                  onChange={(e) => setFormData({...formData, tipo: e.target.value})}
+                  className="w-full border rounded p-2"
+                  required
+                >
+                  <option value="Cardápio do Dia">Cardápio do Dia</option>
+                  <option value="Cardápio de Fim de Semana">Cardápio de Fim de Semana</option>
+                </select>
+              </div>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium mb-1">Prato Principal</label>
+              <Input 
+                value={formData.prato_principal}
+                onChange={(e) => setFormData({...formData, prato_principal: e.target.value})}
+                required
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium mb-1">Acompanhamento</label>
+              <Input 
+                value={formData.acompanhamento}
+                onChange={(e) => setFormData({...formData, acompanhamento: e.target.value})}
+                required
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium mb-1">Salada</label>
+              <Input 
+                value={formData.salada}
+                onChange={(e) => setFormData({...formData, salada: e.target.value})}
+                required
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium mb-1">Sobremesa</label>
+              <Input 
+                value={formData.sobremesa}
+                onChange={(e) => setFormData({...formData, sobremesa: e.target.value})}
+                required
+              />
+            </div>
+            
+            <div className="flex gap-2">
+              <Button type="submit">
+                {editingId ? "Atualizar" : "Adicionar"} Item
+              </Button>
+              
+              {editingId && (
+                <Button type="button" variant="outline" onClick={() => {
+                  setEditingId(null);
+                  setFormData({
+                    dia_semana: "",
+                    tipo: "Cardápio do Dia",
+                    prato_principal: "",
+                    acompanhamento: "",
+                    salada: "",
+                    sobremesa: ""
+                  });
+                }}>
+                  Cancelar
+                </Button>
+              )}
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+      
+      {/* Display existing items */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Cardápio Atual</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="dias-semana">
+            <TabsList className="mb-4">
+              <TabsTrigger value="dias-semana">Segunda a Sexta</TabsTrigger>
+              <TabsTrigger value="fim-semana">Fim de Semana</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="dias-semana">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {cardapio
+                  .filter(item => item.tipo === "Cardápio do Dia")
+                  .map(item => (
+                    <Card key={item.id}>
+                      <CardHeader className="pb-2">
+                        <div className="flex justify-between items-center">
+                          <CardTitle className="text-lg">{item.dia_semana}</CardTitle>
+                          <div className="flex gap-1">
+                            <Button size="sm" variant="ghost" onClick={() => handleEdit(item)}>
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button size="sm" variant="ghost" onClick={() => handleDelete(item.id)}>
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="text-sm">
+                        <p><strong>Prato:</strong> {item.prato_principal}</p>
+                        <p><strong>Acomp.:</strong> {item.acompanhamento}</p>
+                        <p><strong>Salada:</strong> {item.salada}</p>
+                        <p><strong>Sobremesa:</strong> {item.sobremesa}</p>
+                      </CardContent>
+                    </Card>
+                  ))
+                }
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="fim-semana">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {cardapio
+                  .filter(item => item.tipo === "Cardápio de Fim de Semana")
+                  .map(item => (
+                    <Card key={item.id}>
+                      <CardHeader className="pb-2">
+                        <div className="flex justify-between items-center">
+                          <CardTitle className="text-lg">{item.dia_semana}</CardTitle>
+                          <div className="flex gap-1">
+                            <Button size="sm" variant="ghost" onClick={() => handleEdit(item)}>
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button size="sm" variant="ghost" onClick={() => handleDelete(item.id)}>
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="text-sm">
+                        <p><strong>Prato:</strong> {item.prato_principal}</p>
+                        <p><strong>Acomp.:</strong> {item.acompanhamento}</p>
+                        <p><strong>Salada:</strong> {item.salada}</p>
+                        <p><strong>Sobremesa:</strong> {item.sobremesa}</p>
+                      </CardContent>
+                    </Card>
+                  ))
+                }
+              </div>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
     </div>
   );
 };
