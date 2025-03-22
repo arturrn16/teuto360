@@ -19,7 +19,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Download } from "lucide-react";
+import { Download, Ticket, Bus, Calendar, User, Route, AlertCircle } from "lucide-react";
 import { downloadTicket } from "@/services/ticketService";
 import {
   Table,
@@ -340,12 +340,14 @@ const MinhasSolicitacoes = () => {
 
   const handleDownloadTicket = async (solicitacao: Solicitacao) => {
     if (solicitacao.status === 'aprovada') {
-      let ticketType = '';
+      let ticketType: 'rota' | '12x36' | 'refeicao' | null = null;
       
       if (solicitacao.tipo === 'Refeição') {
         ticketType = 'refeicao';
       } else if (solicitacao.tipo === 'Uso de Rota' || solicitacao.tipo === 'Transporte Rota') {
-        ticketType = 'transporte';
+        ticketType = 'rota';
+      } else if (solicitacao.tipo === 'Transporte 12x36') {
+        ticketType = '12x36';
       }
       
       if (ticketType) {
@@ -544,6 +546,7 @@ const MinhasSolicitacoes = () => {
                                     variant="outline" 
                                     size="sm"
                                     title="Gerar Ticket"
+                                    onClick={() => handleDownloadTicket(solicitacao)}
                                   >
                                     <Download className="h-4 w-4" />
                                   </Button>
@@ -580,7 +583,8 @@ const MinhasSolicitacoes = () => {
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            {isRefeicaoSolicitacao(solicitacao) && solicitacao.status === 'aprovada' && (
+                            {(isRefeicaoSolicitacao(solicitacao) || solicitacao.tipo === 'Uso de Rota') && 
+                             solicitacao.status === 'aprovada' && (
                               <Button 
                                 variant="outline" 
                                 size="sm" 

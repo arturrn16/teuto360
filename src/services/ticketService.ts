@@ -37,7 +37,7 @@ export const generateTicket = async ({ id, tipo }: GenerateTicketParams): Promis
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     
-    // Set canvas dimensions
+    // Set canvas dimensions - make it look like a ticket
     canvas.width = 600;
     canvas.height = 300;
     
