@@ -29,7 +29,7 @@ export const AppSidebar = () => {
   return (
     <Sidebar>
       <SidebarHeader className="h-16 flex flex-col justify-center px-4 border-b border-gray-200 bg-white">
-        <h1 className="font-bold text-lg text-blue-900">ConexãoRH®</h1>
+        <h1 className="font-bold text-lg text-blue-900">Teuto360</h1>
       </SidebarHeader>
       
       <SidebarContent className="bg-white text-gray-700">
