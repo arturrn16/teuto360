@@ -7,54 +7,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
-// Mockup data - you would fetch this from your backend in a real app
-const mockSolicitacoes = [
-  {
-    id: 1,
-    tipo: "Abono de Ponto",
-    solicitante: "João Silva",
-    data: "2023-10-15",
-    status: "pendente",
-    descricao: "Preciso de abono para consulta médica no dia 20/10."
-  },
-  {
-    id: 2,
-    tipo: "Alteração de Endereço",
-    solicitante: "Maria Oliveira",
-    data: "2023-10-14",
-    status: "pendente",
-    descricao: "Mudei para Rua das Flores, 123 - Jardim Primavera."
-  },
-  {
-    id: 3,
-    tipo: "Mudança de Turno",
-    solicitante: "Pedro Santos",
-    data: "2023-10-12",
-    status: "pendente",
-    descricao: "Solicito mudança para o turno da tarde por motivos pessoais."
-  },
-  {
-    id: 4,
-    tipo: "Adesão/Cancelamento",
-    solicitante: "Ana Souza",
-    data: "2023-10-10",
-    status: "aprovado",
-    descricao: "Gostaria de aderir ao transporte coletivo."
-  },
-  {
-    id: 5,
-    tipo: "Plantão",
-    solicitante: "Carlos Mendes",
-    data: "2023-10-08",
-    status: "rejeitado",
-    descricao: "Solicito plantão para o dia 25/10."
-  }
-];
-
 type StatusType = "pendente" | "aprovado" | "rejeitado";
 
 const SolicitacoesAdmin = () => {
-  const [solicitacoes, setSolicitacoes] = useState(mockSolicitacoes);
+  const [solicitacoes, setSolicitacoes] = useState([]);
   const [activeTab, setActiveTab] = useState<StatusType>("pendente");
   
   const handleAction = (id: number, action: "aprovar" | "rejeitar") => {
