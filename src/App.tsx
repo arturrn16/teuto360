@@ -1,7 +1,7 @@
 
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
-import Layout from "@/components/Layout";
+import { Layout } from "@/components/Layout"; // Change this from default import to named import
 import { ProtectedRoute } from "@/context/AuthContext";
 
 import Index from "@/pages/Index";
