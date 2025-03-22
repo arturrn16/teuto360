@@ -7,7 +7,6 @@ import { SidebarNavItem } from "./SidebarNavItem";
 import { NavItem, UserType, commonUserNavigation, adminNavigation } from "./navigationConfig";
 
 interface SidebarNavigationProps {
-  items: any; // For backward compatibility
   userType: UserType;
   admin?: boolean;
 }

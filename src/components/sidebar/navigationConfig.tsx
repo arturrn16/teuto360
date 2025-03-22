@@ -99,6 +99,12 @@ export const commonUserNavigation: NavSection[] = [
         ]
       },
       {
+        title: "Avaliação",
+        href: "/avaliacao",
+        icon: <BarChart2 className="h-5 w-5" />,
+        allowedTypes: ["selecao", "colaborador", "comum"] as const,
+      },
+      {
         title: "Oferta de Caronas",
         href: "/oferta-caronas",
         icon: <CarFront className="h-5 w-5" />,
@@ -139,15 +145,15 @@ export const adminNavigation: NavSection[] = [
         allowedTypes: ["admin"] as const,
       },
       {
-        title: "Avaliação",
-        href: "/avaliacao",
-        icon: <BarChart2 className="h-5 w-5" />,
-        allowedTypes: ["admin"] as const,
-      },
-      {
         title: "Gerenciar Cardápio",
         href: "/gerenciar-cardapio",
         icon: <Utensils className="h-5 w-5" />,
+        allowedTypes: ["admin"] as const,
+      },
+      {
+        title: "Solicitações",
+        href: "/solicitacoes-admin",
+        icon: <FileText className="h-5 w-5" />,
         allowedTypes: ["admin"] as const,
       },
     ] as const,
