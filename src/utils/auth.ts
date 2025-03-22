@@ -12,14 +12,12 @@ export interface User {
   username: string;
   admin: boolean;
   tipo_usuario: 'admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum';
-  primeiro_acesso: boolean;
   created_at?: string;
   updated_at?: string;
 }
 
 export const loginUser = async (username: string, password: string): Promise<User | null> => {
   try {
-    console.log("Tentando login para:", username);
     // Chama a edge function de login
     const { data, error } = await supabase.functions.invoke('login', {
       body: { username, password }
@@ -37,52 +35,12 @@ export const loginUser = async (username: string, password: string): Promise<Use
     }
 
     // Se tudo deu certo, retorna o usuário
-    console.log("Login bem-sucedido para:", username, "Dados:", data.user);
     storeUser(data.user);
     return data.user;
   } catch (error) {
     console.error("Erro ao fazer login:", error);
     toast.error("Erro ao fazer login");
     return null;
-  }
-};
-
-export const changePassword = async (userId: number, newPassword: string): Promise<boolean> => {
-  try {
-    console.log("Alterando senha para usuário ID:", userId);
-    
-    // Chama a edge function para alterar a senha
-    const { data, error } = await supabase.functions.invoke('change-password', {
-      body: { userId, newPassword }
-    });
-
-    if (error) {
-      console.error("Erro ao alterar senha:", error);
-      toast.error("Erro ao alterar senha");
-      return false;
-    }
-
-    if (data && data.error) {
-      console.error("Erro retornado pela função change-password:", data.error);
-      toast.error(data.error);
-      return false;
-    }
-
-    console.log("Senha alterada com sucesso para usuário ID:", userId);
-    toast.success("Senha alterada com sucesso!");
-    
-    // Atualiza o usuário armazenado localmente para refletir o primeiro acesso como concluído
-    const user = getStoredUser();
-    if (user) {
-      user.primeiro_acesso = false;
-      storeUser(user);
-    }
-    
-    return true;
-  } catch (error) {
-    console.error("Erro ao alterar senha:", error);
-    toast.error("Erro ao alterar senha");
-    return false;
   }
 };
 

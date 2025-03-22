@@ -10,7 +10,6 @@ interface AuthContextType {
   login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
   isAuthenticated: boolean;
-  needsPasswordChange: boolean;
   shouldShowRoute: (allowedTypes: ReadonlyArray<'admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum'>) => boolean;
 }
 
@@ -62,9 +61,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return shouldShowRoute(user, allowedTypes);
   };
 
-  // Check if the user needs to change their password
-  const needsPasswordChange = user?.primeiro_acesso === true;
-
   return (
     <AuthContext.Provider
       value={{
@@ -73,7 +69,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         login,
         logout,
         isAuthenticated: !!user,
-        needsPasswordChange,
         shouldShowRoute: checkShouldShowRoute,
       }}
     >
@@ -95,19 +90,13 @@ export const ProtectedRoute: React.FC<{
   children: React.ReactNode;
   allowedTypes?: ReadonlyArray<'admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum'>;
 }> = ({ children, allowedTypes = ["admin", "selecao", "refeicao", "colaborador", "comum"] as const }) => {
-  const { user, isAuthenticated, isLoading, needsPasswordChange } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       navigate("/login");
     } else if (!isLoading && isAuthenticated && user) {
-      // Se o usuário precisa alterar a senha, não verifica outras permissões
-      if (needsPasswordChange) {
-        // Não navega para outra página para que o componente de troca de senha seja exibido
-        return;
-      }
-      
       // Verifica permissões do tipo de usuário
       const isAllowed = user.admin || allowedTypes.includes(user.tipo_usuario);
       if (!isAllowed) {
@@ -115,25 +104,12 @@ export const ProtectedRoute: React.FC<{
         navigate("/dashboard");
       }
     }
-  }, [isAuthenticated, isLoading, navigate, user, allowedTypes, needsPasswordChange]);
+  }, [isAuthenticated, isLoading, navigate, user, allowedTypes]);
 
   if (isLoading) {
     return <div className="flex justify-center items-center h-screen">
       <div className="animate-pulse text-primary">Carregando...</div>
     </div>;
-  }
-
-  // Se o usuário precisa alterar a senha, mostra o componente de alteração de senha
-  if (isAuthenticated && needsPasswordChange) {
-    const FirstAccessPasswordChange = React.lazy(() => import('../components/auth/FirstAccessPasswordChange').then(module => ({ default: module.FirstAccessPasswordChange })));
-    
-    return (
-      <div className="min-h-screen flex flex-col justify-center items-center bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800 p-4">
-        <React.Suspense fallback={<div>Carregando...</div>}>
-          <FirstAccessPasswordChange />
-        </React.Suspense>
-      </div>
-    );
   }
 
   // Se autenticado e tem permissão, renderiza os children
