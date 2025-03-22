@@ -65,6 +65,44 @@ export const navigationConfig: NavSection[] = [
         icon: <CarFront className="h-5 w-5" />,
         allowedTypes: ["admin", "selecao", "colaborador", "comum"] as const,
       },
+      {
+        title: "Solicitações",
+        href: "/minhas-solicitacoes",
+        icon: <FileText className="h-5 w-5" />,
+        allowedTypes: ["admin", "selecao", "refeicao", "colaborador", "comum"] as const,
+        children: [
+          {
+            title: "Abono de Ponto",
+            href: "/abono-ponto",
+            icon: <CheckSquare className="h-5 w-5" />,
+            allowedTypes: ["admin", "selecao", "colaborador", "comum"] as const,
+          },
+          {
+            title: "Alteração de Endereço",
+            href: "/alteracao-endereco",
+            icon: <MapPin className="h-5 w-5" />,
+            allowedTypes: ["admin", "selecao", "colaborador", "comum"] as const,
+          },
+          {
+            title: "Mudança de Turno",
+            href: "/mudanca-turno",
+            icon: <Calendar className="h-5 w-5" />,
+            allowedTypes: ["admin", "selecao", "colaborador", "comum"] as const,
+          },
+          {
+            title: "Adesão/Cancelamento",
+            href: "/adesao-cancelamento",
+            icon: <FileEdit className="h-5 w-5" />,
+            allowedTypes: ["admin", "selecao", "colaborador", "comum"] as const,
+          },
+          {
+            title: "Plantão",
+            href: "/plantao",
+            icon: <CalendarCheck className="h-5 w-5" />,
+            allowedTypes: ["admin", "selecao", "colaborador", "comum"] as const,
+          },
+        ]
+      },
     ] as const,
   },
   {
@@ -75,47 +113,6 @@ export const navigationConfig: NavSection[] = [
         href: "/cardapio-semana",
         icon: <Utensils className="h-5 w-5" />,
         allowedTypes: ["admin", "selecao", "refeicao", "colaborador", "comum"] as const,
-      },
-    ] as const,
-  },
-  {
-    title: "Recursos Humanos",
-    items: [
-      {
-        title: "Solicitações",
-        href: "/minhas-solicitacoes",
-        icon: <FileText className="h-5 w-5" />,
-        allowedTypes: ["admin", "selecao", "refeicao", "colaborador", "comum"] as const,
-      },
-      {
-        title: "Abono de Ponto",
-        href: "/abono-ponto",
-        icon: <CheckSquare className="h-5 w-5" />,
-        allowedTypes: ["admin", "selecao", "colaborador", "comum"] as const,
-      },
-      {
-        title: "Alteração de Endereço",
-        href: "/alteracao-endereco",
-        icon: <MapPin className="h-5 w-5" />,
-        allowedTypes: ["admin", "selecao", "colaborador", "comum"] as const,
-      },
-      {
-        title: "Mudança de Turno",
-        href: "/mudanca-turno",
-        icon: <Calendar className="h-5 w-5" />,
-        allowedTypes: ["admin", "selecao", "colaborador", "comum"] as const,
-      },
-      {
-        title: "Adesão/Cancelamento",
-        href: "/adesao-cancelamento",
-        icon: <FileEdit className="h-5 w-5" />,
-        allowedTypes: ["admin", "selecao", "colaborador", "comum"] as const,
-      },
-      {
-        title: "Plantão",
-        href: "/plantao",
-        icon: <CalendarCheck className="h-5 w-5" />,
-        allowedTypes: ["admin", "selecao", "colaborador", "comum"] as const,
       },
       {
         title: "Refeição",
