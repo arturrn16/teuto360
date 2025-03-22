@@ -30,6 +30,7 @@ import AbonoPonto from "./pages/AbonoPonto";
 import Avaliacao from "./pages/Avaliacao";
 import Plantao from "./pages/Plantao";
 import MapaRotas from "./pages/MapaRotas";
+import OfertaCaronas from "./pages/OfertaCaronas";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -181,6 +182,16 @@ const App = () => (
                 element={
                   <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
                     <MapaRotas />
+                  </ProtectedRoute>
+                }
+              />
+              
+              {/* New route for ride sharing */}
+              <Route
+                path="/oferta-caronas"
+                element={
+                  <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
+                    <OfertaCaronas />
                   </ProtectedRoute>
                 }
               />

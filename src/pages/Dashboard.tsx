@@ -1,8 +1,9 @@
+
 import { useAuth } from "@/context/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui-components/Card";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
-import { Clock, FileText, Route, Map, Utensils, Shield, Home, UserCheck, Phone, Star, MapPin, ClipboardCheck, Replace } from "lucide-react";
+import { Clock, FileText, Route, Map, Utensils, Shield, Home, UserCheck, Phone, Star, MapPin, ClipboardCheck, Replace, Car } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const Dashboard = () => {
@@ -161,6 +162,16 @@ const Dashboard = () => {
       allowedTypes: ["colaborador", "comum"],
       color: "from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20",
       textColor: "text-red-600 dark:text-red-400"
+    },
+    // New card for ride sharing
+    {
+      title: "Oferta de Caronas",
+      description: "Compartilhe ou encontre caronas disponíveis",
+      icon: <Car className="h-8 w-8 text-purple-500" />,
+      to: "/oferta-caronas",
+      allowedTypes: ["colaborador", "comum"],
+      color: "from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20",
+      textColor: "text-purple-600 dark:text-purple-400"
     },
   ];
 

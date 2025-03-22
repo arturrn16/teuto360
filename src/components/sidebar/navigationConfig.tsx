@@ -136,7 +136,20 @@ export const navItems: NavItem[] = [
         icon: <Star className="h-5 w-5" />,
         allowedTypes: ["colaborador", "comum"] as const
       },
+      { 
+        name: "Oferta de Caronas", 
+        href: "/oferta-caronas", 
+        icon: <Car className="h-5 w-5" />,
+        allowedTypes: ["colaborador", "comum"] as const
+      },
     ]
+  },
+  // Add a direct access link for the ride sharing
+  { 
+    name: "Oferta de Caronas", 
+    href: "/oferta-caronas", 
+    icon: <Car className="h-5 w-5" />,
+    allowedTypes: ["colaborador", "comum"] as const
   },
 ];
 

@@ -56,6 +56,56 @@ export type Database = {
           },
         ]
       }
+      ofertas_caronas: {
+        Row: {
+          created_at: string | null
+          id: number
+          nome_motorista: string
+          observacoes: string | null
+          saindo_de: string
+          setor: string
+          turno: string
+          updated_at: string | null
+          usuario_id: number
+          valor_mensal: number
+          whatsapp: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: number
+          nome_motorista: string
+          observacoes?: string | null
+          saindo_de: string
+          setor: string
+          turno: string
+          updated_at?: string | null
+          usuario_id: number
+          valor_mensal: number
+          whatsapp: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: number
+          nome_motorista?: string
+          observacoes?: string | null
+          saindo_de?: string
+          setor?: string
+          turno?: string
+          updated_at?: string | null
+          usuario_id?: number
+          valor_mensal?: number
+          whatsapp?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ofertas_caronas_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       solicitacoes_abono_ponto: {
         Row: {
           cidade: string
