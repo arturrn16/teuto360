@@ -516,6 +516,7 @@ export type Database = {
           matricula: string
           nome: string
           password: string
+          primeiro_acesso: boolean | null
           setor: string
           tipo_usuario: string
           updated_at: string | null
@@ -529,6 +530,7 @@ export type Database = {
           matricula: string
           nome: string
           password: string
+          primeiro_acesso?: boolean | null
           setor: string
           tipo_usuario: string
           updated_at?: string | null
@@ -542,6 +544,7 @@ export type Database = {
           matricula?: string
           nome?: string
           password?: string
+          primeiro_acesso?: boolean | null
           setor?: string
           tipo_usuario?: string
           updated_at?: string | null
