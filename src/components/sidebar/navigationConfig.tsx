@@ -96,24 +96,6 @@ export const navItems: NavItem[] = [
     ]
   },
   { 
-    name: "Empréstimo Consignado", 
-    href: "#", 
-    icon: <span className="text-yellow-600 text-xl">💰</span>,
-    allowedTypes: ["colaborador", "comum"] as const
-  },
-  { 
-    name: "Plano de Saúde/Odonto", 
-    href: "#", 
-    icon: <span className="text-blue-500 text-xl">💙</span>,
-    allowedTypes: ["colaborador", "comum"] as const
-  },
-  { 
-    name: "Departamento Pessoal", 
-    href: "#", 
-    icon: <span className="text-blue-400 text-xl">👨‍👩‍👧‍👦</span>,
-    allowedTypes: ["colaborador", "comum"] as const
-  },
-  { 
     name: "Avisos", 
     href: "/comunicados", 
     icon: <span className="text-red-500 text-xl">📢</span>,
@@ -123,12 +105,6 @@ export const navItems: NavItem[] = [
     name: "Ofertas de Carona", 
     href: "/oferta-caronas", 
     icon: <span className="text-red-600 text-xl">🚗</span>,
-    allowedTypes: ["colaborador", "comum"] as const
-  },
-  { 
-    name: "Seleção Interna", 
-    href: "#", 
-    icon: <span className="text-amber-700 text-xl">💼</span>,
     allowedTypes: ["colaborador", "comum"] as const
   },
   // Admin sections - keep these for admin users
