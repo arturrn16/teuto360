@@ -2,6 +2,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { corsHeaders } from "../_shared/cors.ts"
+import * as bcrypt from 'https://deno.land/x/bcrypt@v0.4.1/mod.ts'
 
 console.log("Iniciando edge function de alteração de senha.")
 
@@ -20,12 +21,12 @@ const handler = async (req: Request): Promise<Response> => {
     const supabase = createClient(supabaseUrl, supabaseKey);
     
     // Extrair dados da requisição
-    const { userId, hashedPassword } = await req.json();
+    const { userId, newPassword } = await req.json();
     
-    if (!userId || !hashedPassword) {
-      console.log("Erro: userId ou hashedPassword não fornecidos")
+    if (!userId || !newPassword) {
+      console.log("Erro: userId ou newPassword não fornecidos")
       return new Response(
-        JSON.stringify({ error: "ID do usuário e senha são obrigatórios" }),
+        JSON.stringify({ error: "ID do usuário e nova senha são obrigatórios" }),
         { 
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 400 
@@ -34,6 +35,10 @@ const handler = async (req: Request): Promise<Response> => {
     }
     
     console.log(`Tentando alterar senha para o usuário ID: ${userId}`)
+    
+    // Hash a nova senha
+    const hashedPassword = await bcrypt.hash(newPassword);
+    console.log("Senha criptografada com sucesso");
     
     // Atualiza a senha e marca como não sendo mais o primeiro acesso
     const { error } = await supabase

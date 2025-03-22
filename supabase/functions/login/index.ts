@@ -2,7 +2,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { corsHeaders } from "../_shared/cors.ts"
-import * as bcrypt from 'https://esm.sh/bcryptjs@2.4.3'
+import * as bcrypt from 'https://deno.land/x/bcrypt@v0.4.1/mod.ts'
 
 console.log("Iniciando edge function de login.")
 
@@ -59,10 +59,16 @@ const handler = async (req: Request): Promise<Response> => {
     // Verificar se a senha está em formato hash ou em texto plano (para compatibilidade)
     let passwordMatches = false;
     
-    if (user.password.startsWith('$2a$') || user.password.startsWith('$2b$') || user.password.startsWith('$2y$')) {
+    if (user.password.startsWith('$2')) {
       // Senha já está em formato hash, usar bcrypt para verificar
       console.log("Verificando senha com bcrypt");
-      passwordMatches = await bcrypt.compare(password, user.password);
+      try {
+        passwordMatches = await bcrypt.compare(password, user.password);
+      } catch (bcryptError) {
+        console.error("Erro ao comparar senhas com bcrypt:", bcryptError);
+        // Se falhar, fazer uma comparação direta como fallback para compatibilidade
+        passwordMatches = (password === user.password);
+      }
     } else {
       // Senha em texto plano para compatibilidade com contas existentes
       console.log("Verificando senha em texto plano");
@@ -72,8 +78,7 @@ const handler = async (req: Request): Promise<Response> => {
       if (passwordMatches) {
         console.log("Senha em texto plano válida, atualizando para hash...");
         try {
-          const salt = await bcrypt.genSalt(10);
-          const hashedPassword = await bcrypt.hash(password, salt);
+          const hashedPassword = await bcrypt.hash(password);
           
           const { error: updateError } = await supabase
             .from('usuarios')

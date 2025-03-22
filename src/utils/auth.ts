@@ -1,7 +1,5 @@
-
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import * as bcrypt from "bcryptjs";
 
 // Define user types
 export interface User {
@@ -51,13 +49,10 @@ export const loginUser = async (username: string, password: string): Promise<Use
 export const changePassword = async (userId: number, newPassword: string): Promise<boolean> => {
   try {
     console.log("Alterando senha para usuário ID:", userId);
-    // Criptografa a nova senha
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(newPassword, salt);
-
+    
     // Chama a edge function para alterar a senha
     const { data, error } = await supabase.functions.invoke('change-password', {
-      body: { userId, hashedPassword }
+      body: { userId, newPassword }
     });
 
     if (error) {
