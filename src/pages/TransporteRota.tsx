@@ -79,18 +79,13 @@ const TransporteRota = () => {
   // Opções dinâmicas de turno com base na cidade
   const turnoOptions = cidade === "Anápolis" 
     ? ["Administrativo", "1° Turno", "2° Turno", "3° Turno"]
-    : ["Adm Gyn 1", "Adm Gyn 2", "Gyn 1° Turno", "Gyn 2° Turno"];
+    : ["Gyn Adm 1", "Gyn Adm 2", "Gyn 1° Turno", "Gyn 2° Turno"];
     
   // Opções dinâmicas de rota com base na cidade e turno
   const getRotaOptions = () => {
     if (!turno) return [];
     
-    // Rotas para Goiânia são os próprios turnos
-    if (cidade === "Goiânia") {
-      return [turno]; // A rota para Goiânia é o próprio turno selecionado
-    }
-    
-    // Rotas para Anápolis
+    // Novas regras para rotas baseadas no turno
     if (cidade === "Anápolis") {
       if (turno === "1° Turno") {
         return Array.from({ length: 15 }, (_, i) => `P-${String(i + 1).padStart(2, '0')}`);
@@ -101,6 +96,9 @@ const TransporteRota = () => {
       } else if (turno === "Administrativo") {
         return Array.from({ length: 8 }, (_, i) => `ADM-${String(i + 1).padStart(2, '0')}`);
       }
+    } else if (cidade === "Goiânia") {
+      // Para turnos de Goiânia, use o próprio nome do turno como rota
+      return [turno];
     }
     
     return [];
