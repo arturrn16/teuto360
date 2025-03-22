@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -6,13 +5,6 @@ import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -30,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { FormLayout } from "@/components/FormLayout";
 
 interface FormValues {
   tipoSolicitacao: "Aderir" | "Cancelar";
@@ -84,123 +77,121 @@ const AdesaoCancelamento = () => {
   };
   
   return (
-    <div className="container max-w-3xl py-10">
-      <Card>
-        <CardHeader>
-          <CardTitle>Solicitação de Adesão ou Cancelamento do Transporte Fretado</CardTitle>
-          <CardDescription>
-            Assim que enviar a solicitação, em até 3 dias úteis, receberá o termo para assinatura on-line para efetivação do serviço no e-mail fornecido na solicitação.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <div className="grid grid-cols-2 gap-6">
-                <FormItem>
-                  <FormLabel>Matrícula</FormLabel>
+    <FormLayout
+      title="Adesão ou Cancelamento do Transporte Fretado"
+      description="Assim que enviar a solicitação, em até 3 dias úteis, receberá o termo para assinatura on-line para efetivação do serviço no e-mail fornecido na solicitação."
+    >
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <FormItem>
+              <FormLabel className="form-field-label">Matrícula</FormLabel>
+              <FormControl>
+                <Input value={user?.matricula || ""} disabled className="form-field-input" />
+              </FormControl>
+            </FormItem>
+            
+            <FormItem>
+              <FormLabel className="form-field-label">Nome</FormLabel>
+              <FormControl>
+                <Input value={user?.nome || ""} disabled className="form-field-input" />
+              </FormControl>
+            </FormItem>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <FormItem>
+              <FormLabel className="form-field-label">Cargo</FormLabel>
+              <FormControl>
+                <Input value={user?.cargo || ""} disabled className="form-field-input" />
+              </FormControl>
+            </FormItem>
+            
+            <FormItem>
+              <FormLabel className="form-field-label">Setor</FormLabel>
+              <FormControl>
+                <Input value={user?.setor || ""} disabled className="form-field-input" />
+              </FormControl>
+            </FormItem>
+          </div>
+          
+          <FormField
+            control={form.control}
+            name="tipoSolicitacao"
+            rules={{ required: "Tipo de solicitação é obrigatório" }}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="form-field-label">Tipo de Solicitação</FormLabel>
+                <Select 
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
                   <FormControl>
-                    <Input value={user?.matricula || ""} disabled />
+                    <SelectTrigger className="form-select-input">
+                      <SelectValue placeholder="Selecione o tipo de solicitação" />
+                    </SelectTrigger>
                   </FormControl>
-                </FormItem>
-                
-                <FormItem>
-                  <FormLabel>Nome</FormLabel>
-                  <FormControl>
-                    <Input value={user?.nome || ""} disabled />
-                  </FormControl>
-                </FormItem>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-6">
-                <FormItem>
-                  <FormLabel>Cargo</FormLabel>
-                  <FormControl>
-                    <Input value={user?.cargo || ""} disabled />
-                  </FormControl>
-                </FormItem>
-                
-                <FormItem>
-                  <FormLabel>Setor</FormLabel>
-                  <FormControl>
-                    <Input value={user?.setor || ""} disabled />
-                  </FormControl>
-                </FormItem>
-              </div>
-              
-              <FormField
-                control={form.control}
-                name="tipoSolicitacao"
-                rules={{ required: "Tipo de solicitação é obrigatório" }}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Tipo de Solicitação</FormLabel>
-                    <Select 
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione o tipo de solicitação" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="Aderir">Aderir</SelectItem>
-                        <SelectItem value="Cancelar">Cancelar</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="email"
-                rules={{ 
-                  required: "E-mail é obrigatório",
-                  pattern: {
-                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: "E-mail inválido"
-                  }
-                }}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>E-mail para receber o termo</FormLabel>
-                    <FormControl>
-                      <Input placeholder="seu.email@exemplo.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="motivo"
-                rules={{ required: "Motivo é obrigatório" }}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Motivo</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="Descreva o motivo da solicitação"
-                        rows={4}
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? "Enviando..." : "Enviar Solicitação"}
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
-    </div>
+                  <SelectContent>
+                    <SelectItem value="Aderir">Aderir</SelectItem>
+                    <SelectItem value="Cancelar">Cancelar</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="email"
+            rules={{ 
+              required: "E-mail é obrigatório",
+              pattern: {
+                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                message: "E-mail inválido"
+              }
+            }}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="form-field-label">E-mail para receber o termo</FormLabel>
+                <FormControl>
+                  <Input 
+                    placeholder="seu.email@exemplo.com" 
+                    {...field} 
+                    className="form-field-input"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="motivo"
+            rules={{ required: "Motivo é obrigatório" }}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="form-field-label">Motivo</FormLabel>
+                <FormControl>
+                  <Textarea 
+                    placeholder="Descreva o motivo da solicitação"
+                    rows={4}
+                    {...field} 
+                    className="form-field-input"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? "Enviando..." : "Enviar Solicitação"}
+          </Button>
+        </form>
+      </Form>
+    </FormLayout>
   );
 };
 

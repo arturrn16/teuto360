@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -5,13 +6,6 @@ import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 import { supabase, queryCustomTable } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -29,6 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { FormLayout } from "@/components/FormLayout";
 
 interface FormValues {
   telefone: string;
@@ -139,290 +134,296 @@ const AlteracaoEndereco = () => {
   };
   
   return (
-    <div className="container max-w-3xl py-10">
-      <Card>
-        <CardHeader>
-          <CardTitle>Solicitação de Alteração de Endereço</CardTitle>
-          <CardDescription>
-            Preencha o formulário para solicitar a alteração do seu endereço cadastrado.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <div className="grid grid-cols-2 gap-6">
-                <FormItem>
-                  <FormLabel>Matrícula</FormLabel>
+    <FormLayout
+      title="Alteração de Endereço"
+      description="Preencha o formulário para solicitar a alteração do seu endereço cadastrado."
+    >
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <FormItem>
+              <FormLabel className="form-field-label">Matrícula</FormLabel>
+              <FormControl>
+                <Input value={user?.matricula || ""} disabled className="form-field-input" />
+              </FormControl>
+            </FormItem>
+            
+            <FormItem>
+              <FormLabel className="form-field-label">Nome</FormLabel>
+              <FormControl>
+                <Input value={user?.nome || ""} disabled className="form-field-input" />
+              </FormControl>
+            </FormItem>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <FormItem>
+              <FormLabel className="form-field-label">Cargo</FormLabel>
+              <FormControl>
+                <Input value={user?.cargo || ""} disabled className="form-field-input" />
+              </FormControl>
+            </FormItem>
+            
+            <FormItem>
+              <FormLabel className="form-field-label">Setor</FormLabel>
+              <FormControl>
+                <Input value={user?.setor || ""} disabled className="form-field-input" />
+              </FormControl>
+            </FormItem>
+          </div>
+          
+          <FormField
+            control={form.control}
+            name="telefone"
+            rules={{ 
+              required: "Telefone é obrigatório",
+              pattern: {
+                value: /^\d{10,11}$/,
+                message: "Telefone inválido. Use apenas números (DDD + número)"
+              }
+            }}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="form-field-label">Telefone</FormLabel>
+                <FormControl>
+                  <Input 
+                    placeholder="DDD + número (apenas números)" 
+                    {...field} 
+                    className="form-field-input"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="cep"
+            rules={{ 
+              required: "CEP é obrigatório",
+              pattern: {
+                value: /^\d{8}$/,
+                message: "CEP inválido. Use apenas números"
+              }
+            }}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="form-field-label">CEP do novo endereço</FormLabel>
+                <div className="flex gap-2">
                   <FormControl>
-                    <Input value={user?.matricula || ""} disabled />
+                    <Input 
+                      placeholder="Apenas números" 
+                      {...field} 
+                      className="form-field-input"
+                      onChange={(e) => {
+                        field.onChange(e);
+                        if (e.target.value.length === 8) {
+                          buscarCep(e.target.value);
+                        }
+                      }}
+                    />
                   </FormControl>
-                </FormItem>
-                
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => buscarCep(field.value)}
+                    disabled={field.value.length !== 8 || isLoadingCep}
+                  >
+                    {isLoadingCep ? "Buscando..." : "Buscar"}
+                  </Button>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <FormField
+              control={form.control}
+              name="endereco"
+              rules={{ required: "Endereço é obrigatório" }}
+              render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nome</FormLabel>
+                  <FormLabel className="form-field-label">Endereço</FormLabel>
                   <FormControl>
-                    <Input value={user?.nome || ""} disabled />
+                    <Input {...field} className="form-field-input" />
                   </FormControl>
+                  <FormMessage />
                 </FormItem>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-6">
-                <FormItem>
-                  <FormLabel>Cargo</FormLabel>
-                  <FormControl>
-                    <Input value={user?.cargo || ""} disabled />
-                  </FormControl>
-                </FormItem>
-                
-                <FormItem>
-                  <FormLabel>Setor</FormLabel>
-                  <FormControl>
-                    <Input value={user?.setor || ""} disabled />
-                  </FormControl>
-                </FormItem>
-              </div>
-              
-              <FormField
-                control={form.control}
-                name="telefone"
-                rules={{ 
-                  required: "Telefone é obrigatório",
-                  pattern: {
-                    value: /^\d{10,11}$/,
-                    message: "Telefone inválido. Use apenas números (DDD + número)"
-                  }
-                }}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Telefone</FormLabel>
-                    <FormControl>
-                      <Input placeholder="DDD + número (apenas números)" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="cep"
-                rules={{ 
-                  required: "CEP é obrigatório",
-                  pattern: {
-                    value: /^\d{8}$/,
-                    message: "CEP inválido. Use apenas números"
-                  }
-                }}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>CEP do novo endereço</FormLabel>
-                    <div className="flex gap-2">
-                      <FormControl>
-                        <Input 
-                          placeholder="Apenas números" 
-                          {...field} 
-                          onChange={(e) => {
-                            field.onChange(e);
-                            if (e.target.value.length === 8) {
-                              buscarCep(e.target.value);
-                            }
-                          }}
-                        />
-                      </FormControl>
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        onClick={() => buscarCep(field.value)}
-                        disabled={field.value.length !== 8 || isLoadingCep}
-                      >
-                        {isLoadingCep ? "Buscando..." : "Buscar"}
-                      </Button>
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <div className="grid grid-cols-2 gap-6">
-                <FormField
-                  control={form.control}
-                  name="endereco"
-                  rules={{ required: "Endereço é obrigatório" }}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Endereço</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="bairro"
-                  rules={{ required: "Bairro é obrigatório" }}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Bairro</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              
-              <div className="grid grid-cols-2 gap-6">
-                <FormField
-                  control={form.control}
-                  name="cidade"
-                  rules={{ required: "Cidade é obrigatória" }}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Cidade</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="complemento"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Complemento (opcional)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Apartamento, bloco, etc." {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              
-              <FormField
-                control={form.control}
-                name="telefoneWhatsapp"
-                rules={{ 
-                  required: "Telefone (WhatsApp) é obrigatório",
-                  pattern: {
-                    value: /^\d{10,11}$/,
-                    message: "Telefone inválido. Use apenas números (DDD + número)"
-                  }
-                }}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Telefone (WhatsApp)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="DDD + número (apenas números)" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="rotaAtual"
-                rules={{ required: "Rota atual é obrigatória" }}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Rota Atual</FormLabel>
-                    <Select 
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione sua rota atual" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {rotaOptions.map((rota) => (
-                          <SelectItem key={rota} value={rota}>{rota}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="alterarRota"
-                rules={{ required: "Este campo é obrigatório" }}
-                render={({ field }) => (
-                  <FormItem className="space-y-3">
-                    <FormLabel>Vai alterar a rota?</FormLabel>
-                    <FormControl>
-                      <RadioGroup
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        className="flex flex-row space-x-4"
-                      >
-                        <FormItem className="flex items-center space-x-2">
-                          <FormControl>
-                            <RadioGroupItem value="sim" />
-                          </FormControl>
-                          <FormLabel className="font-normal">Sim</FormLabel>
-                        </FormItem>
-                        <FormItem className="flex items-center space-x-2">
-                          <FormControl>
-                            <RadioGroupItem value="nao" />
-                          </FormControl>
-                          <FormLabel className="font-normal">Não</FormLabel>
-                        </FormItem>
-                      </RadioGroup>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              {alterarRota === "sim" && (
-                <FormField
-                  control={form.control}
-                  name="novaRota"
-                  rules={{ required: "Nova rota é obrigatória" }}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nova Rota</FormLabel>
-                      <Select 
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione a nova rota" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {rotaOptions.map((rota) => (
-                            <SelectItem key={rota} value={rota}>{rota}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
               )}
-              
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? "Enviando..." : "Enviar Solicitação"}
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
-    </div>
+            />
+            
+            <FormField
+              control={form.control}
+              name="bairro"
+              rules={{ required: "Bairro é obrigatório" }}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="form-field-label">Bairro</FormLabel>
+                  <FormControl>
+                    <Input {...field} className="form-field-input" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <FormField
+              control={form.control}
+              name="cidade"
+              rules={{ required: "Cidade é obrigatória" }}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="form-field-label">Cidade</FormLabel>
+                  <FormControl>
+                    <Input {...field} className="form-field-input" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="complemento"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="form-field-label">Complemento (opcional)</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="Apartamento, bloco, etc." 
+                      {...field}
+                      className="form-field-input" 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          
+          <FormField
+            control={form.control}
+            name="telefoneWhatsapp"
+            rules={{ 
+              required: "Telefone (WhatsApp) é obrigatório",
+              pattern: {
+                value: /^\d{10,11}$/,
+                message: "Telefone inválido. Use apenas números (DDD + número)"
+              }
+            }}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="form-field-label">Telefone (WhatsApp)</FormLabel>
+                <FormControl>
+                  <Input 
+                    placeholder="DDD + número (apenas números)" 
+                    {...field}
+                    className="form-field-input" 
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="rotaAtual"
+            rules={{ required: "Rota atual é obrigatória" }}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="form-field-label">Rota Atual</FormLabel>
+                <Select 
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger className="form-select-input">
+                      <SelectValue placeholder="Selecione sua rota atual" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {rotaOptions.map((rota) => (
+                      <SelectItem key={rota} value={rota}>{rota}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="alterarRota"
+            rules={{ required: "Este campo é obrigatório" }}
+            render={({ field }) => (
+              <FormItem className="space-y-3">
+                <FormLabel className="form-field-label">Vai alterar a rota?</FormLabel>
+                <FormControl>
+                  <RadioGroup
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                    className="flex flex-row space-x-4"
+                  >
+                    <FormItem className="flex items-center space-x-2">
+                      <FormControl>
+                        <RadioGroupItem value="sim" />
+                      </FormControl>
+                      <FormLabel className="font-normal">Sim</FormLabel>
+                    </FormItem>
+                    <FormItem className="flex items-center space-x-2">
+                      <FormControl>
+                        <RadioGroupItem value="nao" />
+                      </FormControl>
+                      <FormLabel className="font-normal">Não</FormLabel>
+                    </FormItem>
+                  </RadioGroup>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          {alterarRota === "sim" && (
+            <FormField
+              control={form.control}
+              name="novaRota"
+              rules={{ required: "Nova rota é obrigatória" }}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="form-field-label">Nova Rota</FormLabel>
+                  <Select 
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="form-select-input">
+                        <SelectValue placeholder="Selecione a nova rota" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {rotaOptions.map((rota) => (
+                        <SelectItem key={rota} value={rota}>{rota}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+          
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? "Enviando..." : "Enviar Solicitação"}
+          </Button>
+        </form>
+      </Form>
+    </FormLayout>
   );
 };
 

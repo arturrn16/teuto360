@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Car, Phone } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { FormLayout } from "@/components/FormLayout";
 
 // Define the ride offer type
 interface OfertaCarona {
@@ -180,9 +181,10 @@ const OfertaCaronas = () => {
   };
   
   return (
-    <div className="container max-w-6xl mx-auto py-6">
-      <h1 className="text-2xl font-bold mb-6">Oferta de Caronas</h1>
-      
+    <FormLayout
+      title="Oferta de Caronas"
+      description="Compartilhe ou encontre caronas para o trabalho"
+    >
       {/* Form for new ride offers */}
       <Card className="mb-8">
         <CardHeader>
@@ -192,7 +194,7 @@ const OfertaCaronas = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="saindo_de">Saindo de</Label>
+                <Label htmlFor="saindo_de" className="form-field-label">Saindo de</Label>
                 <Input
                   id="saindo_de"
                   name="saindo_de"
@@ -200,16 +202,17 @@ const OfertaCaronas = () => {
                   onChange={handleChange}
                   placeholder="Ex: Jardim Goiás"
                   required
+                  className="form-field-input"
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="turno">Turno</Label>
+                <Label htmlFor="turno" className="form-field-label">Turno</Label>
                 <Select
                   onValueChange={(value) => handleSelectChange(value, "turno")}
                   value={formData.turno}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="form-select-input">
                     <SelectValue placeholder="Selecione o turno" />
                   </SelectTrigger>
                   <SelectContent>
@@ -223,7 +226,7 @@ const OfertaCaronas = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="nome_motorista">Nome</Label>
+                <Label htmlFor="nome_motorista" className="form-field-label">Nome</Label>
                 <Input
                   id="nome_motorista"
                   name="nome_motorista"
@@ -231,11 +234,12 @@ const OfertaCaronas = () => {
                   onChange={handleChange}
                   placeholder="Seu nome"
                   required
+                  className="form-field-input"
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="whatsapp">WhatsApp</Label>
+                <Label htmlFor="whatsapp" className="form-field-label">WhatsApp</Label>
                 <Input
                   id="whatsapp"
                   name="whatsapp"
@@ -243,11 +247,12 @@ const OfertaCaronas = () => {
                   onChange={handleChange}
                   placeholder="Ex: 62999999999"
                   required
+                  className="form-field-input"
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="setor">Setor</Label>
+                <Label htmlFor="setor" className="form-field-label">Setor</Label>
                 <Input
                   id="setor"
                   name="setor"
@@ -255,11 +260,12 @@ const OfertaCaronas = () => {
                   onChange={handleChange}
                   placeholder="Seu setor na empresa"
                   required
+                  className="form-field-input"
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="valor_mensal">Valor mensal (R$)</Label>
+                <Label htmlFor="valor_mensal" className="form-field-label">Valor mensal (R$)</Label>
                 <Input
                   id="valor_mensal"
                   name="valor_mensal"
@@ -270,12 +276,13 @@ const OfertaCaronas = () => {
                   required
                   step="0.01"
                   min="0"
+                  className="form-field-input"
                 />
               </div>
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="observacoes">Observações</Label>
+              <Label htmlFor="observacoes" className="form-field-label">Observações</Label>
               <Textarea
                 id="observacoes"
                 name="observacoes"
@@ -283,6 +290,7 @@ const OfertaCaronas = () => {
                 onChange={handleChange}
                 placeholder="Informações adicionais sobre a carona"
                 rows={3}
+                className="form-field-input"
               />
             </div>
             
@@ -367,7 +375,7 @@ const OfertaCaronas = () => {
           ))
         )}
       </div>
-    </div>
+    </FormLayout>
   );
 };
 
