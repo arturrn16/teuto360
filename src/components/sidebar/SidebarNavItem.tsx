@@ -10,6 +10,7 @@ interface SidebarNavItemProps {
   isActive: boolean;
   onClick?: () => void;
   suffix?: React.ReactNode;
+  className?: string; // Add this property to the interface
 }
 
 export const SidebarNavItem = ({ 
@@ -18,7 +19,8 @@ export const SidebarNavItem = ({
   name, 
   isActive, 
   onClick,
-  suffix 
+  suffix,
+  className
 }: SidebarNavItemProps) => {
   const content = (
     <>
@@ -34,6 +36,7 @@ export const SidebarNavItem = ({
         asChild={!onClick} 
         isActive={isActive}
         onClick={onClick}
+        className={className} // Pass the className prop to SidebarMenuButton
       >
         {onClick ? (
           <button 
