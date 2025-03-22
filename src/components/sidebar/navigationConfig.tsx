@@ -133,7 +133,7 @@ export const commonUserNavigation: NavSection[] = [
   },
 ];
 
-// Configuration for admin users - only Administration section
+// Configuration for admin users - Administration section with Solicitações
 export const adminNavigation: NavSection[] = [
   {
     title: "Administração",

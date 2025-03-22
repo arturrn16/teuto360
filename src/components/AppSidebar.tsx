@@ -17,6 +17,8 @@ export const AppSidebar = () => {
   
   if (!user) return null;
 
+  const isAdmin = user.admin || user.tipo_usuario === 'admin';
+
   return (
     <Sidebar>
       <SidebarHeader className="h-16 flex items-center px-4 border-b border-gray-200 bg-white">
@@ -32,7 +34,7 @@ export const AppSidebar = () => {
         
         <SidebarNavigation 
           userType={user.tipo_usuario as any}
-          admin={user.admin}
+          admin={isAdmin}
         />
       </SidebarContent>
       

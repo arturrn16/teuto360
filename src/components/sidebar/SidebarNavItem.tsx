@@ -28,33 +28,39 @@ export const SidebarNavItem = ({
     </>
   );
 
+  // If it's a button (for expandable menus), render directly without SidebarMenuButton
+  if (onClick) {
+    return (
+      <SidebarMenuItem>
+        <div 
+          onClick={onClick}
+          className={cn(
+            "flex items-center w-full text-gray-700 hover:text-blue-500 cursor-pointer p-2 rounded",
+            isActive && "text-blue-500 bg-blue-50"
+          )}
+        >
+          {content}
+        </div>
+      </SidebarMenuItem>
+    );
+  }
+
+  // For links, use the SidebarMenuButton with Link
   return (
     <SidebarMenuItem>
       <SidebarMenuButton 
-        asChild={!onClick} 
+        asChild
         isActive={isActive}
-        onClick={onClick}
       >
-        {onClick ? (
-          <button 
-            className={cn(
-              "flex items-center w-full text-gray-700 hover:text-blue-500",
-              isActive && "text-blue-500 bg-blue-50"
-            )}
-          >
-            {content}
-          </button>
-        ) : (
-          <Link 
-            to={href} 
-            className={cn(
-              "flex items-center text-gray-700 hover:text-blue-500",
-              isActive && "text-blue-500 bg-blue-50"
-            )}
-          >
-            {content}
-          </Link>
-        )}
+        <Link 
+          to={href} 
+          className={cn(
+            "flex items-center text-gray-700 hover:text-blue-500",
+            isActive && "text-blue-500 bg-blue-50"
+          )}
+        >
+          {content}
+        </Link>
       </SidebarMenuButton>
     </SidebarMenuItem>
   );
