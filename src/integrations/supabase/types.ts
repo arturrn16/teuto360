@@ -481,6 +481,7 @@ export type Database = {
           colaborador_nome: string
           created_at: string | null
           id: number
+          matricula: string | null
           motivo: string
           periodo_fim: string
           periodo_inicio: string
@@ -495,6 +496,7 @@ export type Database = {
           colaborador_nome: string
           created_at?: string | null
           id?: number
+          matricula?: string | null
           motivo: string
           periodo_fim: string
           periodo_inicio: string
@@ -509,6 +511,7 @@ export type Database = {
           colaborador_nome?: string
           created_at?: string | null
           id?: number
+          matricula?: string | null
           motivo?: string
           periodo_fim?: string
           periodo_inicio?: string

@@ -1,3 +1,4 @@
+
 export interface BaseSolicitacao {
   id: number;
   solicitante_id: number;
@@ -60,6 +61,7 @@ export interface SolicitacaoMudancaTurno extends BaseSolicitacao {
 }
 
 export interface SolicitacaoTransporteRota extends BaseSolicitacao {
+  matricula: string;
   colaborador_nome: string;
   turno: string;
   periodo_inicio: string;
