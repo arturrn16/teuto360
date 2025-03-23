@@ -83,7 +83,7 @@ const TransporteRota = () => {
   // Opções dinâmicas de rota com base na cidade e turno
   const getRotaOptions = () => {
     if (cidade === "Goiânia") {
-      return [turno]; // Para Goiânia, as rotas são iguais aos turnos
+      return [turno].filter(Boolean); // Filter out empty string values
     } else if (cidade === "Anápolis") {
       if (turno === "Administrativo") {
         return Array.from({ length: 8 }, (_, i) => `ADM-${String(i + 1).padStart(2, '0')}`);
@@ -274,11 +274,15 @@ const TransporteRota = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {rotaOptions.map((option) => (
-                          <SelectItem key={option} value={option}>
-                            {option}
-                          </SelectItem>
-                        ))}
+                        {rotaOptions.length > 0 ? (
+                          rotaOptions.map((option) => (
+                            <SelectItem key={option} value={option}>
+                              {option}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <SelectItem value="sem-opcoes" disabled>Sem opções disponíveis</SelectItem>
+                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage />
