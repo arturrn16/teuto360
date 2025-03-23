@@ -36,9 +36,6 @@ interface FormValues {
   cep: string;
   rota: string;
   dataInicio: Date;
-  cidade: string;
-  turno: string;
-  motivo: string;
 }
 
 const TransporteRota = () => {
@@ -57,9 +54,6 @@ const TransporteRota = () => {
       cep: "",
       rota: "",
       dataInicio: new Date(),
-      cidade: "Anápolis",
-      turno: "Comercial",
-      motivo: "Transporte regular"
     },
   });
   
@@ -70,14 +64,6 @@ const TransporteRota = () => {
     "Rota 3 - Sul",
     "Rota 4 - Leste",
     "Rota 5 - Oeste",
-  ];
-
-  // Opções de turno
-  const turnoOptions = [
-    "Comercial",
-    "Primeiro Turno",
-    "Segundo Turno",
-    "Terceiro Turno"
   ];
   
   // Função para formatar a data antes de enviar para o banco de dados
@@ -101,12 +87,11 @@ const TransporteRota = () => {
         solicitante_id: user.id,
         matricula: data.matricula,
         colaborador_nome: data.colaboradorNome,
-        cidade: data.cidade,
-        turno: data.turno,
-        motivo: data.motivo,
+        telefone: data.telefone,
+        endereco: data.endereco,
+        cep: data.cep,
         rota: data.rota,
-        periodo_inicio: formatDate(data.dataInicio),
-        periodo_fim: formatDate(new Date(data.dataInicio.getTime() + 90 * 24 * 60 * 60 * 1000)), // 90 dias após data de início
+        data_inicio: formatDate(data.dataInicio),
         status: status
       });
       
@@ -182,14 +167,52 @@ const TransporteRota = () => {
           
           <FormField
             control={form.control}
-            name="cidade"
-            rules={{ required: "Cidade é obrigatória" }}
+            name="telefone"
+            rules={{ 
+              required: "Telefone é obrigatório",
+              pattern: {
+                value: /^\(\d{2}\) \d{5}-\d{4}$/,
+                message: "Telefone deve estar no formato (99) 99999-9999"
+              }
+            }}
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="form-field-label">Cidade</FormLabel>
+                <FormLabel className="form-field-label">Telefone</FormLabel>
                 <FormControl>
                   <Input 
-                    placeholder="Digite a cidade" 
+                    placeholder="(99) 99999-9999" 
+                    {...field}
+                    className="form-field-input"
+                    onChange={(e) => {
+                      // Formatar o telefone enquanto o usuário digita
+                      let value = e.target.value.replace(/\D/g, '');
+                      if (value.length <= 11) {
+                        if (value.length > 2) {
+                          value = `(${value.substring(0, 2)}) ${value.substring(2)}`;
+                        }
+                        if (value.length > 10) {
+                          value = `${value.substring(0, 10)}-${value.substring(10)}`;
+                        }
+                        field.onChange(value);
+                      }
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="endereco"
+            rules={{ required: "Endereço é obrigatório" }}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="form-field-label">Endereço</FormLabel>
+                <FormControl>
+                  <Input 
+                    placeholder="Digite o endereço completo" 
                     {...field} 
                     className="form-field-input"
                   />
@@ -201,28 +224,34 @@ const TransporteRota = () => {
           
           <FormField
             control={form.control}
-            name="turno"
-            rules={{ required: "Turno é obrigatório" }}
+            name="cep"
+            rules={{ 
+              required: "CEP é obrigatório",
+              pattern: {
+                value: /^\d{5}-\d{3}$/,
+                message: "CEP deve estar no formato 99999-999"
+              }
+            }}
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="form-field-label">Turno</FormLabel>
-                <Select 
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger className="form-select-input">
-                      <SelectValue placeholder="Selecione o turno" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {turnoOptions.map((option) => (
-                      <SelectItem key={option} value={option}>
-                        {option}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <FormLabel className="form-field-label">CEP</FormLabel>
+                <FormControl>
+                  <Input 
+                    placeholder="99999-999" 
+                    {...field}
+                    className="form-field-input"
+                    onChange={(e) => {
+                      // Formatar o CEP enquanto o usuário digita
+                      let value = e.target.value.replace(/\D/g, '');
+                      if (value.length <= 8) {
+                        if (value.length > 5) {
+                          value = `${value.substring(0, 5)}-${value.substring(5)}`;
+                        }
+                        field.onChange(value);
+                      }
+                    }}
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -252,25 +281,6 @@ const TransporteRota = () => {
                     ))}
                   </SelectContent>
                 </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="motivo"
-            rules={{ required: "Motivo é obrigatório" }}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="form-field-label">Motivo da Solicitação</FormLabel>
-                <FormControl>
-                  <Input 
-                    placeholder="Digite o motivo" 
-                    {...field} 
-                    className="form-field-input"
-                  />
-                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
