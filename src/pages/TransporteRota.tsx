@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -64,7 +63,6 @@ const TransporteRota = () => {
     },
   });
   
-  // Atualiza os campos de matrícula e nome quando o user é carregado
   useEffect(() => {
     if (user) {
       form.setValue("matricula", user.matricula);
@@ -75,15 +73,13 @@ const TransporteRota = () => {
   const cidade = form.watch("cidade");
   const turno = form.watch("turno");
   
-  // Opções dinâmicas de turno com base na cidade
   const turnoOptions = cidade === "Anápolis" 
     ? ["Administrativo", "1° Turno", "2° Turno", "3° Turno"]
     : ["Gyn Adm 1", "Gyn Adm 2", "Gyn 1° Turno", "Gyn 2° Turno"];
     
-  // Opções dinâmicas de rota com base na cidade e turno
   const getRotaOptions = () => {
     if (cidade === "Goiânia") {
-      return [turno].filter(Boolean); // Filter out empty string values
+      return [turno].filter(Boolean);
     } else if (cidade === "Anápolis") {
       if (turno === "Administrativo") {
         return Array.from({ length: 8 }, (_, i) => `ADM-${String(i + 1).padStart(2, '0')}`);
@@ -100,14 +96,12 @@ const TransporteRota = () => {
   
   const rotaOptions = getRotaOptions();
   
-  // Atualiza a rota automaticamente quando o turno muda e a cidade é Goiânia
   useEffect(() => {
     if (cidade === "Goiânia" && turno) {
       form.setValue("rota", turno);
     }
   }, [cidade, turno, form]);
   
-  // Função para formatar a data antes de enviar para o banco de dados
   const formatDate = (date: Date) => {
     return format(date, "yyyy-MM-dd");
   };
@@ -204,7 +198,6 @@ const TransporteRota = () => {
                     <Select 
                       onValueChange={(value) => {
                         field.onChange(value);
-                        // Redefina o turno ao mudar a cidade
                         form.setValue("turno", "");
                         form.setValue("rota", "");
                       }}
@@ -236,11 +229,9 @@ const TransporteRota = () => {
                       onValueChange={(value) => {
                         field.onChange(value);
                         
-                        // Se for Goiânia, seleciona automaticamente a rota com o mesmo valor do turno
                         if (cidade === "Goiânia" && value) {
                           form.setValue("rota", value);
                         } else {
-                          // Caso contrário, apenas limpa a rota para seleção manual
                           form.setValue("rota", "");
                         }
                       }}
@@ -274,7 +265,7 @@ const TransporteRota = () => {
                     <Select 
                       onValueChange={field.onChange}
                       value={field.value}
-                      disabled={!turno || (cidade === "Goiânia")} // Desabilita se não tiver turno ou se for Goiânia
+                      disabled={!turno || (cidade === "Goiânia")}
                     >
                       <FormControl>
                         <SelectTrigger>

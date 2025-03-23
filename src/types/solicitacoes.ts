@@ -1,4 +1,3 @@
-
 export interface BaseSolicitacao {
   id: number;
   solicitante_id: number;
@@ -43,7 +42,6 @@ export interface SolicitacaoAlteracaoEndereco extends BaseSolicitacao {
   endereco_atual: string;
   endereco_novo: string;
   data_alteracao: string;
-  comprovante_url?: string;
 }
 
 export interface SolicitacaoMudancaTurno extends BaseSolicitacao {
