@@ -100,6 +100,13 @@ const TransporteRota = () => {
   
   const rotaOptions = getRotaOptions();
   
+  // Atualiza a rota automaticamente quando o turno muda e a cidade é Goiânia
+  useEffect(() => {
+    if (cidade === "Goiânia" && turno) {
+      form.setValue("rota", turno);
+    }
+  }, [cidade, turno, form]);
+  
   // Função para formatar a data antes de enviar para o banco de dados
   const formatDate = (date: Date) => {
     return format(date, "yyyy-MM-dd");
@@ -228,12 +235,13 @@ const TransporteRota = () => {
                     <Select 
                       onValueChange={(value) => {
                         field.onChange(value);
-                        // Redefina a rota ao mudar o turno
-                        form.setValue("rota", "");
                         
-                        // Se for Goiânia, seleciona automaticamente a única opção de rota (o próprio turno)
+                        // Se for Goiânia, seleciona automaticamente a rota com o mesmo valor do turno
                         if (cidade === "Goiânia" && value) {
                           form.setValue("rota", value);
+                        } else {
+                          // Caso contrário, apenas limpa a rota para seleção manual
+                          form.setValue("rota", "");
                         }
                       }}
                       defaultValue={field.value}
@@ -265,7 +273,7 @@ const TransporteRota = () => {
                     <FormLabel>Rota</FormLabel>
                     <Select 
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      value={field.value}
                       disabled={!turno || (cidade === "Goiânia")} // Desabilita se não tiver turno ou se for Goiânia
                     >
                       <FormControl>
