@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { 
@@ -632,6 +633,93 @@ const Admin = () => {
     }
   };
 
+  const renderSolicitacoesAlteracaoEndereco = () => {
+    if (loading) {
+      return <p>Carregando solicitações...</p>;
+    }
+
+    const solicitacoesFiltradas = solicitacoesAlteracaoEndereco.filter(solicitacao => {
+      if (filtroStatus !== "todos" && solicitacao.status !== filtroStatus) {
+        return false;
+      }
+        
+      if (filtroColaborador && solicitacao.solicitante) {
+        return solicitacao.solicitante.nome
+          .toLowerCase()
+          .includes(filtroColaborador.toLowerCase());
+      }
+        
+      return true;
+    });
+
+    if (solicitacoesFiltradas.length === 0) {
+      return <p>Nenhuma solicitação encontrada</p>;
+    }
+
+    return (
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Solicitante</TableHead>
+            <TableHead>Setor</TableHead>
+            <TableHead>Endereço Atual</TableHead>
+            <TableHead>Endereço Novo</TableHead>
+            <TableHead>Data Alteração</TableHead>
+            <TableHead>Comprovante</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Ações</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {solicitacoesFiltradas.map(solicitacao => (
+            <TableRow key={solicitacao.id}>
+              <TableCell>{solicitacao.solicitante?.nome || "N/A"}</TableCell>
+              <TableCell>{solicitacao.solicitante?.setor || "N/A"}</TableCell>
+              <TableCell>{solicitacao.endereco_atual}</TableCell>
+              <TableCell>{solicitacao.endereco_novo}</TableCell>
+              <TableCell>
+                {solicitacao.data_alteracao
+                  ? format(new Date(solicitacao.data_alteracao), "dd/MM/yyyy", { locale: ptBR })
+                  : "N/A"}
+              </TableCell>
+              <TableCell>
+                {solicitacao.comprovante_url ? (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex items-center gap-1"
+                    onClick={() => handleDownloadComprovante(solicitacao.comprovante_url || "")}
+                  >
+                    <Download className="h-4 w-4" /> Baixar
+                  </Button>
+                ) : (
+                  "Não disponível"
+                )}
+              </TableCell>
+              <TableCell>
+                <Badge variant={solicitacao.status === "aprovado" ? "success" : solicitacao.status === "rejeitado" ? "destructive" : "default"}>
+                  {solicitacao.status === "aprovado" ? "Aprovado" : solicitacao.status === "rejeitado" ? "Rejeitado" : "Pendente"}
+                </Badge>
+              </TableCell>
+              <TableCell>
+                {solicitacao.status === "pendente" && (
+                  <div className="flex space-x-2">
+                    <Button variant="outline" size="sm" className="text-green-600 hover:text-green-700" onClick={() => handleAprovarSolicitacao("solicitacoes_alteracao_endereco", solicitacao.id, "alteracao_endereco")}>
+                      <CheckCircle className="h-4 w-4 mr-1" /> Aprovar
+                    </Button>
+                    <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700" onClick={() => handleRejeitarSolicitacao("solicitacoes_alteracao_endereco", solicitacao.id, "alteracao_endereco")}>
+                      <XCircle className="h-4 w-4 mr-1" /> Rejeitar
+                    </Button>
+                  </div>
+                )}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    );
+  };
+
   const renderSolicitacoesMudancaTurno = () => {
     if (loading) {
       return <p>Carregando solicitações...</p>;
@@ -642,11 +730,11 @@ const Admin = () => {
         return false;
       }
         
-        if (filtroColaborador && solicitacao.solicitante) {
-          return solicitacao.solicitante.nome
-            .toLowerCase()
-            .includes(filtroColaborador.toLowerCase());
-        }
+      if (filtroColaborador && solicitacao.solicitante) {
+        return solicitacao.solicitante.nome
+          .toLowerCase()
+          .includes(filtroColaborador.toLowerCase());
+      }
         
       return true;
     });
@@ -771,4 +859,103 @@ const Admin = () => {
         <TabsContent value="rota">
           <Card>
             <CardHeader>
-              <CardTitle
+              <CardTitle>Solicitações de Transporte (Rota)</CardTitle>
+              <CardDescription>
+                Gerencie as solicitações de transporte para rotas regulares.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {renderSolicitacoesTransporteRota()}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="12x36">
+          <Card>
+            <CardHeader>
+              <CardTitle>Solicitações de Transporte (12x36)</CardTitle>
+              <CardDescription>
+                Gerencie as solicitações de transporte para regime 12x36.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {renderSolicitacoesTransporte12x36()}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="refeicao">
+          <Card>
+            <CardHeader>
+              <CardTitle>Solicitações de Refeição</CardTitle>
+              <CardDescription>
+                Gerencie as solicitações de refeição extra.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {renderSolicitacoesRefeicao()}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="abono">
+          <Card>
+            <CardHeader>
+              <CardTitle>Solicitações de Abono de Ponto</CardTitle>
+              <CardDescription>
+                Gerencie as solicitações de abono de ponto.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {renderSolicitacoesAbonoPonto()}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="adesao">
+          <Card>
+            <CardHeader>
+              <CardTitle>Solicitações de Adesão/Cancelamento</CardTitle>
+              <CardDescription>
+                Gerencie as solicitações de adesão ou cancelamento.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {renderSolicitacoesAdesaoCancelamento()}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="endereco">
+          <Card>
+            <CardHeader>
+              <CardTitle>Solicitações de Alteração de Endereço</CardTitle>
+              <CardDescription>
+                Gerencie as solicitações de alteração de endereço.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {renderSolicitacoesAlteracaoEndereco()}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="turno">
+          <Card>
+            <CardHeader>
+              <CardTitle>Solicitações de Mudança de Turno</CardTitle>
+              <CardDescription>
+                Gerencie as solicitações de mudança de turno.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {renderSolicitacoesMudancaTurno()}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+};
+
+export default Admin;
