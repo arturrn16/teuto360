@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -120,7 +119,6 @@ const AdesaoCancelamento = () => {
     }
   };
   
-  // Efeito para buscar CEP quando o campo for preenchido corretamente
   useEffect(() => {
     const cepSemMascara = cep?.replace(/\D/g, '');
     if (cepSemMascara?.length === 8) {
@@ -264,43 +262,41 @@ const AdesaoCancelamento = () => {
                 )}
               />
 
-              {tipoSolicitacao === "Aderir" && (
-                <FormField
-                  control={form.control}
-                  name="tipoTransporte"
-                  rules={{ required: "Tipo de transporte é obrigatório" }}
-                  render={({ field }) => (
-                    <FormItem className="space-y-3">
-                      <FormLabel className="form-field-label">Tipo de Transporte</FormLabel>
-                      <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          className="flex flex-col space-y-1"
-                        >
-                          <FormItem className="flex items-center space-x-3 space-y-0">
-                            <FormControl>
-                              <RadioGroupItem value="Fretado" />
-                            </FormControl>
-                            <FormLabel className="font-normal">
-                              Transporte Fretado
-                            </FormLabel>
-                          </FormItem>
-                          <FormItem className="flex items-center space-x-3 space-y-0">
-                            <FormControl>
-                              <RadioGroupItem value="ValeTransporte" />
-                            </FormControl>
-                            <FormLabel className="font-normal">
-                              Vale Transporte
-                            </FormLabel>
-                          </FormItem>
-                        </RadioGroup>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              )}
+              <FormField
+                control={form.control}
+                name="tipoTransporte"
+                rules={{ required: "Tipo de transporte é obrigatório" }}
+                render={({ field }) => (
+                  <FormItem className="space-y-3">
+                    <FormLabel className="form-field-label">Tipo de Transporte</FormLabel>
+                    <FormControl>
+                      <RadioGroup
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        className="flex flex-col space-y-1"
+                      >
+                        <FormItem className="flex items-center space-x-3 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value="Fretado" />
+                          </FormControl>
+                          <FormLabel className="font-normal">
+                            Transporte Fretado
+                          </FormLabel>
+                        </FormItem>
+                        <FormItem className="flex items-center space-x-3 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value="ValeTransporte" />
+                          </FormControl>
+                          <FormLabel className="font-normal">
+                            Vale Transporte
+                          </FormLabel>
+                        </FormItem>
+                      </RadioGroup>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 <FormField
@@ -319,7 +315,7 @@ const AdesaoCancelamento = () => {
                       <div className="relative">
                         <FormControl>
                           <Input 
-                            placeholder="00000000" 
+                            placeholder="Digite para buscar endereço" 
                             {...field} 
                             className="form-field-input"
                             onChange={e => {
@@ -350,11 +346,7 @@ const AdesaoCancelamento = () => {
                     <FormItem>
                       <FormLabel className="form-field-label">Rua</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="Av. Principal" 
-                          {...field} 
-                          className="form-field-input"
-                        />
+                        <Input {...field} className="form-field-input" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -371,11 +363,7 @@ const AdesaoCancelamento = () => {
                     <FormItem>
                       <FormLabel className="form-field-label">Bairro</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="Centro" 
-                          {...field} 
-                          className="form-field-input"
-                        />
+                        <Input {...field} className="form-field-input" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -390,11 +378,7 @@ const AdesaoCancelamento = () => {
                     <FormItem>
                       <FormLabel className="form-field-label">Cidade</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="São Paulo" 
-                          {...field} 
-                          className="form-field-input"
-                        />
+                        <Input {...field} className="form-field-input" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

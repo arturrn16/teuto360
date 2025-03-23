@@ -1,4 +1,3 @@
-
 export interface BaseSolicitacao {
   id: number;
   solicitante_id: number;
@@ -9,7 +8,7 @@ export interface BaseSolicitacao {
 
 export interface SolicitacaoAdesaoCancelamento extends BaseSolicitacao {
   tipo_solicitacao: "Aderir" | "Cancelar";
-  tipo_transporte?: "Fretado" | "ValeTransporte";
+  tipo_transporte: "Fretado" | "ValeTransporte";
   email: string;
   motivo: string;
   cep?: string;

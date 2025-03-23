@@ -98,6 +98,8 @@ export const DeclaracaoTransporte = ({
         <>
           <div className="py-2 px-2 mb-4">
             <p className="mb-2">NÃO ( X )</p>
+            <p className="mb-2">{tipoTransporte === "Fretado" ? "( X )" : "( \u00A0 )"} TRANSPORTE FRETADO</p>
+            <p className="mb-2">{tipoTransporte === "ValeTransporte" ? "( X )" : "( \u00A0 )"} VALE TRANSPORTE</p>
           </div>
           
           <div className="px-2 mb-4 text-justify">
