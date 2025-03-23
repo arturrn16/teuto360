@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -21,6 +20,7 @@ import MinhasSolicitacoes from "./pages/MinhasSolicitacoes";
 import Admin from "./pages/Admin";
 import Comunicados from "./pages/Comunicados";
 import GerenciarComunicados from "./pages/GerenciarComunicados";
+import Relatorios from "./pages/Relatorios";
 
 // Import cafeteria pages
 import CardapioSemana from "./pages/CardapioSemana";
@@ -214,6 +214,16 @@ const App = () => (
                 element={
                   <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
                     <OfertaCaronas />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* New Reports route for admins */}
+              <Route
+                path="/relatorios"
+                element={
+                  <ProtectedRoute allowedTypes={["admin"]}>
+                    <Relatorios />
                   </ProtectedRoute>
                 }
               />
