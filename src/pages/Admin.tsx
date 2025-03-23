@@ -47,7 +47,8 @@ import {
   XCircle,
   Home,
   ClipboardCheck,
-  Replace
+  Replace,
+  File
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -104,6 +105,7 @@ interface SolicitacaoAlteracaoEndereco extends Solicitacao {
   endereco_atual: string;
   endereco_novo: string;
   data_alteracao: string;
+  comprovante_url?: string;
 }
 
 interface SolicitacaoMudancaTurno extends Solicitacao {
@@ -245,7 +247,8 @@ const Admin = () => {
               updated_at: item.updated_at,
               endereco_atual: item.endereco || '',
               endereco_novo: item.nova_rota ? `${item.endereco} (nova rota: ${item.nova_rota})` : (item.endereco || ''),
-              data_alteracao: item.data_alteracao || item.created_at
+              data_alteracao: item.data_alteracao || item.created_at,
+              comprovante_url: item.comprovante_url
             }));
             setSolicitacoesAlteracaoEndereco(formattedData);
           }
@@ -537,6 +540,38 @@ const Admin = () => {
         <div className="text-muted-foreground">{info.setor}</div>
       </div>
     );
+  };
+  
+  const handleDownloadComprovante = async (url: string, solicitanteNome: string) => {
+    if (!url) {
+      toast.error("Nenhum comprovante de endereço anexado");
+      return;
+    }
+    
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      
+      const downloadUrl = URL.createObjectURL(blob);
+      
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      
+      const extension = url.split('.').pop() || 'pdf';
+      
+      a.download = `comprovante_endereco_${solicitanteNome.replace(/\s+/g, '_')}.${extension}`;
+      
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      
+      URL.revokeObjectURL(downloadUrl);
+      
+      toast.success("Download do comprovante iniciado");
+    } catch (error) {
+      console.error("Erro ao baixar o comprovante:", error);
+      toast.error("Erro ao baixar o comprovante de endereço");
+    }
   };
   
   if (!user?.admin) {
@@ -1055,7 +1090,7 @@ const Admin = () => {
                             <TableHead>Data de Alteração</TableHead>
                             <TableHead>Data de Solicitação</TableHead>
                             <TableHead>Status</TableHead>
-                            <TableHead className="w-[180px]">Ações</TableHead>
+                            <TableHead className="w-[240px]">Ações</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -1072,7 +1107,22 @@ const Admin = () => {
                                 <StatusBadge status={solicitacao.status} />
                               </TableCell>
                               <TableCell>
-                                <div className="flex space-x-2">
+                                <div className="flex flex-col sm:flex-row gap-2">
+                                  {(solicitacao as any).comprovante_url && (
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm"
+                                      className="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-600 border-blue-200"
+                                      onClick={() => handleDownloadComprovante(
+                                        (solicitacao as any).comprovante_url,
+                                        solicitantesInfo[solicitacao.solicitante_id]?.nome || 'solicitante'
+                                      )}
+                                    >
+                                      <File className="h-4 w-4 mr-1" />
+                                      Comprovante
+                                    </Button>
+                                  )}
+                                  
                                   {solicitacao.status === "pendente" && (
                                     <>
                                       <Button 
