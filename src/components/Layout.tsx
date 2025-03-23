@@ -7,12 +7,19 @@ import { AlignLeft } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { useIdleTimeout } from "@/hooks/use-idle-timeout";
 
 export const Layout = () => {
   const { isAuthenticated, isLoading } = useAuth();
   const isMobile = useIsMobile();
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
+
+  // Inicializa o hook de timeout por inatividade
+  useIdleTimeout({
+    idleTime: 15, // 15 minutos de inatividade para logout
+    warningTime: 1, // Aviso 1 minuto antes do logout
+  });
 
   // Detectar scroll para ajustar estilos
   useEffect(() => {
@@ -65,7 +72,7 @@ export const Layout = () => {
         </div>
         {!isMobile && (
           <footer className="py-3 sm:py-4 px-4 bg-white border-t border-gray-200 text-center text-gray-600 text-xs sm:text-sm">
-            <p>© {new Date().getFullYear()} Teuto360 - Todos os direitos reservados</p>
+            <p>© {new Date().getFullYear()} ConexãoRH® - Todos os direitos reservados</p>
           </footer>
         )}
       </div>
