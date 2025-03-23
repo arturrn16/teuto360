@@ -1,7 +1,6 @@
-
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, queryCustomTable } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -39,9 +38,7 @@ const Relatorios = () => {
 
       const results = await Promise.all(
         tables.map(async (table) => {
-          const { data, error } = await supabase
-            .from(table)
-            .select("*");
+          const { data, error } = await queryCustomTable(table);
 
           if (error) {
             console.error(`Error fetching from ${table}:`, error);
