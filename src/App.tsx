@@ -130,7 +130,7 @@ const App = () => (
               <Route
                 path="/cardapio-semana"
                 element={
-                  <ProtectedRoute allowedTypes={["refeicao", "colaborador", "comum"]}>
+                  <ProtectedRoute allowedTypes={["selecao", "refeicao", "colaborador", "comum"]}>
                     <CardapioSemana />
                   </ProtectedRoute>
                 }
