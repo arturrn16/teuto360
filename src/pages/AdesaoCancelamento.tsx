@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -26,14 +27,13 @@ import { FormLayout } from "@/components/FormLayout";
 import { SignaturePad } from "@/components/SignaturePad";
 import { DeclaracaoTransporte } from "@/components/DeclaracaoTransporte";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Download, Loader2 } from "lucide-react";
-import html2canvas from "html2canvas";
+import { Loader2 } from "lucide-react";
+import html2pdf from "html2pdf.js";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface FormValues {
   tipoSolicitacao: "Aderir" | "Cancelar";
   tipoTransporte: "Fretado" | "ValeTransporte";
-  email: string;
   motivo: string;
   cep: string;
   rua: string;
@@ -52,7 +52,6 @@ const AdesaoCancelamento = () => {
     defaultValues: {
       tipoSolicitacao: "Aderir",
       tipoTransporte: "Fretado",
-      email: "",
       motivo: "",
       cep: "",
       rua: "",
@@ -70,29 +69,6 @@ const AdesaoCancelamento = () => {
   
   const handleSignatureChange = (dataUrl: string | null) => {
     setSignatureDataUrl(dataUrl);
-  };
-  
-  const downloadDeclaracao = async () => {
-    const element = document.getElementById('declaracao-preview');
-    if (!element) return;
-    
-    try {
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff'
-      });
-      
-      const dataUrl = canvas.toDataURL('image/png');
-      const link = document.createElement('a');
-      link.href = dataUrl;
-      link.download = `declaracao_${tipoSolicitacao.toLowerCase()}_transporte.png`;
-      link.click();
-    } catch (error) {
-      console.error("Erro ao gerar imagem da declaração:", error);
-      toast.error("Não foi possível baixar a declaração");
-    }
   };
   
   const buscarCep = async (cep: string) => {
@@ -126,6 +102,30 @@ const AdesaoCancelamento = () => {
     }
   }, [cep]);
   
+  const captureDeclaracaoAsPdf = async (): Promise<string> => {
+    const element = document.getElementById('declaracao-preview');
+    if (!element) return '';
+    
+    try {
+      const options = {
+        margin: 10,
+        filename: `declaracao_${tipoSolicitacao.toLowerCase()}_transporte.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      return new Promise((resolve) => {
+        html2pdf().from(element).set(options).outputPdf('datauristring').then((pdf: string) => {
+          resolve(pdf);
+        });
+      });
+    } catch (error) {
+      console.error("Erro ao capturar declaração como PDF:", error);
+      return '';
+    }
+  };
+  
   const onSubmit = async (data: FormValues) => {
     if (!user) {
       toast.error("Você precisa estar logado para enviar uma solicitação");
@@ -140,11 +140,12 @@ const AdesaoCancelamento = () => {
     setIsSubmitting(true);
     
     try {
+      const pdfDataUrl = await captureDeclaracaoAsPdf();
+      
       const { error } = await supabase.from('solicitacoes_adesao_cancelamento').insert({
         solicitante_id: user.id,
         tipo_solicitacao: data.tipoSolicitacao,
-        tipo_transporte: data.tipoSolicitacao === "Aderir" ? data.tipoTransporte : null,
-        email: data.email,
+        tipo_transporte: data.tipoTransporte,
         motivo: data.motivo,
         cep: data.cep,
         rua: data.rua,
@@ -152,7 +153,7 @@ const AdesaoCancelamento = () => {
         cidade: data.cidade,
         status: 'pendente',
         assinatura_url: signatureDataUrl,
-        declaracao_url: await captureDeclaracaoAsImage()
+        declaracao_url: pdfDataUrl
       });
       
       if (error) {
@@ -168,25 +169,6 @@ const AdesaoCancelamento = () => {
       toast.error("Erro ao enviar solicitação");
     } finally {
       setIsSubmitting(false);
-    }
-  };
-  
-  const captureDeclaracaoAsImage = async (): Promise<string> => {
-    const element = document.getElementById('declaracao-preview');
-    if (!element) return '';
-    
-    try {
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff'
-      });
-      
-      return canvas.toDataURL('image/png');
-    } catch (error) {
-      console.error("Erro ao capturar declaração como imagem:", error);
-      return '';
     }
   };
   
@@ -388,31 +370,6 @@ const AdesaoCancelamento = () => {
               
               <FormField
                 control={form.control}
-                name="email"
-                rules={{ 
-                  required: "E-mail é obrigatório",
-                  pattern: {
-                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: "E-mail inválido"
-                  }
-                }}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="form-field-label">E-mail para receber o termo</FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="seu.email@exemplo.com" 
-                        {...field} 
-                        className="form-field-input"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
                 name="motivo"
                 rules={{ required: "Motivo é obrigatório" }}
                 render={({ field }) => (
@@ -451,7 +408,7 @@ const AdesaoCancelamento = () => {
             <div id="declaracao-preview" className="bg-white p-4 rounded-lg border">
               <DeclaracaoTransporte 
                 tipo={tipoSolicitacao} 
-                tipoTransporte={tipoSolicitacao === "Aderir" ? tipoTransporte : undefined}
+                tipoTransporte={tipoTransporte}
                 usuario={user ? {
                   nome: user.nome,
                   matricula: user.matricula,
@@ -467,16 +424,9 @@ const AdesaoCancelamento = () => {
               />
             </div>
             
-            <div className="flex justify-center">
-              <Button 
-                type="button" 
-                onClick={downloadDeclaracao}
-                className="flex items-center gap-2"
-                variant="outline"
-              >
-                <Download size={16} />
-                Baixar Declaração
-              </Button>
+            <div className="text-center text-sm text-gray-500 italic">
+              O documento será enviado para análise após submissão da solicitação.
+              Apenas administradores podem baixar a versão em PDF deste documento.
             </div>
           </div>
         </TabsContent>

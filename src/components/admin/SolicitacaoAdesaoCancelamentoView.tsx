@@ -43,13 +43,13 @@ export function SolicitacaoAdesaoCancelamentoView({
 
   const handleDownloadDeclaracao = () => {
     if (solicitacao.declaracao_url) {
-      // Create a temporary anchor element
-      const link = document.createElement('a');
-      link.href = solicitacao.declaracao_url;
-      link.download = `declaracao_${solicitacao.tipo_solicitacao.toLowerCase()}_${solicitacao.id}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      const linkSource = solicitacao.declaracao_url;
+      const downloadLink = document.createElement('a');
+      const fileName = `declaracao_${solicitacao.tipo_solicitacao.toLowerCase()}_${solicitacao.id}.pdf`;
+      
+      downloadLink.href = linkSource;
+      downloadLink.download = fileName;
+      downloadLink.click();
     } else {
       toast.error("Não há declaração disponível para download");
     }
@@ -83,21 +83,14 @@ export function SolicitacaoAdesaoCancelamentoView({
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <h3 className="text-sm font-medium text-muted-foreground">Email</h3>
-            <p>{solicitacao.email}</p>
-          </div>
-          <div>
             <h3 className="text-sm font-medium text-muted-foreground">Data da Solicitação</h3>
             <p>{new Date(solicitacao.created_at).toLocaleDateString()}</p>
           </div>
-        </div>
-
-        {solicitacao.tipo_solicitacao === "Aderir" && solicitacao.tipo_transporte && (
           <div>
             <h3 className="text-sm font-medium text-muted-foreground">Tipo de Transporte</h3>
             <p>{solicitacao.tipo_transporte === "Fretado" ? "Transporte Fretado" : "Vale Transporte"}</p>
           </div>
-        )}
+        </div>
 
         {solicitacao.cep && (
           <div className="grid grid-cols-1 gap-3">
@@ -122,7 +115,7 @@ export function SolicitacaoAdesaoCancelamentoView({
               onClick={handleDownloadDeclaracao}
             >
               <Download size={16} />
-              Baixar Declaração Assinada
+              Baixar Declaração em PDF
             </Button>
           </div>
         )}
