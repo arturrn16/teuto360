@@ -1,4 +1,3 @@
-
 import { useAuth } from "@/context/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui-components/Card";
 import { cn } from "@/lib/utils";
@@ -175,6 +174,11 @@ const Dashboard = () => {
 
   const filteredCards = cards.filter(card => {
     if (!user) return false;
+    
+    // Add specific check to prevent "Cardápio da Semana" card for "selecao" users
+    if (user.tipo_usuario === 'selecao' && card.title === "Cardápio da Semana") {
+      return false;
+    }
     
     if (user.admin) return card.title === "Administração" || card.title === "Gerenciar Comunicados";
     
