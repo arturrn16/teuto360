@@ -135,7 +135,6 @@ const Admin = () => {
   const fetchSolicitacoes = async () => {
     setLoading(true);
     try {
-      // Função genérica para buscar solicitações
       const fetchTableData = async <T>(tableName: string, setter: (data: T[]) => void) => {
         const { data, error } = await queryCustomTable<T>(tableName, {
           order: { column: 'created_at', ascending: false }
@@ -145,7 +144,6 @@ const Admin = () => {
           toast.error(`Erro ao buscar solicitações de ${tableName}`);
         } else {
           setter(data);
-          // Mapear informações dos solicitantes
           data.forEach((item: any) => {
             if (item.solicitante_id && !solicitantesInfo[item.solicitante_id]) {
               fetchSolicitanteInfo(item.solicitante_id);
@@ -555,7 +553,6 @@ const Admin = () => {
 
       toast.success("Solicitação aprovada com sucesso!");
       
-      // Atualiza a lista de solicitações
       fetchSolicitacoes();
     } catch (error) {
       console.error("Erro ao aprovar solicitação:", error);
@@ -579,7 +576,6 @@ const Admin = () => {
 
       toast.success("Solicitação rejeitada com sucesso!");
       
-      // Atualiza a lista de solicitações
       fetchSolicitacoes();
     } catch (error) {
       console.error("Erro ao rejeitar solicitação:", error);
@@ -587,7 +583,6 @@ const Admin = () => {
     }
   };
 
-  // Função para baixar o comprovante de endereço
   const handleDownloadComprovante = async (comprovanteUrl: string) => {
     try {
       if (!comprovanteUrl) {
@@ -595,12 +590,10 @@ const Admin = () => {
         return;
       }
       
-      // Obtém o nome do arquivo da URL
       const fileName = comprovanteUrl.split('/').pop() || 'comprovante';
       
-      // Faz o download do arquivo do storage do Supabase
       const { data, error } = await supabase.storage
-        .from('comprovantes') // Ajuste o nome do bucket conforme necessário
+        .from('comprovantes')
         .download(comprovanteUrl);
         
       if (error) {
@@ -609,17 +602,14 @@ const Admin = () => {
         return;
       }
       
-      // Cria um URL para o arquivo baixado
       const url = URL.createObjectURL(data);
       
-      // Cria um link para download e simula o clique
       const a = document.createElement('a');
       a.href = url;
       a.download = fileName;
       document.body.appendChild(a);
       a.click();
       
-      // Limpa o URL e remove o elemento
       setTimeout(() => {
         URL.revokeObjectURL(url);
         document.body.removeChild(a);
@@ -771,4 +761,186 @@ const Admin = () => {
               <TableCell>{solicitacao.motivo}</TableCell>
               <TableCell>
                 <Badge variant={solicitacao.status === "aprovado" ? "success" : solicitacao.status === "rejeitado" ? "destructive" : "default"}>
-                  {solicitacao.status === "aprovado" ? "Aprovado" : solicitacao.status === "rejeitado" ? "Rejeitado" : "
+                  {solicitacao.status === "aprovado" ? "Aprovado" : solicitacao.status === "rejeitado" ? "Rejeitado" : "Pendente"}
+                </Badge>
+              </TableCell>
+              <TableCell>
+                {solicitacao.status === "pendente" && (
+                  <div className="flex space-x-2">
+                    <Button variant="outline" size="sm" className="text-green-600 hover:text-green-700" onClick={() => handleAprovarSolicitacao("solicitacoes_mudanca_turno", solicitacao.id, "mudanca_turno")}>
+                      <CheckCircle className="h-4 w-4 mr-1" /> Aprovar
+                    </Button>
+                    <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700" onClick={() => handleRejeitarSolicitacao("solicitacoes_mudanca_turno", solicitacao.id, "mudanca_turno")}>
+                      <XCircle className="h-4 w-4 mr-1" /> Rejeitar
+                    </Button>
+                  </div>
+                )}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    );
+  };
+
+  return (
+    <div className="container mx-auto py-6">
+      <h1 className="text-2xl font-bold mb-6">Painel Administrativo</h1>
+      
+      <div className="mb-6 flex flex-col sm:flex-row gap-4 sm:items-center">
+        <div className="relative w-full sm:w-64">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="Buscar por nome..."
+            className="pl-8"
+            value={filtroColaborador}
+            onChange={(e) => setFiltroColaborador(e.target.value)}
+          />
+        </div>
+        
+        <Select value={filtroStatus} onValueChange={setFiltroStatus}>
+          <SelectTrigger className="w-full sm:w-36">
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="todos">Todos</SelectItem>
+            <SelectItem value="pendente">Pendentes</SelectItem>
+            <SelectItem value="aprovado">Aprovados</SelectItem>
+            <SelectItem value="rejeitado">Rejeitados</SelectItem>
+          </SelectContent>
+        </Select>
+        
+        <Button variant="outline" onClick={() => fetchSolicitacoes()} className="ml-auto">
+          Atualizar
+        </Button>
+      </div>
+      
+      <Tabs defaultValue="transporte_rota" className="w-full">
+        <TabsList className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 mb-4">
+          <TabsTrigger value="transporte_rota" className="flex items-center gap-1">
+            <Route className="h-4 w-4" /> Rota
+          </TabsTrigger>
+          <TabsTrigger value="transporte_12x36" className="flex items-center gap-1">
+            <Map className="h-4 w-4" /> 12x36
+          </TabsTrigger>
+          <TabsTrigger value="refeicao" className="flex items-center gap-1">
+            <Utensils className="h-4 w-4" /> Refeição
+          </TabsTrigger>
+          <TabsTrigger value="abono_ponto" className="flex items-center gap-1">
+            <ClipboardCheck className="h-4 w-4" /> Abono
+          </TabsTrigger>
+          <TabsTrigger value="adesao_cancelamento" className="flex items-center gap-1">
+            <FileText className="h-4 w-4" /> Adesão
+          </TabsTrigger>
+          <TabsTrigger value="alteracao_endereco" className="flex items-center gap-1">
+            <Home className="h-4 w-4" /> Endereço
+          </TabsTrigger>
+          <TabsTrigger value="mudanca_turno" className="flex items-center gap-1">
+            <Replace className="h-4 w-4" /> Turno
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="transporte_rota">
+          <Card>
+            <CardHeader>
+              <CardTitle>Solicitações de Transporte (Rota)</CardTitle>
+              <CardDescription>
+                Gerencie as solicitações de transporte relacionadas a mudanças de rota.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {renderSolicitacoesTransporteRota()}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="transporte_12x36">
+          <Card>
+            <CardHeader>
+              <CardTitle>Solicitações de Transporte (12x36)</CardTitle>
+              <CardDescription>
+                Gerencie as solicitações de transporte para escala 12x36.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {renderSolicitacoesTransporte12x36()}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="refeicao">
+          <Card>
+            <CardHeader>
+              <CardTitle>Solicitações de Refeição</CardTitle>
+              <CardDescription>
+                Gerencie as solicitações de refeição para colaboradores.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {renderSolicitacoesRefeicao()}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="abono_ponto">
+          <Card>
+            <CardHeader>
+              <CardTitle>Solicitações de Abono de Ponto</CardTitle>
+              <CardDescription>
+                Gerencie as solicitações de abono de ponto dos colaboradores.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {renderSolicitacoesAbonoPonto()}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="adesao_cancelamento">
+          <Card>
+            <CardHeader>
+              <CardTitle>Solicitações de Adesão/Cancelamento</CardTitle>
+              <CardDescription>
+                Gerencie as solicitações de adesão ou cancelamento de serviços.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {renderSolicitacoesAdesaoCancelamento()}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="alteracao_endereco">
+          <Card>
+            <CardHeader>
+              <CardTitle>Solicitações de Alteração de Endereço</CardTitle>
+              <CardDescription>
+                Gerencie as solicitações de alteração de endereço dos colaboradores.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {renderSolicitacoesAlteracaoEndereco()}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="mudanca_turno">
+          <Card>
+            <CardHeader>
+              <CardTitle>Solicitações de Mudança de Turno</CardTitle>
+              <CardDescription>
+                Gerencie as solicitações de mudança de turno dos colaboradores.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {renderSolicitacoesMudancaTurno()}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+};
+
+export default Admin;
