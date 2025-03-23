@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -31,6 +30,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { FormLayout } from "@/components/FormLayout";
+import { useEffect } from "react";
 
 interface FormValues {
   telefone: string;
@@ -74,26 +74,34 @@ const MudancaTurno = () => {
     "1° Turno", 
     "2° Turno", 
     "3° Turno", 
-    "12x36 Diurno", 
-    "12x36 Noturno"
+    "Gyn Adm 1", 
+    "Gyn Adm 2", 
+    "Gyn 1° Turno", 
+    "Gyn 2° Turno"
   ];
   
   const getRotaOptions = () => {
-    if (novoTurno === "Administrativo") {
+    if (["Gyn Adm 1", "Gyn Adm 2", "Gyn 1° Turno", "Gyn 2° Turno"].includes(novoTurno)) {
+      return [novoTurno];
+    } else if (novoTurno === "Administrativo") {
       return Array.from({ length: 8 }, (_, i) => `ADM-${String(i + 1).padStart(2, '0')}`);
     } else if (novoTurno === "1° Turno") {
       return Array.from({ length: 15 }, (_, i) => `P-${String(i + 1).padStart(2, '0')}`);
     } else if (novoTurno === "2° Turno") {
       return Array.from({ length: 12 }, (_, i) => `S-${String(i + 1).padStart(2, '0')}`);
     } else if (novoTurno === "3° Turno") {
-      return Array.from({ length: 3 }, (_, i) => `T-${String(i + 1).padStart(2, '0')}`);
-    } else if (novoTurno === "12x36 Diurno" || novoTurno === "12x36 Noturno") {
-      return ["Rota Especial 12x36"];
+      return Array.from({ length: 8 }, (_, i) => `T-${String(i + 1).padStart(2, '0')}`);
     }
     return [];
   };
   
   const rotaOptions = getRotaOptions();
+  
+  useEffect(() => {
+    if (["Gyn Adm 1", "Gyn Adm 2", "Gyn 1° Turno", "Gyn 2° Turno"].includes(novoTurno)) {
+      form.setValue("novaRota", novoTurno);
+    }
+  }, [novoTurno, form]);
   
   const buscarCep = async (cep: string) => {
     if (cep.length !== 8) return;
@@ -350,7 +358,11 @@ const MudancaTurno = () => {
                   <Select 
                     onValueChange={(value) => {
                       field.onChange(value);
-                      form.setValue("novaRota", "");
+                      if (["Gyn Adm 1", "Gyn Adm 2", "Gyn 1° Turno", "Gyn 2° Turno"].includes(value)) {
+                        form.setValue("novaRota", value);
+                      } else {
+                        form.setValue("novaRota", "");
+                      }
                     }}
                     defaultValue={field.value}
                   >
@@ -381,7 +393,7 @@ const MudancaTurno = () => {
                 <Select 
                   onValueChange={field.onChange}
                   defaultValue={field.value}
-                  disabled={!form.watch("novoTurno")}
+                  disabled={!novoTurno || ["Gyn Adm 1", "Gyn Adm 2", "Gyn 1° Turno", "Gyn 2° Turno"].includes(novoTurno)}
                 >
                   <FormControl>
                     <SelectTrigger className="form-select-input">
@@ -389,7 +401,7 @@ const MudancaTurno = () => {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {getRotaOptions().map((rota) => (
+                    {rotaOptions.map((rota) => (
                       <SelectItem key={rota} value={rota}>{rota}</SelectItem>
                     ))}
                   </SelectContent>

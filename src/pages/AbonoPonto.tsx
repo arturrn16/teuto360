@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -56,12 +55,12 @@ const AbonoPonto = () => {
   // Opções dinâmicas de turno com base na cidade
   const turnoOptions = cidade === "Anápolis" 
     ? ["Administrativo", "1° Turno", "2° Turno", "3° Turno"]
-    : ["Gyn adm 1", "Gyn adm 2", "Gyn 1° Turno", "Gyn 2° Turno"];
+    : ["Gyn Adm 1", "Gyn Adm 2", "Gyn 1° Turno", "Gyn 2° Turno"];
     
   // Opções dinâmicas de rota com base na cidade e turno
   const getRotaOptions = () => {
     if (cidade === "Goiânia") {
-      return turnoOptions; // Para Goiânia, as rotas são iguais aos turnos
+      return [turno].filter(Boolean);
     } else if (cidade === "Anápolis") {
       if (turno === "Administrativo") {
         return Array.from({ length: 8 }, (_, i) => `ADM-${String(i + 1).padStart(2, '0')}`);
@@ -77,6 +76,12 @@ const AbonoPonto = () => {
   };
   
   const rotaOptions = getRotaOptions();
+  
+  useEffect(() => {
+    if (cidade === "Goiânia" && turno) {
+      form.setValue("rota", turno);
+    }
+  }, [cidade, turno, form]);
   
   const onSubmit = async (data: FormValues) => {
     if (!user) {
@@ -211,7 +216,11 @@ const AbonoPonto = () => {
                 value={turno}
                 onChange={(e) => {
                   form.setValue("turno", e.target.value);
-                  form.setValue("rota", "");
+                  if (cidade === "Goiânia" && e.target.value) {
+                    form.setValue("rota", e.target.value);
+                  } else {
+                    form.setValue("rota", "");
+                  }
                 }}
                 disabled={!cidade}
               >
@@ -226,7 +235,7 @@ const AbonoPonto = () => {
                 className="form-select-input"
                 value={form.watch("rota")}
                 onChange={(e) => form.setValue("rota", e.target.value)}
-                disabled={!turno}
+                disabled={!turno || (cidade === "Goiânia")}
               >
                 <option value="" disabled>Selecione a rota</option>
                 {rotaOptions.map((option) => (
@@ -293,8 +302,12 @@ const AbonoPonto = () => {
                   <Select 
                     onValueChange={(value) => {
                       field.onChange(value);
-                      // Redefina a rota ao mudar o turno
-                      form.setValue("rota", "");
+                      
+                      if (cidade === "Goiânia" && value) {
+                        form.setValue("rota", value);
+                      } else {
+                        form.setValue("rota", "");
+                      }
                     }}
                     defaultValue={field.value}
                   >
@@ -326,7 +339,7 @@ const AbonoPonto = () => {
                   <Select 
                     onValueChange={field.onChange}
                     defaultValue={field.value}
-                    disabled={!turno} // Desabilita até que o turno seja selecionado
+                    disabled={!turno || (cidade === "Goiânia")}
                   >
                     <FormControl>
                       <SelectTrigger>
