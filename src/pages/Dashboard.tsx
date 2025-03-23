@@ -166,7 +166,7 @@ const Dashboard = () => {
       description: "Confira o cardápio do refeitório para a semana",
       icon: <CalendarDays className="h-8 w-8 text-green-500" />,
       to: "/cardapio-semana",
-      allowedTypes: ["refeicao", "colaborador", "comum"], // Removed 'selecao' from allowed types
+      allowedTypes: ["selecao", "refeicao", "colaborador", "comum"],
       color: "from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20",
       textColor: "text-green-600 dark:text-green-400"
     },
@@ -174,11 +174,6 @@ const Dashboard = () => {
 
   const filteredCards = cards.filter(card => {
     if (!user) return false;
-    
-    // Add specific check to prevent "Cardápio da Semana" card for "selecao" users
-    if (user.tipo_usuario === 'selecao' && card.title === "Cardápio da Semana") {
-      return false;
-    }
     
     if (user.admin) return card.title === "Administração" || card.title === "Gerenciar Comunicados";
     
