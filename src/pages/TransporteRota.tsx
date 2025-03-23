@@ -33,7 +33,7 @@ import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface FormValues {
   matricula: string;
@@ -50,7 +50,6 @@ const TransporteRota = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
   
   const form = useForm<FormValues>({
     defaultValues: {
@@ -83,24 +82,19 @@ const TransporteRota = () => {
     
   // Opções dinâmicas de rota com base na cidade e turno
   const getRotaOptions = () => {
-    if (!turno) return [];
-    
-    // Novas regras para rotas baseadas no turno
-    if (cidade === "Anápolis") {
-      if (turno === "1° Turno") {
+    if (cidade === "Goiânia") {
+      return [turno]; // Para Goiânia, as rotas são iguais aos turnos
+    } else if (cidade === "Anápolis") {
+      if (turno === "Administrativo") {
+        return Array.from({ length: 8 }, (_, i) => `ADM-${String(i + 1).padStart(2, '0')}`);
+      } else if (turno === "1° Turno") {
         return Array.from({ length: 15 }, (_, i) => `P-${String(i + 1).padStart(2, '0')}`);
       } else if (turno === "2° Turno") {
         return Array.from({ length: 12 }, (_, i) => `S-${String(i + 1).padStart(2, '0')}`);
       } else if (turno === "3° Turno") {
         return Array.from({ length: 8 }, (_, i) => `T-${String(i + 1).padStart(2, '0')}`);
-      } else if (turno === "Administrativo") {
-        return Array.from({ length: 8 }, (_, i) => `ADM-${String(i + 1).padStart(2, '0')}`);
       }
-    } else if (cidade === "Goiânia") {
-      // Para turnos de Goiânia, use o próprio nome do turno como rota
-      return [turno];
     }
-    
     return [];
   };
   
@@ -113,11 +107,7 @@ const TransporteRota = () => {
   
   const onSubmit = async (data: FormValues) => {
     if (!user) {
-      toast({
-        variant: "destructive",
-        title: "Erro",
-        description: "Você precisa estar logado para enviar uma solicitação"
-      });
+      toast.error("Você precisa estar logado para enviar uma solicitação");
       return;
     }
     
@@ -134,30 +124,20 @@ const TransporteRota = () => {
         periodo_inicio: formatDate(data.periodoInicio),
         periodo_fim: formatDate(data.periodoFim),
         motivo: data.motivo,
+        status: 'pendente'
       });
       
       if (error) {
         console.error("Erro ao enviar solicitação:", error);
-        toast({
-          variant: "destructive",
-          title: "Erro",
-          description: "Erro ao enviar solicitação"
-        });
+        toast.error("Erro ao enviar solicitação");
         return;
       }
       
-      toast({
-        title: "Sucesso",
-        description: "Solicitação enviada com sucesso!"
-      });
+      toast.success("Solicitação enviada com sucesso!");
       navigate("/minhas-solicitacoes");
     } catch (error) {
       console.error("Erro ao enviar solicitação:", error);
-      toast({
-        variant: "destructive",
-        title: "Erro",
-        description: "Erro ao enviar solicitação"
-      });
+      toast.error("Erro ao enviar solicitação");
     } finally {
       setIsSubmitting(false);
     }
@@ -207,76 +187,74 @@ const TransporteRota = () => {
                 />
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
-                  control={form.control}
-                  name="cidade"
-                  rules={{ required: "Cidade é obrigatória" }}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Cidade</FormLabel>
-                      <Select 
-                        onValueChange={(value) => {
-                          field.onChange(value);
-                          // Redefina o turno ao mudar a cidade
-                          form.setValue("turno", "");
-                          form.setValue("rota", "");
-                        }}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione a cidade" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="Anápolis">Anápolis</SelectItem>
-                          <SelectItem value="Goiânia">Goiânia</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="turno"
-                  rules={{ required: "Turno é obrigatório" }}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Turno</FormLabel>
-                      <Select 
-                        onValueChange={(value) => {
-                          field.onChange(value);
-                          // Redefina a rota ao mudar o turno
-                          form.setValue("rota", "");
-                          
-                          // Se for Goiânia, seleciona automaticamente a única opção de rota (o próprio turno)
-                          if (cidade === "Goiânia" && value) {
-                            form.setValue("rota", value);
-                          }
-                        }}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione o turno" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {turnoOptions.map((option) => (
-                            <SelectItem key={option} value={option}>
-                              {option}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+              <FormField
+                control={form.control}
+                name="cidade"
+                rules={{ required: "Cidade é obrigatória" }}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Cidade</FormLabel>
+                    <Select 
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        // Redefina o turno ao mudar a cidade
+                        form.setValue("turno", "");
+                        form.setValue("rota", "");
+                      }}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione a cidade" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Anápolis">Anápolis</SelectItem>
+                        <SelectItem value="Goiânia">Goiânia</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="turno"
+                rules={{ required: "Turno é obrigatório" }}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Turno</FormLabel>
+                    <Select 
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        // Redefina a rota ao mudar o turno
+                        form.setValue("rota", "");
+                        
+                        // Se for Goiânia, seleciona automaticamente a única opção de rota (o próprio turno)
+                        if (cidade === "Goiânia" && value) {
+                          form.setValue("rota", value);
+                        }
+                      }}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o turno" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {turnoOptions.map((option) => (
+                          <SelectItem key={option} value={option}>
+                            {option}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               
               <FormField
                 control={form.control}

@@ -231,6 +231,7 @@ export type Database = {
           cep: string
           cidade: string
           complemento: string | null
+          comprovante_url: string | null
           created_at: string | null
           data_alteracao: string | null
           endereco: string
@@ -251,6 +252,7 @@ export type Database = {
           cep: string
           cidade: string
           complemento?: string | null
+          comprovante_url?: string | null
           created_at?: string | null
           data_alteracao?: string | null
           endereco: string
@@ -271,6 +273,7 @@ export type Database = {
           cep?: string
           cidade?: string
           complemento?: string | null
+          comprovante_url?: string | null
           created_at?: string | null
           data_alteracao?: string | null
           endereco?: string

@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { FormLayout } from "@/components/FormLayout";
+import { Upload, X } from "lucide-react";
 
 interface FormValues {
   telefone: string;
@@ -43,6 +44,8 @@ const AlteracaoEndereco = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingCep, setIsLoadingCep] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [fileUploading, setFileUploading] = useState(false);
   
   const form = useForm<FormValues>({
     defaultValues: {
@@ -91,15 +94,76 @@ const AlteracaoEndereco = () => {
     }
   };
   
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setUploadedFile(e.target.files[0]);
+    }
+  };
+  
+  const handleRemoveFile = () => {
+    setUploadedFile(null);
+  };
+  
+  const uploadComprovanteEndereco = async (file: File): Promise<string | null> => {
+    if (!user) return null;
+    
+    setFileUploading(true);
+    try {
+      // Create a unique filename using the user's name and current timestamp
+      const fileName = `${user.nome.replace(/\s+/g, '_')}_${Date.now()}.${file.name.split('.').pop()}`;
+      
+      // Upload the file to Supabase Storage
+      const { data, error } = await supabase.storage
+        .from('endereco_comprovantes')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+      
+      if (error) {
+        console.error("Erro ao fazer upload do arquivo:", error);
+        toast.error("Erro ao enviar o comprovante de endereço");
+        return null;
+      }
+      
+      // Get the public URL for the uploaded file
+      const { data: publicUrlData } = supabase.storage
+        .from('endereco_comprovantes')
+        .getPublicUrl(fileName);
+      
+      return publicUrlData.publicUrl;
+    } catch (error) {
+      console.error("Erro ao processar upload:", error);
+      toast.error("Erro ao processar o comprovante de endereço");
+      return null;
+    } finally {
+      setFileUploading(false);
+    }
+  };
+  
   const onSubmit = async (data: FormValues) => {
     if (!user) {
       toast.error("Você precisa estar logado para enviar uma solicitação");
       return;
     }
     
+    // Check if a file was uploaded
+    if (!uploadedFile) {
+      toast.error("É necessário anexar um comprovante de endereço");
+      return;
+    }
+    
     setIsSubmitting(true);
     
     try {
+      // First upload the file and get the URL
+      const fileUrl = await uploadComprovanteEndereco(uploadedFile);
+      
+      if (!fileUrl) {
+        setIsSubmitting(false);
+        return;
+      }
+      
       const { error } = await supabase.from('solicitacoes_alteracao_endereco').insert({
         solicitante_id: user.id,
         telefone: data.telefone,
@@ -114,6 +178,7 @@ const AlteracaoEndereco = () => {
         nova_rota: data.alterarRota === "sim" ? data.novaRota : null,
         endereco_atual: "Endereço atual do sistema",
         endereco_novo: `${data.endereco}, ${data.bairro}, ${data.cidade}, ${data.cep}`,
+        comprovante_url: fileUrl,
         status: 'pendente'
       });
       
@@ -305,6 +370,58 @@ const AlteracaoEndereco = () => {
             />
           </div>
           
+          {/* Comprovante de Endereço (File Upload) */}
+          <FormItem>
+            <FormLabel className="form-field-label">Comprovante de Endereço</FormLabel>
+            <div className="border border-input rounded-md p-2">
+              {!uploadedFile ? (
+                <div className="flex flex-col items-center justify-center py-4">
+                  <label htmlFor="file-upload" className="cursor-pointer">
+                    <div className="flex flex-col items-center gap-2">
+                      <Upload className="h-8 w-8 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">
+                        Clique para anexar um comprovante
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        (Conta de luz, água ou telefone em seu nome)
+                      </span>
+                    </div>
+                    <input
+                      id="file-upload"
+                      name="file-upload"
+                      type="file"
+                      className="sr-only"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      onChange={handleFileChange}
+                    />
+                  </label>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between p-2 bg-muted/50 rounded">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 bg-primary/10 rounded">
+                      <Upload className="h-4 w-4 text-primary" />
+                    </div>
+                    <span className="text-sm font-medium truncate max-w-[200px]">
+                      {uploadedFile.name}
+                    </span>
+                  </div>
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={handleRemoveFile}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
+            <FormMessage>
+              {!uploadedFile && "É necessário anexar um comprovante de endereço"}
+            </FormMessage>
+          </FormItem>
+          
           <FormField
             control={form.control}
             name="telefoneWhatsapp"
@@ -418,7 +535,7 @@ const AlteracaoEndereco = () => {
             />
           )}
           
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
+          <Button type="submit" className="w-full" disabled={isSubmitting || fileUploading}>
             {isSubmitting ? "Enviando..." : "Enviar Solicitação"}
           </Button>
         </form>
