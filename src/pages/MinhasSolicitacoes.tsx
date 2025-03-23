@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { 
@@ -81,11 +80,9 @@ const MinhasSolicitacoes = () => {
   const [filtroStatus, setFiltroStatus] = useState<string>("todas");
   const [filtroTipo, setFiltroTipo] = useState<string>("todos");
   
-  // Estados para o modal de detalhes
   const [detalhesAberto, setDetalhesAberto] = useState(false);
   const [solicitacaoSelecionada, setSolicitacaoSelecionada] = useState<Solicitacao | null>(null);
 
-  // Get distinct solicitation types
   const tiposSolicitacao = Array.from(new Set(solicitacoes.map(s => s.tipo)));
 
   useEffect(() => {
@@ -362,15 +359,12 @@ const MinhasSolicitacoes = () => {
   }, [user, isAuthenticated]);
 
   useEffect(() => {
-    // Aplica os dois filtros (status e tipo)
     let filtered = solicitacoes;
     
-    // Filtro por status
     if (filtroStatus !== "todas") {
       filtered = filtered.filter(sol => sol.status === filtroStatus);
     }
     
-    // Filtro por tipo
     if (filtroTipo !== "todos") {
       filtered = filtered.filter(sol => sol.tipo === filtroTipo);
     }
@@ -463,7 +457,6 @@ const MinhasSolicitacoes = () => {
   const renderDetalhes = () => {
     if (!solicitacaoSelecionada) return null;
     
-    // Conteúdo específico para cada tipo de solicitação
     let detalhesConteudo = null;
     
     if (isRefeicaoSolicitacao(solicitacaoSelecionada)) {
@@ -565,17 +558,47 @@ const MinhasSolicitacoes = () => {
           <div className="grid grid-cols-2 gap-4 my-4">
             <div>
               <p className="text-sm text-gray-500">Tipo de Solicitação</p>
-              <p className="font-medium">{solicitacaoSelecionada.tipo_solicitacao}</p>
+              <p className="font-medium">
+                {solicitacaoSelecionada.tipo_solicitacao === "Aderir" 
+                  ? "Aderir transporte" 
+                  : "Cancelar transporte"}
+              </p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Email</p>
-              <p className="font-medium">{solicitacaoSelecionada.email}</p>
+              <p className="text-sm text-gray-500">Tipo de Transporte</p>
+              <p className="font-medium">
+                {solicitacaoSelecionada.tipo_transporte === "Fretado" 
+                  ? "Transporte Fretado" 
+                  : "Vale Transporte"}
+              </p>
             </div>
           </div>
           <div className="mt-4">
             <p className="text-sm text-gray-500">Motivo</p>
             <p className="font-medium">{solicitacaoSelecionada.motivo}</p>
           </div>
+          
+          {solicitacaoSelecionada.status === "aprovada" && (
+            <div className="mt-4 p-3 border border-green-200 bg-green-50 rounded-md">
+              <p className="text-green-700">
+                Sua solicitação de adesão ao transporte foi aprovada, dirija-se ao RH-Benefícios para o cadastro do seu crachá.
+              </p>
+            </div>
+          )}
+          
+          {solicitacaoSelecionada.status === "rejeitada" && (
+            <div className="mt-4 p-3 border border-red-200 bg-red-50 rounded-md">
+              <p className="text-red-700">
+                Sua solicitação de adesão ou cancelamento de transporte foi rejeitada.
+              </p>
+              {solicitacaoSelecionada.motivo_rejeicao && (
+                <div className="mt-2">
+                  <p className="text-sm text-gray-600">Motivo da rejeição:</p>
+                  <p className="text-red-700">{solicitacaoSelecionada.motivo_rejeicao}</p>
+                </div>
+              )}
+            </div>
+          )}
         </>
       );
     } else if (isAlteracaoEnderecoSolicitacao(solicitacaoSelecionada)) {

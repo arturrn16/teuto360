@@ -234,8 +234,8 @@ const AdesaoCancelamento = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="Aderir">Aderir</SelectItem>
-                        <SelectItem value="Cancelar">Cancelar</SelectItem>
+                        <SelectItem value="Aderir">Aderir transporte</SelectItem>
+                        <SelectItem value="Cancelar">Cancelar transporte</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
