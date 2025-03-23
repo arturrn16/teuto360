@@ -25,12 +25,19 @@ export function SolicitacaoAdesaoCancelamentoView({
   const handleUpdateStatus = async (newStatus: string) => {
     setIsLoading(true);
     try {
+      // Verificando se há motivo em caso de rejeição
+      if (newStatus === 'rejeitada' && !motivo.trim()) {
+        toast.error("É necessário informar o motivo da rejeição");
+        setIsLoading(false);
+        return;
+      }
+      
       const updateData: { status: string; motivo_rejeicao?: string } = { 
         status: newStatus 
       };
       
       // Adicionar motivo apenas se for rejeitada
-      if (newStatus === 'rejeitada' && motivo) {
+      if (newStatus === 'rejeitada') {
         updateData.motivo_rejeicao = motivo;
       }
       
@@ -53,15 +60,39 @@ export function SolicitacaoAdesaoCancelamentoView({
     }
   };
 
-  const handleDownloadDeclaracao = () => {
+  const handleDownloadDeclaracao = async () => {
     if (solicitacao.declaracao_url) {
-      const linkSource = solicitacao.declaracao_url;
-      const downloadLink = document.createElement('a');
-      const fileName = `declaracao_${solicitacao.tipo_solicitacao.toLowerCase()}_${solicitacao.id}.pdf`;
-      
-      downloadLink.href = linkSource;
-      downloadLink.download = fileName;
-      downloadLink.click();
+      try {
+        console.log("Tentando baixar declaração:", solicitacao.declaracao_url);
+        
+        // Se a URL já for completa, use-a diretamente
+        if (solicitacao.declaracao_url.startsWith('http')) {
+          window.open(solicitacao.declaracao_url, '_blank');
+        } else {
+          // Caso contrário, tenta baixar do storage do Supabase
+          const { data, error } = await supabase.storage
+            .from('documentos')
+            .download(solicitacao.declaracao_url);
+            
+          if (error) {
+            console.error("Erro ao baixar arquivo:", error);
+            toast.error("Erro ao baixar a declaração. Verifique o console para mais detalhes.");
+            return;
+          }
+          
+          // Criar URL para o blob e abrir
+          const url = URL.createObjectURL(data);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `declaracao_${solicitacao.tipo_solicitacao.toLowerCase()}_${solicitacao.id}.pdf`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
+      } catch (error) {
+        console.error("Erro ao processar download:", error);
+        toast.error("Não foi possível baixar a declaração");
+      }
     } else {
       toast.error("Não há declaração disponível para download");
     }
@@ -170,13 +201,7 @@ export function SolicitacaoAdesaoCancelamentoView({
           <div className="flex justify-end gap-2 w-full">
             <Button
               variant="outline"
-              onClick={() => {
-                if (!motivo.trim()) {
-                  toast.error("Informe o motivo da rejeição");
-                  return;
-                }
-                handleUpdateStatus("rejeitada");
-              }}
+              onClick={() => handleUpdateStatus("rejeitada")}
               disabled={isLoading}
             >
               Rejeitar
