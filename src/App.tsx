@@ -126,11 +126,11 @@ const App = () => (
                 }
               />
               
-              {/* New routes for cafeteria menu */}
+              {/* New routes for cafeteria menu - Updated to exclude selecao users */}
               <Route
                 path="/cardapio-semana"
                 element={
-                  <ProtectedRoute allowedTypes={["selecao", "refeicao", "colaborador", "comum"]}>
+                  <ProtectedRoute allowedTypes={["refeicao", "colaborador", "comum"]}>
                     <CardapioSemana />
                   </ProtectedRoute>
                 }

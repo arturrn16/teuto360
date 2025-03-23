@@ -1,3 +1,4 @@
+
 import React from "react";
 
 // Types for user roles
@@ -85,13 +86,13 @@ export const navItems: NavItem[] = [
     name: "Refeitório", 
     href: "#", // No direct link
     icon: <span className="text-gray-600 text-xl">🍽️</span>,
-    allowedTypes: ["colaborador", "comum", "refeicao"] as const,
+    allowedTypes: ["colaborador", "comum", "refeicao"] as const, // Removed selecao
     children: [
       { 
         name: "Cardápio da Semana", 
         href: "/cardapio-semana", 
         icon: <span className="text-green-500 text-xl">📅</span>,
-        allowedTypes: ["colaborador", "comum", "refeicao"] as const
+        allowedTypes: ["colaborador", "comum", "refeicao"] as const // Removed selecao
       }
     ]
   },
