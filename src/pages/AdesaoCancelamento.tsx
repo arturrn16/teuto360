@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -390,7 +389,7 @@ const AdesaoCancelamento = () => {
               
               <div className="space-y-3">
                 <FormLabel className="form-field-label">Assinatura</FormLabel>
-                <SignaturePad onSignatureChange={handleSignatureDataUrl} disabled={isSubmitting} />
+                <SignaturePad onSignatureChange={handleSignatureChange} disabled={isSubmitting} />
                 {!signatureDataUrl && (
                   <p className="text-sm text-amber-600">Assine o documento antes de enviar</p>
                 )}
