@@ -1,4 +1,5 @@
 
+
 export interface BaseSolicitacao {
   id: number;
   solicitante_id: number;
