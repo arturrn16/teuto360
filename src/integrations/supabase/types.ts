@@ -185,33 +185,51 @@ export type Database = {
       }
       solicitacoes_adesao_cancelamento: {
         Row: {
+          assinatura_url: string | null
+          bairro: string | null
+          cep: string | null
+          cidade: string | null
           created_at: string | null
-          email: string
+          declaracao_url: string | null
           id: number
           motivo: string
+          rua: string | null
           solicitante_id: number | null
           status: string | null
           tipo_solicitacao: string
+          tipo_transporte: string | null
           updated_at: string | null
         }
         Insert: {
+          assinatura_url?: string | null
+          bairro?: string | null
+          cep?: string | null
+          cidade?: string | null
           created_at?: string | null
-          email: string
+          declaracao_url?: string | null
           id?: number
           motivo: string
+          rua?: string | null
           solicitante_id?: number | null
           status?: string | null
           tipo_solicitacao: string
+          tipo_transporte?: string | null
           updated_at?: string | null
         }
         Update: {
+          assinatura_url?: string | null
+          bairro?: string | null
+          cep?: string | null
+          cidade?: string | null
           created_at?: string | null
-          email?: string
+          declaracao_url?: string | null
           id?: number
           motivo?: string
+          rua?: string | null
           solicitante_id?: number | null
           status?: string | null
           tipo_solicitacao?: string
+          tipo_transporte?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -570,6 +588,22 @@ export type Database = {
           p_autor_id: number
           p_autor_nome: string
           p_importante?: boolean
+        }
+        Returns: undefined
+      }
+      insert_solicitacao_adesao_cancelamento: {
+        Args: {
+          p_solicitante_id: number
+          p_tipo_solicitacao: string
+          p_tipo_transporte: string
+          p_motivo: string
+          p_cep?: string
+          p_rua?: string
+          p_bairro?: string
+          p_cidade?: string
+          p_assinatura_url?: string
+          p_declaracao_url?: string
+          p_status?: string
         }
         Returns: undefined
       }
