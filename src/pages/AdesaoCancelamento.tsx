@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -27,13 +27,19 @@ import { FormLayout } from "@/components/FormLayout";
 import { SignaturePad } from "@/components/SignaturePad";
 import { DeclaracaoTransporte } from "@/components/DeclaracaoTransporte";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Download } from "lucide-react";
+import { Download, Loader2 } from "lucide-react";
 import html2canvas from "html2canvas";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface FormValues {
   tipoSolicitacao: "Aderir" | "Cancelar";
+  tipoTransporte: "Fretado" | "ValeTransporte";
   email: string;
   motivo: string;
+  cep: string;
+  rua: string;
+  bairro: string;
+  cidade: string;
 }
 
 const AdesaoCancelamento = () => {
@@ -41,16 +47,27 @@ const AdesaoCancelamento = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [signatureDataUrl, setSignatureDataUrl] = useState<string | null>(null);
+  const [isCepLoading, setIsCepLoading] = useState(false);
   
   const form = useForm<FormValues>({
     defaultValues: {
       tipoSolicitacao: "Aderir",
+      tipoTransporte: "Fretado",
       email: "",
       motivo: "",
+      cep: "",
+      rua: "",
+      bairro: "",
+      cidade: "",
     },
   });
   
   const tipoSolicitacao = form.watch("tipoSolicitacao");
+  const tipoTransporte = form.watch("tipoTransporte");
+  const cep = form.watch("cep");
+  const rua = form.watch("rua");
+  const bairro = form.watch("bairro");
+  const cidade = form.watch("cidade");
   
   const handleSignatureChange = (dataUrl: string | null) => {
     setSignatureDataUrl(dataUrl);
@@ -79,6 +96,38 @@ const AdesaoCancelamento = () => {
     }
   };
   
+  const buscarCep = async (cep: string) => {
+    if (!cep || cep.length !== 8) return;
+    
+    setIsCepLoading(true);
+    try {
+      const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+      const data = await response.json();
+      
+      if (data.erro) {
+        toast.error("CEP não encontrado");
+        return;
+      }
+      
+      form.setValue("rua", data.logradouro);
+      form.setValue("bairro", data.bairro);
+      form.setValue("cidade", data.localidade);
+    } catch (error) {
+      console.error("Erro ao buscar CEP:", error);
+      toast.error("Erro ao buscar CEP");
+    } finally {
+      setIsCepLoading(false);
+    }
+  };
+  
+  // Efeito para buscar CEP quando o campo for preenchido corretamente
+  useEffect(() => {
+    const cepSemMascara = cep?.replace(/\D/g, '');
+    if (cepSemMascara?.length === 8) {
+      buscarCep(cepSemMascara);
+    }
+  }, [cep]);
+  
   const onSubmit = async (data: FormValues) => {
     if (!user) {
       toast.error("Você precisa estar logado para enviar uma solicitação");
@@ -96,8 +145,13 @@ const AdesaoCancelamento = () => {
       const { error } = await supabase.from('solicitacoes_adesao_cancelamento').insert({
         solicitante_id: user.id,
         tipo_solicitacao: data.tipoSolicitacao,
+        tipo_transporte: data.tipoSolicitacao === "Aderir" ? data.tipoTransporte : null,
         email: data.email,
         motivo: data.motivo,
+        cep: data.cep,
+        rua: data.rua,
+        bairro: data.bairro,
+        cidade: data.cidade,
         status: 'pendente',
         assinatura_url: signatureDataUrl,
         declaracao_url: await captureDeclaracaoAsImage()
@@ -209,6 +263,144 @@ const AdesaoCancelamento = () => {
                   </FormItem>
                 )}
               />
+
+              {tipoSolicitacao === "Aderir" && (
+                <FormField
+                  control={form.control}
+                  name="tipoTransporte"
+                  rules={{ required: "Tipo de transporte é obrigatório" }}
+                  render={({ field }) => (
+                    <FormItem className="space-y-3">
+                      <FormLabel className="form-field-label">Tipo de Transporte</FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          className="flex flex-col space-y-1"
+                        >
+                          <FormItem className="flex items-center space-x-3 space-y-0">
+                            <FormControl>
+                              <RadioGroupItem value="Fretado" />
+                            </FormControl>
+                            <FormLabel className="font-normal">
+                              Transporte Fretado
+                            </FormLabel>
+                          </FormItem>
+                          <FormItem className="flex items-center space-x-3 space-y-0">
+                            <FormControl>
+                              <RadioGroupItem value="ValeTransporte" />
+                            </FormControl>
+                            <FormLabel className="font-normal">
+                              Vale Transporte
+                            </FormLabel>
+                          </FormItem>
+                        </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+              
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                <FormField
+                  control={form.control}
+                  name="cep"
+                  rules={{ 
+                    required: "CEP é obrigatório",
+                    pattern: {
+                      value: /^\d{8}$/,
+                      message: "CEP deve conter 8 dígitos numéricos"
+                    }
+                  }}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="form-field-label">CEP</FormLabel>
+                      <div className="relative">
+                        <FormControl>
+                          <Input 
+                            placeholder="00000000" 
+                            {...field} 
+                            className="form-field-input"
+                            onChange={e => {
+                              const value = e.target.value.replace(/\D/g, '');
+                              field.onChange(value);
+                            }}
+                            maxLength={8}
+                          />
+                        </FormControl>
+                        {isCepLoading && (
+                          <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                          </div>
+                        )}
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 gap-6">
+                <FormField
+                  control={form.control}
+                  name="rua"
+                  rules={{ required: "Rua é obrigatória" }}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="form-field-label">Rua</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="Av. Principal" 
+                          {...field} 
+                          className="form-field-input"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="bairro"
+                  rules={{ required: "Bairro é obrigatório" }}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="form-field-label">Bairro</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="Centro" 
+                          {...field} 
+                          className="form-field-input"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="cidade"
+                  rules={{ required: "Cidade é obrigatória" }}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="form-field-label">Cidade</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="São Paulo" 
+                          {...field} 
+                          className="form-field-input"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
               
               <FormField
                 control={form.control}
@@ -275,12 +467,18 @@ const AdesaoCancelamento = () => {
             <div id="declaracao-preview" className="bg-white p-4 rounded-lg border">
               <DeclaracaoTransporte 
                 tipo={tipoSolicitacao} 
+                tipoTransporte={tipoSolicitacao === "Aderir" ? tipoTransporte : undefined}
                 usuario={user ? {
                   nome: user.nome,
                   matricula: user.matricula,
                   cargo: user.cargo,
                   setor: user.setor
                 } : null} 
+                endereco={
+                  cep && rua && bairro && cidade 
+                    ? { cep, rua, bairro, cidade } 
+                    : undefined
+                }
                 signatureDataUrl={signatureDataUrl}
               />
             </div>

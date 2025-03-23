@@ -9,8 +9,13 @@ export interface BaseSolicitacao {
 
 export interface SolicitacaoAdesaoCancelamento extends BaseSolicitacao {
   tipo_solicitacao: "Aderir" | "Cancelar";
+  tipo_transporte?: "Fretado" | "ValeTransporte";
   email: string;
   motivo: string;
+  cep?: string;
+  rua?: string;
+  bairro?: string;
+  cidade?: string;
   assinatura_url?: string;
   declaracao_url?: string;
 }

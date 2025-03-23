@@ -92,6 +92,22 @@ export function SolicitacaoAdesaoCancelamentoView({
           </div>
         </div>
 
+        {solicitacao.tipo_solicitacao === "Aderir" && solicitacao.tipo_transporte && (
+          <div>
+            <h3 className="text-sm font-medium text-muted-foreground">Tipo de Transporte</h3>
+            <p>{solicitacao.tipo_transporte === "Fretado" ? "Transporte Fretado" : "Vale Transporte"}</p>
+          </div>
+        )}
+
+        {solicitacao.cep && (
+          <div className="grid grid-cols-1 gap-3">
+            <h3 className="text-sm font-medium text-muted-foreground">Endereço</h3>
+            <p>
+              {solicitacao.rua}, {solicitacao.bairro}, {solicitacao.cidade} - CEP: {solicitacao.cep}
+            </p>
+          </div>
+        )}
+
         <div>
           <h3 className="text-sm font-medium text-muted-foreground">Motivo</h3>
           <p className="whitespace-pre-wrap">{solicitacao.motivo}</p>

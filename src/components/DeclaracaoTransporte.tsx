@@ -4,16 +4,29 @@ import { ptBR } from "date-fns/locale/pt-BR";
 
 interface DeclaracaoTransporteProps {
   tipo: "Aderir" | "Cancelar";
+  tipoTransporte?: "Fretado" | "ValeTransporte";
   usuario: {
     nome: string;
     matricula: string;
     cargo: string;
     setor: string;
   } | null;
+  endereco?: {
+    cep: string;
+    rua: string;
+    bairro: string;
+    cidade: string;
+  };
   signatureDataUrl: string | null;
 }
 
-export const DeclaracaoTransporte = ({ tipo, usuario, signatureDataUrl }: DeclaracaoTransporteProps) => {
+export const DeclaracaoTransporte = ({ 
+  tipo, 
+  tipoTransporte, 
+  usuario, 
+  endereco, 
+  signatureDataUrl 
+}: DeclaracaoTransporteProps) => {
   if (!usuario) return null;
 
   const dataAtual = format(new Date(), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
@@ -54,13 +67,20 @@ export const DeclaracaoTransporte = ({ tipo, usuario, signatureDataUrl }: Declar
         {usuario.cargo} / {usuario.setor}
       </div>
 
+      {endereco && (
+        <div className="border border-gray-300 py-1 px-2 mb-2">
+          <div className="font-semibold">Endereço Residencial</div>
+          {endereco.rua}, {endereco.bairro}, {endereco.cidade} - CEP: {endereco.cep}
+        </div>
+      )}
+
       {tipo === "Aderir" ? (
         <>
           <div className="py-2 px-2 mb-4">
             <p className="mb-2">1. Deseja participar do sistema de Vale Transporte?</p>
             <p className="mb-2">SIM ( X )</p>
-            <p className="mb-2">( &nbsp; ) TRANSPORTE FRETADO</p>
-            <p className="mb-2">( X ) VALE TRANSPORTE</p>
+            <p className="mb-2">{tipoTransporte === "Fretado" ? "( X )" : "( \u00A0 )"} TRANSPORTE FRETADO</p>
+            <p className="mb-2">{tipoTransporte === "ValeTransporte" ? "( X )" : "( \u00A0 )"} VALE TRANSPORTE</p>
           </div>
           
           <div className="text-center font-bold mb-3">AUTORIZAÇÃO DE DESCONTO</div>
