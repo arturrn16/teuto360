@@ -104,7 +104,6 @@ interface SolicitacaoAlteracaoEndereco extends Solicitacao {
   endereco_atual: string;
   endereco_novo: string;
   data_alteracao: string;
-  comprovante_url?: string;
 }
 
 interface SolicitacaoMudancaTurno extends Solicitacao {
@@ -127,820 +126,1086 @@ const Admin = () => {
   const [filtroColaborador, setFiltroColaborador] = useState("");
   const [filtroStatus, setFiltroStatus] = useState("todos");
   const [solicitantesInfo, setSolicitantesInfo] = useState<{[id: number]: {nome: string, setor: string}}>({});
-
+  
   useEffect(() => {
-    fetchSolicitacoes();
-  }, []);
-
-  const fetchSolicitacoes = async () => {
-    setLoading(true);
-    try {
-      const fetchTableData = async <T>(tableName: string, setter: (data: T[]) => void) => {
-        const { data, error } = await queryCustomTable<T>(tableName, {
-          order: { column: 'created_at', ascending: false }
-        });
-        if (error) {
-          console.error(`Erro ao buscar solicitações de ${tableName}:`, error);
-          toast.error(`Erro ao buscar solicitações de ${tableName}`);
+    if (!user || !user.admin) return;
+    
+    const fetchSolicitacoes = async () => {
+      try {
+        setLoading(true);
+        
+        const { data: dataRota, error: errorRota } = await supabase
+          .from("solicitacoes_transporte_rota")
+          .select("*")
+          .order("created_at", { ascending: false });
+          
+        if (errorRota) {
+          console.error("Erro ao buscar solicitações de rota:", errorRota);
         } else {
-          setter(data);
-          data.forEach((item: any) => {
-            if (item.solicitante_id && !solicitantesInfo[item.solicitante_id]) {
-              fetchSolicitanteInfo(item.solicitante_id);
+          setSolicitacoesRota(dataRota || []);
+        }
+        
+        const { data: data12x36, error: error12x36 } = await supabase
+          .from("solicitacoes_transporte_12x36")
+          .select("*")
+          .order("created_at", { ascending: false });
+          
+        if (error12x36) {
+          console.error("Erro ao buscar solicitações 12x36:", error12x36);
+        } else {
+          setSolicitacoes12x36(data12x36 || []);
+        }
+        
+        const { data: dataRefeicao, error: errorRefeicao } = await supabase
+          .from("solicitacoes_refeicao")
+          .select("*")
+          .order("created_at", { ascending: false });
+          
+        if (errorRefeicao) {
+          console.error("Erro ao buscar solicitações de refeição:", errorRefeicao);
+        } else {
+          setSolicitacoesRefeicao(dataRefeicao || []);
+        }
+
+        try {
+          console.log("Fetching abono_ponto solicitations...");
+          const { data: dataAbonoPonto, error: errorAbonoPonto } = await queryCustomTable<any>(
+            "solicitacoes_abono_ponto",
+            {
+              order: { column: "created_at", ascending: false }
             }
-          });
+          );
+            
+          if (errorAbonoPonto) {
+            console.error("Erro ao buscar solicitações de abono de ponto:", errorAbonoPonto);
+          } else if (dataAbonoPonto) {
+            console.log("Received abono_ponto data:", dataAbonoPonto.length, "records");
+            const formattedData: SolicitacaoAbonosPonto[] = dataAbonoPonto.map((item: any) => ({
+              id: item.id,
+              solicitante_id: item.solicitante_id,
+              status: item.status,
+              created_at: item.created_at,
+              updated_at: item.updated_at,
+              data_ocorrencia: item.data_ocorrencia || '',
+              turno: item.turno || '',
+              motivo: item.motivo || ''
+            }));
+            setSolicitacoesAbonoPonto(formattedData);
+          }
+        } catch (err) {
+          console.error("Erro ao processar solicitações de abono de ponto:", err);
         }
-      };
 
-      await Promise.all([
-        fetchTableData<SolicitacaoTransporteRota>("solicitacoes_transporte_rota", setSolicitacoesRota),
-        fetchTableData<SolicitacaoTransporte12x36>("solicitacoes_transporte_12x36", setSolicitacoes12x36),
-        fetchTableData<SolicitacaoRefeicao>("solicitacoes_refeicao", setSolicitacoesRefeicao),
-        fetchTableData<SolicitacaoAbonosPonto>("solicitacoes_abono_ponto", setSolicitacoesAbonoPonto),
-        fetchTableData<SolicitacaoAdesaoCancelamento>("solicitacoes_adesao_cancelamento", setSolicitacoesAdesaoCancelamento),
-        fetchTableData<SolicitacaoAlteracaoEndereco>("solicitacoes_alteracao_endereco", setSolicitacoesAlteracaoEndereco),
-        fetchTableData<SolicitacaoMudancaTurno>("solicitacoes_mudanca_turno", setSolicitacoesMudancaTurno),
-      ]);
-    } finally {
-      setLoading(false);
-    }
-  };
+        try {
+          console.log("Fetching adesao_cancelamento solicitations...");
+          const { data: dataAdesaoCancelamento, error: errorAdesaoCancelamento } = await queryCustomTable<any>(
+            "solicitacoes_adesao_cancelamento",
+            {
+              order: { column: "created_at", ascending: false }
+            }
+          );
+            
+          if (errorAdesaoCancelamento) {
+            console.error("Erro ao buscar solicitações de adesão/cancelamento:", errorAdesaoCancelamento);
+          } else if (dataAdesaoCancelamento) {
+            console.log("Received adesao_cancelamento data:", dataAdesaoCancelamento.length, "records");
+            const formattedData: SolicitacaoAdesaoCancelamento[] = dataAdesaoCancelamento.map((item: any) => ({
+              id: item.id,
+              solicitante_id: item.solicitante_id,
+              status: item.status,
+              created_at: item.created_at,
+              updated_at: item.updated_at,
+              tipo_solicitacao: item.tipo_solicitacao || '',
+              motivo: item.motivo || ''
+            }));
+            setSolicitacoesAdesaoCancelamento(formattedData);
+          }
+        } catch (err) {
+          console.error("Erro ao processar solicitações de adesão/cancelamento:", err);
+        }
 
-  const fetchSolicitanteInfo = async (solicitanteId: number) => {
+        try {
+          console.log("Fetching alteracao_endereco solicitations...");
+          const { data: dataAlteracaoEndereco, error: errorAlteracaoEndereco } = await queryCustomTable<any>(
+            "solicitacoes_alteracao_endereco",
+            {
+              order: { column: "created_at", ascending: false }
+            }
+          );
+            
+          if (errorAlteracaoEndereco) {
+            console.error("Erro ao buscar solicitações de alteração de endereço:", errorAlteracaoEndereco);
+          } else if (dataAlteracaoEndereco) {
+            console.log("Received alteracao_endereco data:", dataAlteracaoEndereco.length, "records");
+            const formattedData: SolicitacaoAlteracaoEndereco[] = dataAlteracaoEndereco.map((item: any) => ({
+              id: item.id,
+              solicitante_id: item.solicitante_id,
+              status: item.status,
+              created_at: item.created_at,
+              updated_at: item.updated_at,
+              endereco_atual: item.endereco || '',
+              endereco_novo: item.nova_rota ? `${item.endereco} (nova rota: ${item.nova_rota})` : (item.endereco || ''),
+              data_alteracao: item.data_alteracao || item.created_at
+            }));
+            setSolicitacoesAlteracaoEndereco(formattedData);
+          }
+        } catch (err) {
+          console.error("Erro ao processar solicitações de alteração de endereço:", err);
+        }
+
+        try {
+          console.log("Fetching mudanca_turno solicitations...");
+          const { data: dataMudancaTurno, error: errorMudancaTurno } = await queryCustomTable<any>(
+            "solicitacoes_mudanca_turno",
+            {
+              order: { column: "created_at", ascending: false }
+            }
+          );
+            
+          if (errorMudancaTurno) {
+            console.error("Erro ao buscar solicitações de mudança de turno:", errorMudancaTurno);
+          } else if (dataMudancaTurno) {
+            console.log("Received mudanca_turno data:", dataMudancaTurno.length, "records");
+            const formattedData: SolicitacaoMudancaTurno[] = dataMudancaTurno.map((item: any) => ({
+              id: item.id,
+              solicitante_id: item.solicitante_id,
+              status: item.status,
+              created_at: item.created_at,
+              updated_at: item.updated_at,
+              turno_atual: item.turno_atual || '',
+              turno_novo: item.novo_turno || '',
+              data_alteracao: item.data_alteracao || item.created_at,
+              motivo: item.motivo || ''
+            }));
+            setSolicitacoesMudancaTurno(formattedData);
+          }
+        } catch (err) {
+          console.error("Erro ao processar solicitações de mudança de turno:", err);
+        }
+        
+        const solicitanteIds = new Set<number>();
+        
+        [
+          ...(dataRota || []), 
+          ...(data12x36 || []), 
+          ...(dataRefeicao || [])
+        ].forEach(s => {
+          if (s.solicitante_id) solicitanteIds.add(s.solicitante_id);
+        });
+        
+        solicitacoesAbonoPonto.forEach(s => { 
+          if (s && s.solicitante_id) solicitanteIds.add(s.solicitante_id); 
+        });
+        
+        solicitacoesAdesaoCancelamento.forEach(s => { 
+          if (s && s.solicitante_id) solicitanteIds.add(s.solicitante_id); 
+        });
+        
+        solicitacoesAlteracaoEndereco.forEach(s => { 
+          if (s && s.solicitante_id) solicitanteIds.add(s.solicitante_id); 
+        });
+        
+        solicitacoesMudancaTurno.forEach(s => { 
+          if (s && s.solicitante_id) solicitanteIds.add(s.solicitante_id); 
+        });
+          
+        if (solicitanteIds.size > 0) {
+          const { data: solicitantesData, error: solicitantesError } = await supabase
+            .from("usuarios")
+            .select("id, nome, setor")
+            .in("id", Array.from(solicitanteIds));
+            
+          if (solicitantesError) {
+            console.error("Erro ao buscar solicitantes:", solicitantesError);
+          } else if (solicitantesData) {
+            const infoMap: {[id: number]: {nome: string, setor: string}} = {};
+            solicitantesData.forEach(s => {
+              infoMap[s.id] = { nome: s.nome, setor: s.setor };
+            });
+            setSolicitantesInfo(infoMap);
+          }
+        }
+      } catch (error) {
+        console.error("Erro ao buscar solicitações:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchSolicitacoes();
+  }, [user]);
+  
+  const formatarData = (dataString: string) => {
     try {
-      const { data: solicitante, error } = await supabase
-        .from('colaboradores')
-        .select('nome, setor')
-        .eq('id', solicitanteId)
-        .single();
-
-      if (error) {
-        console.error("Erro ao buscar informações do solicitante:", error);
-        toast.error("Erro ao buscar informações do solicitante");
-      } else if (solicitante) {
-        setSolicitantesInfo(prev => ({
-          ...prev,
-          [solicitanteId]: { nome: solicitante.nome, setor: solicitante.setor }
-        }));
-      }
+      return format(new Date(dataString), "dd/MM/yyyy", { locale: ptBR });
     } catch (error) {
-      console.error("Erro ao buscar informações do solicitante:", error);
-      toast.error("Ocorreu um erro ao buscar informações do solicitante");
+      return dataString;
     }
   };
-
-  const renderSolicitacoesTransporteRota = () => {
-    if (loading) {
-      return <p>Carregando solicitações...</p>;
+  
+  const formatarTimestamp = (dataString: string) => {
+    try {
+      return format(new Date(dataString), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
+    } catch (error) {
+      return dataString;
     }
-
-    const solicitacoesFiltradas = solicitacoesRota.filter(solicitacao => {
-      if (filtroStatus !== "todos" && solicitacao.status !== filtroStatus) {
-        return false;
-      }
-      if (filtroColaborador && !solicitacao.colaborador_nome.toLowerCase().includes(filtroColaborador.toLowerCase())) {
-        return false;
-      }
-      return true;
+  };
+  
+  const filtrarSolicitacoesRota = () => {
+    return solicitacoesRota.filter(s => {
+      const matchColaborador = s.colaborador_nome.toLowerCase().includes(filtroColaborador.toLowerCase());
+      const matchStatus = filtroStatus === "todos" || s.status === filtroStatus;
+      return matchColaborador && matchStatus;
     });
-
-    if (solicitacoesFiltradas.length === 0) {
-      return <p>Nenhuma solicitação encontrada</p>;
-    }
-
-    return (
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Nome</TableHead>
-            <TableHead>Cidade</TableHead>
-            <TableHead>Turno</TableHead>
-            <TableHead>Rota</TableHead>
-            <TableHead>Período Início</TableHead>
-            <TableHead>Período Fim</TableHead>
-            <TableHead>Motivo</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Ações</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {solicitacoesFiltradas.map(solicitacao => (
-            <TableRow key={solicitacao.id}>
-              <TableCell>{solicitacao.colaborador_nome}</TableCell>
-              <TableCell>{solicitacao.cidade}</TableCell>
-              <TableCell>{solicitacao.turno}</TableCell>
-              <TableCell>{solicitacao.rota}</TableCell>
-              <TableCell>
-                {solicitacao.periodo_inicio
-                  ? format(new Date(solicitacao.periodo_inicio), "dd/MM/yyyy", { locale: ptBR })
-                  : "N/A"}
-              </TableCell>
-              <TableCell>
-                {solicitacao.periodo_fim
-                  ? format(new Date(solicitacao.periodo_fim), "dd/MM/yyyy", { locale: ptBR })
-                  : "N/A"}
-              </TableCell>
-              <TableCell>{solicitacao.motivo}</TableCell>
-              <TableCell>
-                <Badge variant={solicitacao.status === "aprovado" ? "success" : solicitacao.status === "rejeitado" ? "destructive" : "default"}>
-                  {solicitacao.status === "aprovado" ? "Aprovado" : solicitacao.status === "rejeitado" ? "Rejeitado" : "Pendente"}
-                </Badge>
-              </TableCell>
-              <TableCell>
-                {solicitacao.status === "pendente" && (
-                  <div className="flex space-x-2">
-                    <Button variant="outline" size="sm" className="text-green-600 hover:text-green-700" onClick={() => handleAprovarSolicitacao("solicitacoes_transporte_rota", solicitacao.id, "rota")}>
-                      <CheckCircle className="h-4 w-4 mr-1" /> Aprovar
-                    </Button>
-                    <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700" onClick={() => handleRejeitarSolicitacao("solicitacoes_transporte_rota", solicitacao.id, "rota")}>
-                      <XCircle className="h-4 w-4 mr-1" /> Rejeitar
-                    </Button>
-                  </div>
-                )}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    );
   };
-
-  const renderSolicitacoesTransporte12x36 = () => {
-    if (loading) {
-      return <p>Carregando solicitações...</p>;
-    }
-
-    const solicitacoesFiltradas = solicitacoes12x36.filter(solicitacao => {
-      if (filtroStatus !== "todos" && solicitacao.status !== filtroStatus) {
-        return false;
-      }
-      if (filtroColaborador && !solicitacao.colaborador_nome.toLowerCase().includes(filtroColaborador.toLowerCase())) {
-        return false;
-      }
-      return true;
+  
+  const filtrarSolicitacoes12x36 = () => {
+    return solicitacoes12x36.filter(s => {
+      const matchColaborador = s.colaborador_nome.toLowerCase().includes(filtroColaborador.toLowerCase());
+      const matchStatus = filtroStatus === "todos" || s.status === filtroStatus;
+      return matchColaborador && matchStatus;
     });
-
-    if (solicitacoesFiltradas.length === 0) {
-      return <p>Nenhuma solicitação encontrada</p>;
-    }
-
-    return (
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Nome</TableHead>
-            <TableHead>Telefone</TableHead>
-            <TableHead>Endereço</TableHead>
-            <TableHead>CEP</TableHead>
-            <TableHead>Rota</TableHead>
-            <TableHead>Data Início</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Ações</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {solicitacoesFiltradas.map(solicitacao => (
-            <TableRow key={solicitacao.id}>
-              <TableCell>{solicitacao.colaborador_nome}</TableCell>
-              <TableCell>{solicitacao.telefone}</TableCell>
-              <TableCell>{solicitacao.endereco}</TableCell>
-              <TableCell>{solicitacao.cep}</TableCell>
-              <TableCell>{solicitacao.rota}</TableCell>
-              <TableCell>
-                {solicitacao.data_inicio
-                  ? format(new Date(solicitacao.data_inicio), "dd/MM/yyyy", { locale: ptBR })
-                  : "N/A"}
-              </TableCell>
-              <TableCell>
-                <Badge variant={solicitacao.status === "aprovado" ? "success" : solicitacao.status === "rejeitado" ? "destructive" : "default"}>
-                  {solicitacao.status === "aprovado" ? "Aprovado" : solicitacao.status === "rejeitado" ? "Rejeitado" : "Pendente"}
-                </Badge>
-              </TableCell>
-              <TableCell>
-                {solicitacao.status === "pendente" && (
-                  <div className="flex space-x-2">
-                    <Button variant="outline" size="sm" className="text-green-600 hover:text-green-700" onClick={() => handleAprovarSolicitacao("solicitacoes_transporte_12x36", solicitacao.id, "12x36")}>
-                      <CheckCircle className="h-4 w-4 mr-1" /> Aprovar
-                    </Button>
-                    <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700" onClick={() => handleRejeitarSolicitacao("solicitacoes_transporte_12x36", solicitacao.id, "12x36")}>
-                      <XCircle className="h-4 w-4 mr-1" /> Rejeitar
-                    </Button>
-                  </div>
-                )}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    );
   };
-
-  const renderSolicitacoesRefeicao = () => {
-    if (loading) {
-      return <p>Carregando solicitações...</p>;
-    }
-
-    const solicitacoesFiltradas = solicitacoesRefeicao.filter(solicitacao => {
-      if (filtroStatus !== "todos" && solicitacao.status !== filtroStatus) {
-        return false;
-      }
-      if (filtroColaborador && !solicitacao.colaboradores.some(colaborador => colaborador.toLowerCase().includes(filtroColaborador.toLowerCase()))) {
-        return false;
-      }
-      return true;
+  
+  const filtrarSolicitacoesRefeicao = () => {
+    return solicitacoesRefeicao.filter(s => {
+      const matchColaborador = s.colaboradores.some(c => 
+        c.toLowerCase().includes(filtroColaborador.toLowerCase())
+      );
+      const matchStatus = filtroStatus === "todos" || s.status === filtroStatus;
+      return matchColaborador && matchStatus;
     });
-
-    if (solicitacoesFiltradas.length === 0) {
-      return <p>Nenhuma solicitação encontrada</p>;
-    }
-
-    return (
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Colaboradores</TableHead>
-            <TableHead>Tipo de Refeição</TableHead>
-            <TableHead>Data da Refeição</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Ações</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {solicitacoesFiltradas.map(solicitacao => (
-            <TableRow key={solicitacao.id}>
-              <TableCell>{solicitacao.colaboradores.join(", ")}</TableCell>
-              <TableCell>{solicitacao.tipo_refeicao}</TableCell>
-              <TableCell>
-                {solicitacao.data_refeicao
-                  ? format(new Date(solicitacao.data_refeicao), "dd/MM/yyyy", { locale: ptBR })
-                  : "N/A"}
-              </TableCell>
-              <TableCell>
-                <Badge variant={solicitacao.status === "aprovado" ? "success" : solicitacao.status === "rejeitado" ? "destructive" : "default"}>
-                  {solicitacao.status === "aprovado" ? "Aprovado" : solicitacao.status === "rejeitado" ? "Rejeitado" : "Pendente"}
-                </Badge>
-              </TableCell>
-              <TableCell>
-                {solicitacao.status === "pendente" && (
-                  <div className="flex space-x-2">
-                    <Button variant="outline" size="sm" className="text-green-600 hover:text-green-700" onClick={() => handleAprovarSolicitacao("solicitacoes_refeicao", solicitacao.id, "refeicao")}>
-                      <CheckCircle className="h-4 w-4 mr-1" /> Aprovar
-                    </Button>
-                    <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700" onClick={() => handleRejeitarSolicitacao("solicitacoes_refeicao", solicitacao.id, "refeicao")}>
-                      <XCircle className="h-4 w-4 mr-1" /> Rejeitar
-                    </Button>
-                  </div>
-                )}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    );
   };
 
-  const renderSolicitacoesAbonoPonto = () => {
-    if (loading) {
-      return <p>Carregando solicitações...</p>;
-    }
+  const filtrarSolicitacoesAbonoPonto = () => {
+    return solicitacoesAbonoPonto.filter(s => {
+      const matchStatus = filtroStatus === "todos" || s.status === filtroStatus;
+      return matchStatus;
+    });
+  };
 
-    const solicitacoesFiltradas = solicitacoesAbonoPonto.filter(solicitacao => {
-      if (filtroStatus !== "todos" && solicitacao.status !== filtroStatus) {
-        return false;
-      }
+  const filtrarSolicitacoesAdesaoCancelamento = () => {
+    return solicitacoesAdesaoCancelamento.filter(s => {
+      const matchStatus = filtroStatus === "todos" || s.status === filtroStatus;
+      return matchStatus;
+    });
+  };
+
+  const filtrarSolicitacoesAlteracaoEndereco = () => {
+    return solicitacoesAlteracaoEndereco.filter(s => {
+      const matchStatus = filtroStatus === "todos" || s.status === filtroStatus;
+      return matchStatus;
+    });
+  };
+
+  const filtrarSolicitacoesMudancaTurno = () => {
+    return solicitacoesMudancaTurno.filter(s => {
+      const matchStatus = filtroStatus === "todos" || s.status === filtroStatus;
+      return matchStatus;
+    });
+  };
+  
+  const atualizarStatusRota = async (id: number, status: 'aprovada' | 'rejeitada') => {
+    try {
+      const { error } = await supabase
+        .from('solicitacoes_transporte_rota')
+        .update({ status })
+        .eq('id', id);
         
-        if (filtroColaborador && solicitacao.solicitante) {
-          return solicitacao.solicitante.nome
-            .toLowerCase()
-            .includes(filtroColaborador.toLowerCase());
-        }
-        
-      return true;
-    });
-
-    if (solicitacoesFiltradas.length === 0) {
-      return <p>Nenhuma solicitação encontrada</p>;
-    }
-
-    return (
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Solicitante</TableHead>
-            <TableHead>Setor</TableHead>
-            <TableHead>Data Ocorrência</TableHead>
-            <TableHead>Turno</TableHead>
-            <TableHead>Motivo</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Ações</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {solicitacoesFiltradas.map(solicitacao => (
-            <TableRow key={solicitacao.id}>
-              <TableCell>{solicitacao.solicitante?.nome || "N/A"}</TableCell>
-              <TableCell>{solicitacao.solicitante?.setor || "N/A"}</TableCell>
-              <TableCell>
-                {solicitacao.data_ocorrencia
-                  ? format(new Date(solicitacao.data_ocorrencia), "dd/MM/yyyy", { locale: ptBR })
-                  : "N/A"}
-              </TableCell>
-              <TableCell>{solicitacao.turno}</TableCell>
-              <TableCell>{solicitacao.motivo}</TableCell>
-              <TableCell>
-                <Badge variant={solicitacao.status === "aprovado" ? "success" : solicitacao.status === "rejeitado" ? "destructive" : "default"}>
-                  {solicitacao.status === "aprovado" ? "Aprovado" : solicitacao.status === "rejeitado" ? "Rejeitado" : "Pendente"}
-                </Badge>
-              </TableCell>
-              <TableCell>
-                {solicitacao.status === "pendente" && (
-                  <div className="flex space-x-2">
-                    <Button variant="outline" size="sm" className="text-green-600 hover:text-green-700" onClick={() => handleAprovarSolicitacao("solicitacoes_abono_ponto", solicitacao.id, "abono_ponto")}>
-                      <CheckCircle className="h-4 w-4 mr-1" /> Aprovar
-                    </Button>
-                    <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700" onClick={() => handleRejeitarSolicitacao("solicitacoes_abono_ponto", solicitacao.id, "abono_ponto")}>
-                      <XCircle className="h-4 w-4 mr-1" /> Rejeitar
-                    </Button>
-                  </div>
-                )}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    );
-  };
-
-  const renderSolicitacoesAdesaoCancelamento = () => {
-    if (loading) {
-      return <p>Carregando solicitações...</p>;
-    }
-
-    const solicitacoesFiltradas = solicitacoesAdesaoCancelamento.filter(solicitacao => {
-      if (filtroStatus !== "todos" && solicitacao.status !== filtroStatus) {
-        return false;
+      if (error) {
+        console.error("Erro ao atualizar status:", error);
+        toast.error(`Erro ao ${status === 'aprovada' ? 'aprovar' : 'rejeitar'} solicitação`);
+        return;
       }
-        
-        if (filtroColaborador && solicitacao.solicitante) {
-          return solicitacao.solicitante.nome
-            .toLowerCase()
-            .includes(filtroColaborador.toLowerCase());
-        }
-        
-      return true;
-    });
-
-    if (solicitacoesFiltradas.length === 0) {
-      return <p>Nenhuma solicitação encontrada</p>;
+      
+      setSolicitacoesRota(prev => 
+        prev.map(s => s.id === id ? { ...s, status } : s)
+      );
+      
+      toast.success(`Solicitação ${status === 'aprovada' ? 'aprovada' : 'rejeitada'} com sucesso!`);
+    } catch (error) {
+      console.error("Erro ao atualizar status:", error);
+      toast.error(`Erro ao ${status === 'aprovada' ? 'aprovar' : 'rejeitar'} solicitação`);
     }
-
-    return (
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Solicitante</TableHead>
-            <TableHead>Setor</TableHead>
-            <TableHead>Tipo Solicitação</TableHead>
-            <TableHead>Motivo</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Ações</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {solicitacoesFiltradas.map(solicitacao => (
-            <TableRow key={solicitacao.id}>
-              <TableCell>{solicitacao.solicitante?.nome || "N/A"}</TableCell>
-              <TableCell>{solicitacao.solicitante?.setor || "N/A"}</TableCell>
-              <TableCell>{solicitacao.tipo_solicitacao}</TableCell>
-              <TableCell>{solicitacao.motivo}</TableCell>
-              <TableCell>
-                <Badge variant={solicitacao.status === "aprovado" ? "success" : solicitacao.status === "rejeitado" ? "destructive" : "default"}>
-                  {solicitacao.status === "aprovado" ? "Aprovado" : solicitacao.status === "rejeitado" ? "Rejeitado" : "Pendente"}
-                </Badge>
-              </TableCell>
-              <TableCell>
-                {solicitacao.status === "pendente" && (
-                  <div className="flex space-x-2">
-                    <Button variant="outline" size="sm" className="text-green-600 hover:text-green-700" onClick={() => handleAprovarSolicitacao("solicitacoes_adesao_cancelamento", solicitacao.id, "adesao_cancelamento")}>
-                      <CheckCircle className="h-4 w-4 mr-1" /> Aprovar
-                    </Button>
-                    <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700" onClick={() => handleRejeitarSolicitacao("solicitacoes_adesao_cancelamento", solicitacao.id, "adesao_cancelamento")}>
-                      <XCircle className="h-4 w-4 mr-1" /> Rejeitar
-                    </Button>
-                  </div>
-                )}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    );
+  };
+  
+  const atualizarStatus12x36 = async (id: number, status: 'aprovada' | 'rejeitada') => {
+    try {
+      const { error } = await supabase
+        .from('solicitacoes_transporte_12x36')
+        .update({ status })
+        .eq('id', id);
+        
+      if (error) {
+        console.error("Erro ao atualizar status:", error);
+        toast.error(`Erro ao ${status === 'aprovada' ? 'aprovar' : 'rejeitar'} solicitação`);
+        return;
+      }
+      
+      setSolicitacoes12x36(prev => 
+        prev.map(s => s.id === id ? { ...s, status } : s)
+      );
+      
+      toast.success(`Solicitação ${status === 'aprovada' ? 'aprovada' : 'rejeitada'} com sucesso!`);
+    } catch (error) {
+      console.error("Erro ao atualizar status:", error);
+      toast.error(`Erro ao ${status === 'aprovada' ? 'aprovar' : 'rejeitar'} solicitação`);
+    }
+  };
+  
+  const atualizarStatusRefeicao = async (id: number, status: 'aprovada' | 'rejeitada') => {
+    try {
+      const { error } = await supabase
+        .from('solicitacoes_refeicao')
+        .update({ status })
+        .eq('id', id);
+        
+      if (error) {
+        console.error("Erro ao atualizar status:", error);
+        toast.error(`Erro ao ${status === 'aprovada' ? 'aprovar' : 'rejeitar'} solicitação`);
+        return;
+      }
+      
+      setSolicitacoesRefeicao(prev => 
+        prev.map(s => s.id === id ? { ...s, status } : s)
+      );
+      
+      toast.success(`Solicitação ${status === 'aprovada' ? 'aprovada' : 'rejeitada'} com sucesso!`);
+    } catch (error) {
+      console.error("Erro ao atualizar status:", error);
+      toast.error(`Erro ao ${status === 'aprovada' ? 'aprovar' : 'rejeitar'} solicitação`);
+    }
   };
 
-  const handleAprovarSolicitacao = async (tableName: string, id: number, tipo: string) => {
+  const atualizarStatusGenerico = async (tabela: string, id: number, status: 'aprovada' | 'rejeitada', atualizarEstado: Function) => {
     try {
       const { error } = await updateCustomTable(
-        tableName,
-        { status: "aprovado", updated_at: new Date().toISOString() },
-        { column: "id", value: id }
+        tabela,
+        { status },
+        { column: 'id', value: id }
       );
-
+        
       if (error) {
-        toast.error("Erro ao aprovar solicitação");
-        console.error("Erro ao aprovar:", error);
+        console.error(`Erro ao atualizar status em ${tabela}:`, error);
+        toast.error(`Erro ao ${status === 'aprovada' ? 'aprovar' : 'rejeitar'} solicitação`);
         return;
       }
-
-      toast.success("Solicitação aprovada com sucesso!");
       
-      fetchSolicitacoes();
-    } catch (error) {
-      console.error("Erro ao aprovar solicitação:", error);
-      toast.error("Ocorreu um erro ao aprovar a solicitação");
-    }
-  };
-
-  const handleRejeitarSolicitacao = async (tableName: string, id: number, tipo: string) => {
-    try {
-      const { error } = await updateCustomTable(
-        tableName,
-        { status: "rejeitado", updated_at: new Date().toISOString() },
-        { column: "id", value: id }
+      atualizarEstado((prev: any[]) => 
+        prev.map((s: any) => s.id === id ? { ...s, status } : s)
       );
-
-      if (error) {
-        toast.error("Erro ao rejeitar solicitação");
-        console.error("Erro ao rejeitar:", error);
-        return;
-      }
-
-      toast.success("Solicitação rejeitada com sucesso!");
       
-      fetchSolicitacoes();
+      toast.success(`Solicitação ${status === 'aprovada' ? 'aprovada' : 'rejeitada'} com sucesso!`);
     } catch (error) {
-      console.error("Erro ao rejeitar solicitação:", error);
-      toast.error("Ocorreu um erro ao rejeitar a solicitação");
+      console.error(`Erro ao atualizar status em ${tabela}:`, error);
+      toast.error(`Erro ao ${status === 'aprovada' ? 'aprovar' : 'rejeitar'} solicitação`);
     }
   };
-
-  const handleDownloadComprovante = async (comprovanteUrl: string) => {
-    try {
-      if (!comprovanteUrl) {
-        toast.error("URL do comprovante não disponível");
-        return;
-      }
-      
-      const fileName = comprovanteUrl.split('/').pop() || 'comprovante';
-      
-      const { data, error } = await supabase.storage
-        .from('comprovantes')
-        .download(comprovanteUrl);
-        
-      if (error) {
-        console.error("Erro ao baixar comprovante:", error);
-        toast.error("Erro ao baixar o comprovante");
-        return;
-      }
-      
-      const url = URL.createObjectURL(data);
-      
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      
-      setTimeout(() => {
-        URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-      }, 100);
-      
-      toast.success("Download do comprovante iniciado");
-    } catch (error) {
-      console.error("Erro ao processar download:", error);
-      toast.error("Ocorreu um erro ao baixar o comprovante");
+  
+  const StatusBadge = ({ status }: { status: string }) => {
+    let variant = "default";
+    
+    switch (status) {
+      case "aprovada":
+        variant = "success";
+        break;
+      case "rejeitada":
+        variant = "destructive";
+        break;
+      case "pendente":
+        variant = "secondary";
+        break;
+      default:
+        variant = "outline";
     }
-  };
-
-  const renderSolicitacoesAlteracaoEndereco = () => {
-    if (loading) {
-      return <p>Carregando solicitações...</p>;
-    }
-
-    const solicitacoesFiltradas = solicitacoesAlteracaoEndereco.filter(solicitacao => {
-      if (filtroStatus !== "todos" && solicitacao.status !== filtroStatus) {
-        return false;
-      }
-        
-      if (filtroColaborador && solicitacao.solicitante) {
-        return solicitacao.solicitante.nome
-          .toLowerCase()
-          .includes(filtroColaborador.toLowerCase());
-      }
-        
-      return true;
-    });
-
-    if (solicitacoesFiltradas.length === 0) {
-      return <p>Nenhuma solicitação encontrada</p>;
-    }
-
+    
     return (
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Solicitante</TableHead>
-            <TableHead>Setor</TableHead>
-            <TableHead>Endereço Atual</TableHead>
-            <TableHead>Endereço Novo</TableHead>
-            <TableHead>Data Alteração</TableHead>
-            <TableHead>Comprovante</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Ações</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {solicitacoesFiltradas.map(solicitacao => (
-            <TableRow key={solicitacao.id}>
-              <TableCell>{solicitacao.solicitante?.nome || "N/A"}</TableCell>
-              <TableCell>{solicitacao.solicitante?.setor || "N/A"}</TableCell>
-              <TableCell>{solicitacao.endereco_atual}</TableCell>
-              <TableCell>{solicitacao.endereco_novo}</TableCell>
-              <TableCell>
-                {solicitacao.data_alteracao
-                  ? format(new Date(solicitacao.data_alteracao), "dd/MM/yyyy", { locale: ptBR })
-                  : "N/A"}
-              </TableCell>
-              <TableCell>
-                {solicitacao.comprovante_url ? (
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="flex items-center gap-1"
-                    onClick={() => handleDownloadComprovante(solicitacao.comprovante_url || "")}
-                  >
-                    <Download className="h-4 w-4" /> Baixar
-                  </Button>
-                ) : (
-                  "Não disponível"
-                )}
-              </TableCell>
-              <TableCell>
-                <Badge variant={solicitacao.status === "aprovado" ? "success" : solicitacao.status === "rejeitado" ? "destructive" : "default"}>
-                  {solicitacao.status === "aprovado" ? "Aprovado" : solicitacao.status === "rejeitado" ? "Rejeitado" : "Pendente"}
-                </Badge>
-              </TableCell>
-              <TableCell>
-                {solicitacao.status === "pendente" && (
-                  <div className="flex space-x-2">
-                    <Button variant="outline" size="sm" className="text-green-600 hover:text-green-700" onClick={() => handleAprovarSolicitacao("solicitacoes_alteracao_endereco", solicitacao.id, "alteracao_endereco")}>
-                      <CheckCircle className="h-4 w-4 mr-1" /> Aprovar
-                    </Button>
-                    <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700" onClick={() => handleRejeitarSolicitacao("solicitacoes_alteracao_endereco", solicitacao.id, "alteracao_endereco")}>
-                      <XCircle className="h-4 w-4 mr-1" /> Rejeitar
-                    </Button>
-                  </div>
-                )}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      <Badge variant={variant as any} className="capitalize">
+        {status}
+      </Badge>
     );
   };
-
-  const renderSolicitacoesMudancaTurno = () => {
-    if (loading) {
-      return <p>Carregando solicitações...</p>;
-    }
-
-    const solicitacoesFiltradas = solicitacoesMudancaTurno.filter(solicitacao => {
-      if (filtroStatus !== "todos" && solicitacao.status !== filtroStatus) {
-        return false;
-      }
-        
-      if (filtroColaborador && solicitacao.solicitante) {
-        return solicitacao.solicitante.nome
-          .toLowerCase()
-          .includes(filtroColaborador.toLowerCase());
-      }
-        
-      return true;
-    });
-
-    if (solicitacoesFiltradas.length === 0) {
-      return <p>Nenhuma solicitação encontrada</p>;
-    }
-
+  
+  const SolicitanteInfo = ({ id }: { id: number }) => {
+    const info = solicitantesInfo[id];
+    
+    if (!info) return <span className="text-muted-foreground">--</span>;
+    
     return (
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Solicitante</TableHead>
-            <TableHead>Setor</TableHead>
-            <TableHead>Turno Atual</TableHead>
-            <TableHead>Turno Novo</TableHead>
-            <TableHead>Data Alteração</TableHead>
-            <TableHead>Motivo</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Ações</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {solicitacoesFiltradas.map(solicitacao => (
-            <TableRow key={solicitacao.id}>
-              <TableCell>{solicitacao.solicitante?.nome || "N/A"}</TableCell>
-              <TableCell>{solicitacao.solicitante?.setor || "N/A"}</TableCell>
-              <TableCell>{solicitacao.turno_atual}</TableCell>
-              <TableCell>{solicitacao.turno_novo}</TableCell>
-              <TableCell>
-                {solicitacao.data_alteracao
-                  ? format(new Date(solicitacao.data_alteracao), "dd/MM/yyyy", { locale: ptBR })
-                  : "N/A"}
-              </TableCell>
-              <TableCell>{solicitacao.motivo}</TableCell>
-              <TableCell>
-                <Badge variant={solicitacao.status === "aprovado" ? "success" : solicitacao.status === "rejeitado" ? "destructive" : "default"}>
-                  {solicitacao.status === "aprovado" ? "Aprovado" : solicitacao.status === "rejeitado" ? "Rejeitado" : "Pendente"}
-                </Badge>
-              </TableCell>
-              <TableCell>
-                {solicitacao.status === "pendente" && (
-                  <div className="flex space-x-2">
-                    <Button variant="outline" size="sm" className="text-green-600 hover:text-green-700" onClick={() => handleAprovarSolicitacao("solicitacoes_mudanca_turno", solicitacao.id, "mudanca_turno")}>
-                      <CheckCircle className="h-4 w-4 mr-1" /> Aprovar
-                    </Button>
-                    <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700" onClick={() => handleRejeitarSolicitacao("solicitacoes_mudanca_turno", solicitacao.id, "mudanca_turno")}>
-                      <XCircle className="h-4 w-4 mr-1" /> Rejeitar
-                    </Button>
-                  </div>
-                )}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    );
-  };
-
-  return (
-    <div className="container mx-auto py-6">
-      <h1 className="text-2xl font-bold mb-6">Painel Administrativo</h1>
-      
-      <div className="mb-6 flex flex-col sm:flex-row gap-4 sm:items-center">
-        <div className="relative w-full sm:w-64">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="text"
-            placeholder="Buscar por nome..."
-            className="pl-8"
-            value={filtroColaborador}
-            onChange={(e) => setFiltroColaborador(e.target.value)}
-          />
-        </div>
-        
-        <Select value={filtroStatus} onValueChange={setFiltroStatus}>
-          <SelectTrigger className="w-full sm:w-36">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="todos">Todos</SelectItem>
-            <SelectItem value="pendente">Pendentes</SelectItem>
-            <SelectItem value="aprovado">Aprovados</SelectItem>
-            <SelectItem value="rejeitado">Rejeitados</SelectItem>
-          </SelectContent>
-        </Select>
-        
-        <Button variant="outline" onClick={() => fetchSolicitacoes()} className="ml-auto">
-          Atualizar
-        </Button>
+      <div className="text-sm">
+        <div className="font-medium">{info.nome}</div>
+        <div className="text-muted-foreground">{info.setor}</div>
       </div>
-      
-      <Tabs defaultValue="transporte_rota" className="w-full">
-        <TabsList className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 mb-4">
-          <TabsTrigger value="transporte_rota" className="flex items-center gap-1">
-            <Route className="h-4 w-4" /> Rota
-          </TabsTrigger>
-          <TabsTrigger value="transporte_12x36" className="flex items-center gap-1">
-            <Map className="h-4 w-4" /> 12x36
-          </TabsTrigger>
-          <TabsTrigger value="refeicao" className="flex items-center gap-1">
-            <Utensils className="h-4 w-4" /> Refeição
-          </TabsTrigger>
-          <TabsTrigger value="abono_ponto" className="flex items-center gap-1">
-            <ClipboardCheck className="h-4 w-4" /> Abono
-          </TabsTrigger>
-          <TabsTrigger value="adesao_cancelamento" className="flex items-center gap-1">
-            <FileText className="h-4 w-4" /> Adesão
-          </TabsTrigger>
-          <TabsTrigger value="alteracao_endereco" className="flex items-center gap-1">
-            <Home className="h-4 w-4" /> Endereço
-          </TabsTrigger>
-          <TabsTrigger value="mudanca_turno" className="flex items-center gap-1">
-            <Replace className="h-4 w-4" /> Turno
-          </TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="transporte_rota">
-          <Card>
-            <CardHeader>
-              <CardTitle>Solicitações de Transporte (Rota)</CardTitle>
-              <CardDescription>
-                Gerencie as solicitações de transporte relacionadas a mudanças de rota.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {renderSolicitacoesTransporteRota()}
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="transporte_12x36">
-          <Card>
-            <CardHeader>
-              <CardTitle>Solicitações de Transporte (12x36)</CardTitle>
-              <CardDescription>
-                Gerencie as solicitações de transporte para escala 12x36.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {renderSolicitacoesTransporte12x36()}
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="refeicao">
-          <Card>
-            <CardHeader>
-              <CardTitle>Solicitações de Refeição</CardTitle>
-              <CardDescription>
-                Gerencie as solicitações de refeição para colaboradores.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {renderSolicitacoesRefeicao()}
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="abono_ponto">
-          <Card>
-            <CardHeader>
-              <CardTitle>Solicitações de Abono de Ponto</CardTitle>
-              <CardDescription>
-                Gerencie as solicitações de abono de ponto dos colaboradores.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {renderSolicitacoesAbonoPonto()}
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="adesao_cancelamento">
-          <Card>
-            <CardHeader>
-              <CardTitle>Solicitações de Adesão/Cancelamento</CardTitle>
-              <CardDescription>
-                Gerencie as solicitações de adesão ou cancelamento de serviços.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {renderSolicitacoesAdesaoCancelamento()}
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="alteracao_endereco">
-          <Card>
-            <CardHeader>
-              <CardTitle>Solicitações de Alteração de Endereço</CardTitle>
-              <CardDescription>
-                Gerencie as solicitações de alteração de endereço dos colaboradores.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {renderSolicitacoesAlteracaoEndereco()}
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="mudanca_turno">
-          <Card>
-            <CardHeader>
-              <CardTitle>Solicitações de Mudança de Turno</CardTitle>
-              <CardDescription>
-                Gerencie as solicitações de mudança de turno dos colaboradores.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {renderSolicitacoesMudancaTurno()}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+    );
+  };
+  
+  if (!user?.admin) {
+    return (
+      <div className="container py-10">
+        <Card>
+          <CardContent className="p-10 text-center">
+            <div className="text-2xl font-bold text-destructive mb-4">Acesso Negado</div>
+            <p>Você não tem permissão para acessar esta página.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="container py-10">
+      <Card>
+        <CardHeader>
+          <CardTitle>Administração de Solicitações</CardTitle>
+          <CardDescription>
+            Gerenciamento de solicitações de transporte, refeição e serviços
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <p className="text-center py-10">Carregando solicitações...</p>
+          ) : (
+            <>
+              <div className="flex flex-col md:flex-row gap-4 mb-6">
+                <div className="flex-1">
+                  <div className="relative">
+                    <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                    <Input
+                      placeholder="Filtrar por nome do colaborador"
+                      value={filtroColaborador}
+                      onChange={(e) => setFiltroColaborador(e.target.value)}
+                      className="pl-8"
+                    />
+                  </div>
+                </div>
+                <div className="w-full md:w-64">
+                  <Select
+                    value={filtroStatus}
+                    onValueChange={setFiltroStatus}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Filtrar por status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todos">Todos os status</SelectItem>
+                      <SelectItem value="pendente">Pendente</SelectItem>
+                      <SelectItem value="aprovada">Aprovada</SelectItem>
+                      <SelectItem value="rejeitada">Rejeitada</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <Tabs defaultValue="rota">
+                <TabsList className="grid w-full grid-cols-7">
+                  <TabsTrigger value="rota" className="flex items-center gap-1">
+                    <Route className="h-4 w-4" />
+                    Transporte Rota
+                  </TabsTrigger>
+                  <TabsTrigger value="12x36" className="flex items-center gap-1">
+                    <Map className="h-4 w-4" />
+                    Transporte 12x36
+                  </TabsTrigger>
+                  <TabsTrigger value="refeicao" className="flex items-center gap-1">
+                    <Utensils className="h-4 w-4" />
+                    Refeição
+                  </TabsTrigger>
+                  <TabsTrigger value="abono" className="flex items-center gap-1">
+                    <FileText className="h-4 w-4" />
+                    Abono Ponto
+                  </TabsTrigger>
+                  <TabsTrigger value="adesao" className="flex items-center gap-1">
+                    <ClipboardCheck className="h-4 w-4" />
+                    Adesão/Cancelamento
+                  </TabsTrigger>
+                  <TabsTrigger value="endereco" className="flex items-center gap-1">
+                    <Home className="h-4 w-4" />
+                    Alteração Endereço
+                  </TabsTrigger>
+                  <TabsTrigger value="turno" className="flex items-center gap-1">
+                    <Replace className="h-4 w-4" />
+                    Mudança Turno
+                  </TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="rota" className="mt-4">
+                  {filtrarSolicitacoesRota().length > 0 ? (
+                    <div className="rounded-md border overflow-hidden">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Solicitante</TableHead>
+                            <TableHead>Colaborador</TableHead>
+                            <TableHead>Cidade / Turno</TableHead>
+                            <TableHead>Rota</TableHead>
+                            <TableHead>Período</TableHead>
+                            <TableHead>Data de Solicitação</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead className="w-[180px]">Ações</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filtrarSolicitacoesRota().map((solicitacao) => (
+                            <TableRow key={solicitacao.id}>
+                              <TableCell>
+                                <SolicitanteInfo id={solicitacao.solicitante_id} />
+                              </TableCell>
+                              <TableCell className="font-medium">{solicitacao.colaborador_nome}</TableCell>
+                              <TableCell>{solicitacao.cidade} / {solicitacao.turno}</TableCell>
+                              <TableCell>{solicitacao.rota}</TableCell>
+                              <TableCell>
+                                {formatarData(solicitacao.periodo_inicio)} até {formatarData(solicitacao.periodo_fim)}
+                              </TableCell>
+                              <TableCell>{formatarTimestamp(solicitacao.created_at)}</TableCell>
+                              <TableCell>
+                                <StatusBadge status={solicitacao.status} />
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex space-x-2">
+                                  {solicitacao.status === "pendente" && (
+                                    <>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="flex-1 bg-green-50 hover:bg-green-100 text-green-600 border-green-200"
+                                        onClick={() => atualizarStatusRota(solicitacao.id, "aprovada")}
+                                      >
+                                        <CheckCircle className="h-4 w-4 mr-1" />
+                                        Aprovar
+                                      </Button>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 border-red-200"
+                                        onClick={() => atualizarStatusRota(solicitacao.id, "rejeitada")}
+                                      >
+                                        <XCircle className="h-4 w-4 mr-1" />
+                                        Rejeitar
+                                      </Button>
+                                    </>
+                                  )}
+                                  {solicitacao.status === "aprovada" && (
+                                    <Button variant="outline" size="sm" className="w-full">
+                                      <Download className="h-4 w-4 mr-1" />
+                                      Gerar Ticket
+                                    </Button>
+                                  )}
+                                  {solicitacao.status === "rejeitada" && (
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm" 
+                                      className="w-full"
+                                      onClick={() => atualizarStatusRota(solicitacao.id, "aprovada")}
+                                    >
+                                      <CheckCircle className="h-4 w-4 mr-1" />
+                                      Aprovar
+                                    </Button>
+                                  )}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  ) : (
+                    <p className="text-center py-10 text-muted-foreground">
+                      Nenhuma solicitação de transporte rota encontrada.
+                    </p>
+                  )}
+                </TabsContent>
+                
+                <TabsContent value="12x36" className="mt-4">
+                  {filtrarSolicitacoes12x36().length > 0 ? (
+                    <div className="rounded-md border overflow-hidden">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Solicitante</TableHead>
+                            <TableHead>Colaborador</TableHead>
+                            <TableHead>Telefone</TableHead>
+                            <TableHead>Rota</TableHead>
+                            <TableHead>Data de Início</TableHead>
+                            <TableHead>Data de Solicitação</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead className="w-[180px]">Ações</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filtrarSolicitacoes12x36().map((solicitacao) => (
+                            <TableRow key={solicitacao.id}>
+                              <TableCell>
+                                <SolicitanteInfo id={solicitacao.solicitante_id} />
+                              </TableCell>
+                              <TableCell className="font-medium">{solicitacao.colaborador_nome}</TableCell>
+                              <TableCell>{solicitacao.telefone}</TableCell>
+                              <TableCell>{solicitacao.rota}</TableCell>
+                              <TableCell>{formatarData(solicitacao.data_inicio)}</TableCell>
+                              <TableCell>{formatarTimestamp(solicitacao.created_at)}</TableCell>
+                              <TableCell>
+                                <StatusBadge status={solicitacao.status} />
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex space-x-2">
+                                  {solicitacao.status === "pendente" && (
+                                    <>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="flex-1 bg-green-50 hover:bg-green-100 text-green-600 border-green-200"
+                                        onClick={() => atualizarStatus12x36(solicitacao.id, "aprovada")}
+                                      >
+                                        <CheckCircle className="h-4 w-4 mr-1" />
+                                        Aprovar
+                                      </Button>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 border-red-200"
+                                        onClick={() => atualizarStatus12x36(solicitacao.id, "rejeitada")}
+                                      >
+                                        <XCircle className="h-4 w-4 mr-1" />
+                                        Rejeitar
+                                      </Button>
+                                    </>
+                                  )}
+                                  {solicitacao.status === "aprovada" && (
+                                    <Button variant="outline" size="sm" className="w-full">
+                                      <Download className="h-4 w-4 mr-1" />
+                                      Gerar Ticket
+                                    </Button>
+                                  )}
+                                  {solicitacao.status === "rejeitada" && (
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm" 
+                                      className="w-full"
+                                      onClick={() => atualizarStatus12x36(solicitacao.id, "aprovada")}
+                                    >
+                                      <CheckCircle className="h-4 w-4 mr-1" />
+                                      Aprovar
+                                    </Button>
+                                  )}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  ) : (
+                    <p className="text-center py-10 text-muted-foreground">
+                      Nenhuma solicitação de transporte 12x36 encontrada.
+                    </p>
+                  )}
+                </TabsContent>
+                
+                <TabsContent value="refeicao" className="mt-4">
+                  {filtrarSolicitacoesRefeicao().length > 0 ? (
+                    <div className="rounded-md border overflow-hidden">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Solicitante</TableHead>
+                            <TableHead>Colaboradores</TableHead>
+                            <TableHead>Tipo de Refeição</TableHead>
+                            <TableHead>Data da Refeição</TableHead>
+                            <TableHead>Data de Solicitação</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead className="w-[180px]">Ações</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filtrarSolicitacoesRefeicao().map((solicitacao) => (
+                            <TableRow key={solicitacao.id}>
+                              <TableCell>
+                                <SolicitanteInfo id={solicitacao.solicitante_id} />
+                              </TableCell>
+                              <TableCell className="font-medium">
+                                <div className="max-h-20 overflow-y-auto">
+                                  {solicitacao.colaboradores.map((nome, idx) => (
+                                    <div key={idx} className="mb-1 last:mb-0">
+                                      {nome}
+                                    </div>
+                                  ))}
+                                </div>
+                              </TableCell>
+                              <TableCell>{solicitacao.tipo_refeicao}</TableCell>
+                              <TableCell>{formatarData(solicitacao.data_refeicao)}</TableCell>
+                              <TableCell>{formatarTimestamp(solicitacao.created_at)}</TableCell>
+                              <TableCell>
+                                <StatusBadge status={solicitacao.status} />
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex space-x-2">
+                                  {solicitacao.status === "pendente" && (
+                                    <>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="flex-1 bg-green-50 hover:bg-green-100 text-green-600 border-green-200"
+                                        onClick={() => atualizarStatusRefeicao(solicitacao.id, "aprovada")}
+                                      >
+                                        <CheckCircle className="h-4 w-4 mr-1" />
+                                        Aprovar
+                                      </Button>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 border-red-200"
+                                        onClick={() => atualizarStatusRefeicao(solicitacao.id, "rejeitada")}
+                                      >
+                                        <XCircle className="h-4 w-4 mr-1" />
+                                        Rejeitar
+                                      </Button>
+                                    </>
+                                  )}
+                                  {solicitacao.status === "aprovada" && (
+                                    <Button variant="outline" size="sm" className="w-full">
+                                      <Download className="h-4 w-4 mr-1" />
+                                      Gerar Tickets
+                                    </Button>
+                                  )}
+                                  {solicitacao.status === "rejeitada" && (
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm" 
+                                      className="w-full"
+                                      onClick={() => atualizarStatusRefeicao(solicitacao.id, "aprovada")}
+                                    >
+                                      <CheckCircle className="h-4 w-4 mr-1" />
+                                      Aprovar
+                                    </Button>
+                                  )}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  ) : (
+                    <p className="text-center py-10 text-muted-foreground">
+                      Nenhuma solicitação de refeição encontrada.
+                    </p>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="abono" className="mt-4">
+                  {filtrarSolicitacoesAbonoPonto().length > 0 ? (
+                    <div className="rounded-md border overflow-hidden">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Solicitante</TableHead>
+                            <TableHead>Data da Ocorrência</TableHead>
+                            <TableHead>Turno</TableHead>
+                            <TableHead>Motivo</TableHead>
+                            <TableHead>Data de Solicitação</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead className="w-[180px]">Ações</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filtrarSolicitacoesAbonoPonto().map((solicitacao) => (
+                            <TableRow key={solicitacao.id}>
+                              <TableCell>
+                                <SolicitanteInfo id={solicitacao.solicitante_id} />
+                              </TableCell>
+                              <TableCell>{formatarData(solicitacao.data_ocorrencia)}</TableCell>
+                              <TableCell>{solicitacao.turno}</TableCell>
+                              <TableCell>{solicitacao.motivo}</TableCell>
+                              <TableCell>{formatarTimestamp(solicitacao.created_at)}</TableCell>
+                              <TableCell>
+                                <StatusBadge status={solicitacao.status} />
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex space-x-2">
+                                  {solicitacao.status === "pendente" && (
+                                    <>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="flex-1 bg-green-50 hover:bg-green-100 text-green-600 border-green-200"
+                                        onClick={() => atualizarStatusGenerico('solicitacoes_abono_ponto', solicitacao.id, "aprovada", setSolicitacoesAbonoPonto)}
+                                      >
+                                        <CheckCircle className="h-4 w-4 mr-1" />
+                                        Aprovar
+                                      </Button>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 border-red-200"
+                                        onClick={() => atualizarStatusGenerico('solicitacoes_abono_ponto', solicitacao.id, "rejeitada", setSolicitacoesAbonoPonto)}
+                                      >
+                                        <XCircle className="h-4 w-4 mr-1" />
+                                        Rejeitar
+                                      </Button>
+                                    </>
+                                  )}
+                                  {solicitacao.status === "rejeitada" && (
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm" 
+                                      className="w-full"
+                                      onClick={() => atualizarStatusGenerico('solicitacoes_abono_ponto', solicitacao.id, "aprovada", setSolicitacoesAbonoPonto)}
+                                    >
+                                      <CheckCircle className="h-4 w-4 mr-1" />
+                                      Aprovar
+                                    </Button>
+                                  )}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  ) : (
+                    <p className="text-center py-10 text-muted-foreground">
+                      Nenhuma solicitação de abono de ponto encontrada.
+                    </p>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="adesao" className="mt-4">
+                  {filtrarSolicitacoesAdesaoCancelamento().length > 0 ? (
+                    <div className="rounded-md border overflow-hidden">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Solicitante</TableHead>
+                            <TableHead>Tipo</TableHead>
+                            <TableHead>Motivo</TableHead>
+                            <TableHead>Data de Solicitação</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead className="w-[180px]">Ações</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filtrarSolicitacoesAdesaoCancelamento().map((solicitacao) => (
+                            <TableRow key={solicitacao.id}>
+                              <TableCell>
+                                <SolicitanteInfo id={solicitacao.solicitante_id} />
+                              </TableCell>
+                              <TableCell>{solicitacao.tipo_solicitacao}</TableCell>
+                              <TableCell>{solicitacao.motivo}</TableCell>
+                              <TableCell>{formatarTimestamp(solicitacao.created_at)}</TableCell>
+                              <TableCell>
+                                <StatusBadge status={solicitacao.status} />
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex space-x-2">
+                                  {solicitacao.status === "pendente" && (
+                                    <>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="flex-1 bg-green-50 hover:bg-green-100 text-green-600 border-green-200"
+                                        onClick={() => atualizarStatusGenerico('solicitacoes_adesao_cancelamento', solicitacao.id, "aprovada", setSolicitacoesAdesaoCancelamento)}
+                                      >
+                                        <CheckCircle className="h-4 w-4 mr-1" />
+                                        Aprovar
+                                      </Button>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 border-red-200"
+                                        onClick={() => atualizarStatusGenerico('solicitacoes_adesao_cancelamento', solicitacao.id, "rejeitada", setSolicitacoesAdesaoCancelamento)}
+                                      >
+                                        <XCircle className="h-4 w-4 mr-1" />
+                                        Rejeitar
+                                      </Button>
+                                    </>
+                                  )}
+                                  {solicitacao.status === "rejeitada" && (
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm" 
+                                      className="w-full"
+                                      onClick={() => atualizarStatusGenerico('solicitacoes_adesao_cancelamento', solicitacao.id, "aprovada", setSolicitacoesAdesaoCancelamento)}
+                                    >
+                                      <CheckCircle className="h-4 w-4 mr-1" />
+                                      Aprovar
+                                    </Button>
+                                  )}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  ) : (
+                    <p className="text-center py-10 text-muted-foreground">
+                      Nenhuma solicitação de adesão/cancelamento encontrada.
+                    </p>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="endereco" className="mt-4">
+                  {filtrarSolicitacoesAlteracaoEndereco().length > 0 ? (
+                    <div className="rounded-md border overflow-hidden">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Solicitante</TableHead>
+                            <TableHead>Endereço Atual</TableHead>
+                            <TableHead>Novo Endereço</TableHead>
+                            <TableHead>Data de Alteração</TableHead>
+                            <TableHead>Data de Solicitação</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead className="w-[180px]">Ações</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filtrarSolicitacoesAlteracaoEndereco().map((solicitacao) => (
+                            <TableRow key={solicitacao.id}>
+                              <TableCell>
+                                <SolicitanteInfo id={solicitacao.solicitante_id} />
+                              </TableCell>
+                              <TableCell>{solicitacao.endereco_atual}</TableCell>
+                              <TableCell>{solicitacao.endereco_novo}</TableCell>
+                              <TableCell>{formatarData(solicitacao.data_alteracao)}</TableCell>
+                              <TableCell>{formatarTimestamp(solicitacao.created_at)}</TableCell>
+                              <TableCell>
+                                <StatusBadge status={solicitacao.status} />
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex space-x-2">
+                                  {solicitacao.status === "pendente" && (
+                                    <>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="flex-1 bg-green-50 hover:bg-green-100 text-green-600 border-green-200"
+                                        onClick={() => atualizarStatusGenerico('solicitacoes_alteracao_endereco', solicitacao.id, "aprovada", setSolicitacoesAlteracaoEndereco)}
+                                      >
+                                        <CheckCircle className="h-4 w-4 mr-1" />
+                                        Aprovar
+                                      </Button>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 border-red-200"
+                                        onClick={() => atualizarStatusGenerico('solicitacoes_alteracao_endereco', solicitacao.id, "rejeitada", setSolicitacoesAlteracaoEndereco)}
+                                      >
+                                        <XCircle className="h-4 w-4 mr-1" />
+                                        Rejeitar
+                                      </Button>
+                                    </>
+                                  )}
+                                  {solicitacao.status === "rejeitada" && (
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm" 
+                                      className="w-full"
+                                      onClick={() => atualizarStatusGenerico('solicitacoes_alteracao_endereco', solicitacao.id, "aprovada", setSolicitacoesAlteracaoEndereco)}
+                                    >
+                                      <CheckCircle className="h-4 w-4 mr-1" />
+                                      Aprovar
+                                    </Button>
+                                  )}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  ) : (
+                    <p className="text-center py-10 text-muted-foreground">
+                      Nenhuma solicitação de alteração de endereço encontrada.
+                    </p>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="turno" className="mt-4">
+                  {filtrarSolicitacoesMudancaTurno().length > 0 ? (
+                    <div className="rounded-md border overflow-hidden">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Solicitante</TableHead>
+                            <TableHead>Turno Atual</TableHead>
+                            <TableHead>Novo Turno</TableHead>
+                            <TableHead>Data de Alteração</TableHead>
+                            <TableHead>Motivo</TableHead>
+                            <TableHead>Data de Solicitação</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead className="w-[180px]">Ações</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filtrarSolicitacoesMudancaTurno().map((solicitacao) => (
+                            <TableRow key={solicitacao.id}>
+                              <TableCell>
+                                <SolicitanteInfo id={solicitacao.solicitante_id} />
+                              </TableCell>
+                              <TableCell>{solicitacao.turno_atual}</TableCell>
+                              <TableCell>{solicitacao.turno_novo}</TableCell>
+                              <TableCell>{formatarData(solicitacao.data_alteracao)}</TableCell>
+                              <TableCell>{solicitacao.motivo}</TableCell>
+                              <TableCell>{formatarTimestamp(solicitacao.created_at)}</TableCell>
+                              <TableCell>
+                                <StatusBadge status={solicitacao.status} />
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex space-x-2">
+                                  {solicitacao.status === "pendente" && (
+                                    <>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="flex-1 bg-green-50 hover:bg-green-100 text-green-600 border-green-200"
+                                        onClick={() => atualizarStatusGenerico('solicitacoes_mudanca_turno', solicitacao.id, "aprovada", setSolicitacoesMudancaTurno)}
+                                      >
+                                        <CheckCircle className="h-4 w-4 mr-1" />
+                                        Aprovar
+                                      </Button>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 border-red-200"
+                                        onClick={() => atualizarStatusGenerico('solicitacoes_mudanca_turno', solicitacao.id, "rejeitada", setSolicitacoesMudancaTurno)}
+                                      >
+                                        <XCircle className="h-4 w-4 mr-1" />
+                                        Rejeitar
+                                      </Button>
+                                    </>
+                                  )}
+                                  {solicitacao.status === "rejeitada" && (
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm" 
+                                      className="w-full"
+                                      onClick={() => atualizarStatusGenerico('solicitacoes_mudanca_turno', solicitacao.id, "aprovada", setSolicitacoesMudancaTurno)}
+                                    >
+                                      <CheckCircle className="h-4 w-4 mr-1" />
+                                      Aprovar
+                                    </Button>
+                                  )}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  ) : (
+                    <p className="text-center py-10 text-muted-foreground">
+                      Nenhuma solicitação de mudança de turno encontrada.
+                    </p>
+                  )}
+                </TabsContent>
+              </Tabs>
+            </>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };
 
 export default Admin;
+
