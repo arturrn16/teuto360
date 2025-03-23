@@ -33,7 +33,6 @@ interface FormValues {
   bairro: string;
   cidade: string;
   complemento: string;
-  telefoneWhatsapp: string;
   rotaAtual: string;
   alterarRota: "sim" | "nao";
   novaRota?: string;
@@ -55,7 +54,6 @@ const AlteracaoEndereco = () => {
       bairro: "",
       cidade: "",
       complemento: "",
-      telefoneWhatsapp: "",
       rotaAtual: "",
       alterarRota: "nao",
     },
@@ -172,7 +170,6 @@ const AlteracaoEndereco = () => {
         bairro: data.bairro,
         cidade: data.cidade,
         complemento: data.complemento,
-        telefone_whatsapp: data.telefoneWhatsapp,
         rota_atual: data.rotaAtual,
         alterar_rota: data.alterarRota === "sim",
         nova_rota: data.alterarRota === "sim" ? data.novaRota : null,
@@ -370,83 +367,6 @@ const AlteracaoEndereco = () => {
             />
           </div>
           
-          {/* Comprovante de Endereço (File Upload) */}
-          <FormItem>
-            <FormLabel className="form-field-label">Comprovante de Endereço</FormLabel>
-            <div className="border border-input rounded-md p-2">
-              {!uploadedFile ? (
-                <div className="flex flex-col items-center justify-center py-4">
-                  <label htmlFor="file-upload" className="cursor-pointer">
-                    <div className="flex flex-col items-center gap-2">
-                      <Upload className="h-8 w-8 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">
-                        Clique para anexar um comprovante
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        (Conta de luz, água ou telefone em seu nome)
-                      </span>
-                    </div>
-                    <input
-                      id="file-upload"
-                      name="file-upload"
-                      type="file"
-                      className="sr-only"
-                      accept=".pdf,.jpg,.jpeg,.png"
-                      onChange={handleFileChange}
-                    />
-                  </label>
-                </div>
-              ) : (
-                <div className="flex items-center justify-between p-2 bg-muted/50 rounded">
-                  <div className="flex items-center gap-2">
-                    <div className="p-2 bg-primary/10 rounded">
-                      <Upload className="h-4 w-4 text-primary" />
-                    </div>
-                    <span className="text-sm font-medium truncate max-w-[200px]">
-                      {uploadedFile.name}
-                    </span>
-                  </div>
-                  <Button 
-                    type="button" 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={handleRemoveFile}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
-            </div>
-            <FormMessage>
-              {!uploadedFile && "É necessário anexar um comprovante de endereço"}
-            </FormMessage>
-          </FormItem>
-          
-          <FormField
-            control={form.control}
-            name="telefoneWhatsapp"
-            rules={{ 
-              required: "Telefone (WhatsApp) é obrigatório",
-              pattern: {
-                value: /^\d{10,11}$/,
-                message: "Telefone inválido. Use apenas números (DDD + número)"
-              }
-            }}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="form-field-label">Telefone (WhatsApp)</FormLabel>
-                <FormControl>
-                  <Input 
-                    placeholder="DDD + número (apenas números)" 
-                    {...field}
-                    className="form-field-input" 
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
           <FormField
             control={form.control}
             name="rotaAtual"
@@ -534,6 +454,58 @@ const AlteracaoEndereco = () => {
               )}
             />
           )}
+          
+          {/* Comprovante de Endereço (File Upload) - Moved to the end of the form */}
+          <FormItem>
+            <FormLabel className="form-field-label">Comprovante de Endereço</FormLabel>
+            <div className="border border-input rounded-md p-2">
+              {!uploadedFile ? (
+                <div className="flex flex-col items-center justify-center py-4">
+                  <label htmlFor="file-upload" className="cursor-pointer">
+                    <div className="flex flex-col items-center gap-2">
+                      <Upload className="h-8 w-8 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">
+                        Clique para anexar um comprovante
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        (Conta de luz, água ou telefone em seu nome)
+                      </span>
+                    </div>
+                    <input
+                      id="file-upload"
+                      name="file-upload"
+                      type="file"
+                      className="sr-only"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      onChange={handleFileChange}
+                    />
+                  </label>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between p-2 bg-muted/50 rounded">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 bg-primary/10 rounded">
+                      <Upload className="h-4 w-4 text-primary" />
+                    </div>
+                    <span className="text-sm font-medium truncate max-w-[200px]">
+                      {uploadedFile.name}
+                    </span>
+                  </div>
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={handleRemoveFile}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
+            <FormMessage>
+              {!uploadedFile && "É necessário anexar um comprovante de endereço"}
+            </FormMessage>
+          </FormItem>
           
           <Button type="submit" className="w-full" disabled={isSubmitting || fileUploading}>
             {isSubmitting ? "Enviando..." : "Enviar Solicitação"}

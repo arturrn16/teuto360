@@ -261,7 +261,6 @@ export type Database = {
           solicitante_id: number | null
           status: string | null
           telefone: string
-          telefone_whatsapp: string
           updated_at: string | null
         }
         Insert: {
@@ -282,7 +281,6 @@ export type Database = {
           solicitante_id?: number | null
           status?: string | null
           telefone: string
-          telefone_whatsapp: string
           updated_at?: string | null
         }
         Update: {
@@ -303,7 +301,6 @@ export type Database = {
           solicitante_id?: number | null
           status?: string | null
           telefone?: string
-          telefone_whatsapp?: string
           updated_at?: string | null
         }
         Relationships: [
