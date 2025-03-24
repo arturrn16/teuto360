@@ -3,11 +3,12 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { supabase, updateCustomTable } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SolicitacaoAdesaoCancelamento } from "@/types/solicitacoes";
 import { Download } from "lucide-react";
-import { AdminCommentField } from "@/components/admin/AdminCommentField";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
 interface SolicitacaoAdesaoCancelamentoViewProps {
   solicitacao: SolicitacaoAdesaoCancelamento;
@@ -20,51 +21,32 @@ export function SolicitacaoAdesaoCancelamentoView({
 }: SolicitacaoAdesaoCancelamentoViewProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [motivo, setMotivo] = useState("");
-  const [comentario, setComentario] = useState("");
 
   const handleUpdateStatus = async (newStatus: string) => {
     setIsLoading(true);
     try {
-      console.log(`Starting ${newStatus} process for solicitação ID: ${solicitacao.id}`);
+      // Verificando se há motivo em caso de rejeição
+      if (newStatus === 'rejeitada' && !motivo.trim()) {
+        toast.error("É necessário informar o motivo da rejeição");
+        setIsLoading(false);
+        return;
+      }
       
-      // Preparar dados para atualização
-      const updateData: { 
-        status: string; 
-        motivo_rejeicao?: string;
-        motivo_comentario?: string;
-      } = { 
+      const updateData: { status: string; motivo_rejeicao?: string } = { 
         status: newStatus 
       };
       
-      // Para rejeição, precisamos do motivo
+      // Adicionar motivo apenas se for rejeitada
       if (newStatus === 'rejeitada') {
-        if (!motivo.trim()) {
-          toast.error("É necessário informar o motivo da rejeição");
-          setIsLoading(false);
-          return;
-        }
         updateData.motivo_rejeicao = motivo;
-        console.log("Setting motivo_rejeicao:", motivo);
       }
       
-      // Adicionar comentário se fornecido, independente do status
-      if (comentario.trim()) {
-        updateData.motivo_comentario = comentario;
-        console.log("Setting motivo_comentario:", comentario);
-      }
-      
-      console.log("Updating with data:", updateData);
-      console.log("Table: solicitacoes_adesao_cancelamento");
-      console.log("Condition: id =", solicitacao.id);
-      
-      const { error } = await updateCustomTable(
-        'solicitacoes_adesao_cancelamento',
-        updateData,
-        { column: 'id', value: solicitacao.id }
-      );
+      const { error } = await supabase
+        .from('solicitacoes_adesao_cancelamento')
+        .update(updateData)
+        .eq('id', solicitacao.id);
 
       if (error) {
-        console.error('Erro ao atualizar status:', error);
         throw error;
       }
 
@@ -174,13 +156,6 @@ export function SolicitacaoAdesaoCancelamentoView({
           </div>
         )}
 
-        {solicitacao.motivo_comentario && (
-          <div className="mt-4 p-3 border border-blue-200 bg-blue-50 rounded-md">
-            <h3 className="text-sm font-medium text-blue-600">Comentário do Administrador</h3>
-            <p className="text-blue-700">{solicitacao.motivo_comentario}</p>
-          </div>
-        )}
-
         {solicitacao.declaracao_url && (
           <div className="pt-2">
             <Button 
@@ -211,25 +186,17 @@ export function SolicitacaoAdesaoCancelamentoView({
       
       {solicitacao.status === "pendente" && (
         <CardFooter className="flex flex-col gap-4">
-          {/* Campo de comentários (opcional) */}
-          <AdminCommentField
-            value={comentario}
-            onChange={setComentario}
-            id="comentario"
-            label="Comentário do Administrador (opcional)"
-            placeholder="Adicione um comentário sobre esta solicitação"
-            className="mt-1"
-          />
-          
           {/* Campo de motivo para rejeição */}
-          <AdminCommentField
-            value={motivo}
-            onChange={setMotivo}
-            id="motivo_rejeicao"
-            label="Motivo para rejeição (obrigatório caso rejeite)"
-            placeholder="Informe o motivo caso decida rejeitar a solicitação"
-            className="mt-1"
-          />
+          <div className="w-full">
+            <Label htmlFor="motivo_rejeicao">Motivo para rejeição (obrigatório caso rejeite)</Label>
+            <Textarea 
+              id="motivo_rejeicao"
+              placeholder="Informe o motivo caso decida rejeitar a solicitação"
+              value={motivo}
+              onChange={(e) => setMotivo(e.target.value)}
+              className="mt-1"
+            />
+          </div>
           
           <div className="flex justify-end gap-2 w-full">
             <Button

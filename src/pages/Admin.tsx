@@ -2,13 +2,13 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { 
   supabase, 
-  customSupabase, 
-  BaseSolicitacao, 
+  queryCustomTable,
+  updateCustomTable,
+  BaseSolicitacao,
   SolicitacaoAbonoPonto as AbonoPontoType,
   SolicitacaoAdesaoCancelamento as AdesaoCancelamentoType,
   SolicitacaoAlteracaoEndereco as AlteracaoEnderecoType,
-  SolicitacaoMudancaTurno as MudancaTurnoType,
-  updateCustomTable
+  SolicitacaoMudancaTurno as MudancaTurnoType
 } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -48,22 +48,11 @@ import {
   Home,
   ClipboardCheck,
   Replace,
-  File,
-  X
+  File
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import { AdminCommentField } from "@/components/admin/AdminCommentField";
 
 interface Solicitacao {
   id: number;
@@ -84,7 +73,6 @@ interface SolicitacaoTransporteRota extends Solicitacao {
   periodo_inicio: string;
   periodo_fim: string;
   motivo: string;
-  updated_at: string;
 }
 
 interface SolicitacaoTransporte12x36 extends Solicitacao {
@@ -94,27 +82,23 @@ interface SolicitacaoTransporte12x36 extends Solicitacao {
   cep: string;
   rota: string;
   data_inicio: string;
-  updated_at: string;
 }
 
 interface SolicitacaoRefeicao extends Solicitacao {
   colaboradores: string[];
   tipo_refeicao: string;
   data_refeicao: string;
-  updated_at: string;
 }
 
 interface SolicitacaoAbonosPonto extends Solicitacao {
   data_ocorrencia: string;
   turno: string;
   motivo: string;
-  updated_at: string;
 }
 
 interface SolicitacaoAdesaoCancelamento extends Solicitacao {
   tipo_solicitacao: string;
   motivo: string;
-  updated_at: string;
 }
 
 interface SolicitacaoAlteracaoEndereco extends Solicitacao {
@@ -122,7 +106,6 @@ interface SolicitacaoAlteracaoEndereco extends Solicitacao {
   endereco_novo: string;
   data_alteracao: string;
   comprovante_url?: string;
-  updated_at: string;
 }
 
 interface SolicitacaoMudancaTurno extends Solicitacao {
@@ -130,7 +113,6 @@ interface SolicitacaoMudancaTurno extends Solicitacao {
   turno_novo: string;
   data_alteracao: string;
   motivo: string;
-  updated_at: string;
 }
 
 const Admin = () => {
@@ -146,13 +128,6 @@ const Admin = () => {
   const [filtroColaborador, setFiltroColaborador] = useState("");
   const [filtroStatus, setFiltroStatus] = useState("todos");
   const [solicitantesInfo, setSolicitantesInfo] = useState<{[id: number]: {nome: string, setor: string}}>({});
-  const [isOpenMotivo, setIsOpenMotivo] = useState(false);
-  const [motivoRejeicao, setMotivoRejeicao] = useState("");
-  const [selectedSolicitacao, setSelectedSolicitacao] = useState<{
-    id: number;
-    tipo: string;
-    status: 'aprovada' | 'rejeitada';
-  }>({ id: 0, tipo: '', status: 'aprovada' });
   
   useEffect(() => {
     if (!user || !user.admin) return;
@@ -196,16 +171,28 @@ const Admin = () => {
 
         try {
           console.log("Fetching abono_ponto solicitations...");
-          const { data: dataAbonoPonto, error: errorAbonoPonto } = await supabase
-            .from("solicitacoes_abono_ponto")
-            .select("*")
-            .order("created_at", { ascending: false });
+          const { data: dataAbonoPonto, error: errorAbonoPonto } = await queryCustomTable<any>(
+            "solicitacoes_abono_ponto",
+            {
+              order: { column: "created_at", ascending: false }
+            }
+          );
             
           if (errorAbonoPonto) {
             console.error("Erro ao buscar solicitações de abono de ponto:", errorAbonoPonto);
           } else if (dataAbonoPonto) {
             console.log("Received abono_ponto data:", dataAbonoPonto.length, "records");
-            setSolicitacoesAbonoPonto(dataAbonoPonto);
+            const formattedData: SolicitacaoAbonosPonto[] = dataAbonoPonto.map((item: any) => ({
+              id: item.id,
+              solicitante_id: item.solicitante_id,
+              status: item.status,
+              created_at: item.created_at,
+              updated_at: item.updated_at,
+              data_ocorrencia: item.data_ocorrencia || '',
+              turno: item.turno || '',
+              motivo: item.motivo || ''
+            }));
+            setSolicitacoesAbonoPonto(formattedData);
           }
         } catch (err) {
           console.error("Erro ao processar solicitações de abono de ponto:", err);
@@ -213,16 +200,27 @@ const Admin = () => {
 
         try {
           console.log("Fetching adesao_cancelamento solicitations...");
-          const { data: dataAdesaoCancelamento, error: errorAdesaoCancelamento } = await supabase
-            .from("solicitacoes_adesao_cancelamento")
-            .select("*")
-            .order("created_at", { ascending: false });
+          const { data: dataAdesaoCancelamento, error: errorAdesaoCancelamento } = await queryCustomTable<any>(
+            "solicitacoes_adesao_cancelamento",
+            {
+              order: { column: "created_at", ascending: false }
+            }
+          );
             
           if (errorAdesaoCancelamento) {
             console.error("Erro ao buscar solicitações de adesão/cancelamento:", errorAdesaoCancelamento);
           } else if (dataAdesaoCancelamento) {
             console.log("Received adesao_cancelamento data:", dataAdesaoCancelamento.length, "records");
-            setSolicitacoesAdesaoCancelamento(dataAdesaoCancelamento);
+            const formattedData: SolicitacaoAdesaoCancelamento[] = dataAdesaoCancelamento.map((item: any) => ({
+              id: item.id,
+              solicitante_id: item.solicitante_id,
+              status: item.status,
+              created_at: item.created_at,
+              updated_at: item.updated_at,
+              tipo_solicitacao: item.tipo_solicitacao || '',
+              motivo: item.motivo || ''
+            }));
+            setSolicitacoesAdesaoCancelamento(formattedData);
           }
         } catch (err) {
           console.error("Erro ao processar solicitações de adesão/cancelamento:", err);
@@ -230,16 +228,29 @@ const Admin = () => {
 
         try {
           console.log("Fetching alteracao_endereco solicitations...");
-          const { data: dataAlteracaoEndereco, error: errorAlteracaoEndereco } = await supabase
-            .from("solicitacoes_alteracao_endereco")
-            .select("*")
-            .order("created_at", { ascending: false });
+          const { data: dataAlteracaoEndereco, error: errorAlteracaoEndereco } = await queryCustomTable<any>(
+            "solicitacoes_alteracao_endereco",
+            {
+              order: { column: "created_at", ascending: false }
+            }
+          );
             
           if (errorAlteracaoEndereco) {
             console.error("Erro ao buscar solicitações de alteração de endereço:", errorAlteracaoEndereco);
           } else if (dataAlteracaoEndereco) {
             console.log("Received alteracao_endereco data:", dataAlteracaoEndereco.length, "records");
-            setSolicitacoesAlteracaoEndereco(dataAlteracaoEndereco);
+            const formattedData: SolicitacaoAlteracaoEndereco[] = dataAlteracaoEndereco.map((item: any) => ({
+              id: item.id,
+              solicitante_id: item.solicitante_id,
+              status: item.status,
+              created_at: item.created_at,
+              updated_at: item.updated_at,
+              endereco_atual: item.endereco || '',
+              endereco_novo: item.nova_rota ? `${item.endereco} (nova rota: ${item.nova_rota})` : (item.endereco || ''),
+              data_alteracao: item.data_alteracao || item.created_at,
+              comprovante_url: item.comprovante_url
+            }));
+            setSolicitacoesAlteracaoEndereco(formattedData);
           }
         } catch (err) {
           console.error("Erro ao processar solicitações de alteração de endereço:", err);
@@ -247,16 +258,29 @@ const Admin = () => {
 
         try {
           console.log("Fetching mudanca_turno solicitations...");
-          const { data: dataMudancaTurno, error: errorMudancaTurno } = await supabase
-            .from("solicitacoes_mudanca_turno")
-            .select("*")
-            .order("created_at", { ascending: false });
+          const { data: dataMudancaTurno, error: errorMudancaTurno } = await queryCustomTable<any>(
+            "solicitacoes_mudanca_turno",
+            {
+              order: { column: "created_at", ascending: false }
+            }
+          );
             
           if (errorMudancaTurno) {
             console.error("Erro ao buscar solicitações de mudança de turno:", errorMudancaTurno);
           } else if (dataMudancaTurno) {
             console.log("Received mudanca_turno data:", dataMudancaTurno.length, "records");
-            setSolicitacoesMudancaTurno(dataMudancaTurno);
+            const formattedData: SolicitacaoMudancaTurno[] = dataMudancaTurno.map((item: any) => ({
+              id: item.id,
+              solicitante_id: item.solicitante_id,
+              status: item.status,
+              created_at: item.created_at,
+              updated_at: item.updated_at,
+              turno_atual: item.turno_atual || '',
+              turno_novo: item.novo_turno || '',
+              data_alteracao: item.data_alteracao || item.created_at,
+              motivo: item.motivo || ''
+            }));
+            setSolicitacoesMudancaTurno(formattedData);
           }
         } catch (err) {
           console.error("Erro ao processar solicitações de mudança de turno:", err);
@@ -383,68 +407,12 @@ const Admin = () => {
       return matchStatus;
     });
   };
-
-  const abrirDialogMotivo = (id: number, tipo: string, status: 'aprovada' | 'rejeitada') => {
-    setSelectedSolicitacao({id, tipo, status});
-    setMotivoRejeicao("");
-    setIsOpenMotivo(true);
-  };
-
-  const handleConfirmarMotivo = async () => {
-    const { id, tipo, status } = selectedSolicitacao;
-    setIsOpenMotivo(false);
-    
-    // Requisito mínimo para motivo de rejeição
-    if (status === 'rejeitada' && !motivoRejeicao.trim()) {
-      toast.error("É necessário informar o motivo da rejeição");
-      return;
-    }
-
-    console.log(`Processing ${status} for ${tipo} with id ${id}, motivo: ${motivoRejeicao}`);
-
-    switch (tipo) {
-      case "rota":
-        await atualizarStatusRota(id, status, motivoRejeicao);
-        break;
-      case "12x36":
-        await atualizarStatus12x36(id, status, motivoRejeicao);
-        break;
-      case "refeicao":
-        await atualizarStatusRefeicao(id, status, motivoRejeicao);
-        break;
-      case "abono":
-        await atualizarStatusGenerico('solicitacoes_abono_ponto', id, status, setSolicitacoesAbonoPonto, motivoRejeicao);
-        break;
-      case "adesao":
-        await atualizarStatusGenerico('solicitacoes_adesao_cancelamento', id, status, setSolicitacoesAdesaoCancelamento, motivoRejeicao);
-        break;
-      case "endereco":
-        await atualizarStatusGenerico('solicitacoes_alteracao_endereco', id, status, setSolicitacoesAlteracaoEndereco, motivoRejeicao);
-        break;
-      case "turno":
-        await atualizarStatusGenerico('solicitacoes_mudanca_turno', id, status, setSolicitacoesMudancaTurno, motivoRejeicao);
-        break;
-    }
-  };
   
-  const atualizarStatusRota = async (id: number, status: 'aprovada' | 'rejeitada', motivo: string = "") => {
+  const atualizarStatusRota = async (id: number, status: 'aprovada' | 'rejeitada') => {
     try {
-      const updateData: { status: string; motivo_rejeicao?: string; motivo_comentario?: string } = { status };
-      
-      if (status === 'rejeitada' && motivo.trim()) {
-        updateData.motivo_rejeicao = motivo;
-      }
-      
-      // Adicionar comentário se fornecido, independente do status
-      if (motivo.trim()) {
-        updateData.motivo_comentario = motivo;
-      }
-      
-      console.log("Updating rota with data:", updateData);
-      
       const { error } = await supabase
         .from('solicitacoes_transporte_rota')
-        .update(updateData)
+        .update({ status })
         .eq('id', id);
         
       if (error) {
@@ -454,12 +422,7 @@ const Admin = () => {
       }
       
       setSolicitacoesRota(prev => 
-        prev.map(s => s.id === id ? { 
-          ...s, 
-          status, 
-          motivo_rejeicao: status === 'rejeitada' ? motivo : undefined,
-          motivo_comentario: motivo || undefined
-        } : s)
+        prev.map(s => s.id === id ? { ...s, status } : s)
       );
       
       toast.success(`Solicitação ${status === 'aprovada' ? 'aprovada' : 'rejeitada'} com sucesso!`);
@@ -469,24 +432,11 @@ const Admin = () => {
     }
   };
   
-  const atualizarStatus12x36 = async (id: number, status: 'aprovada' | 'rejeitada', motivo: string = "") => {
+  const atualizarStatus12x36 = async (id: number, status: 'aprovada' | 'rejeitada') => {
     try {
-      const updateData: { status: string; motivo_rejeicao?: string; motivo_comentario?: string } = { status };
-      
-      if (status === 'rejeitada' && motivo.trim()) {
-        updateData.motivo_rejeicao = motivo;
-      }
-      
-      // Adicionar comentário se fornecido, independente do status
-      if (motivo.trim()) {
-        updateData.motivo_comentario = motivo;
-      }
-      
-      console.log("Updating 12x36 with data:", updateData);
-      
       const { error } = await supabase
         .from('solicitacoes_transporte_12x36')
-        .update(updateData)
+        .update({ status })
         .eq('id', id);
         
       if (error) {
@@ -496,12 +446,7 @@ const Admin = () => {
       }
       
       setSolicitacoes12x36(prev => 
-        prev.map(s => s.id === id ? { 
-          ...s, 
-          status, 
-          motivo_rejeicao: status === 'rejeitada' ? motivo : undefined,
-          motivo_comentario: motivo || undefined
-        } : s)
+        prev.map(s => s.id === id ? { ...s, status } : s)
       );
       
       toast.success(`Solicitação ${status === 'aprovada' ? 'aprovada' : 'rejeitada'} com sucesso!`);
@@ -511,24 +456,11 @@ const Admin = () => {
     }
   };
   
-  const atualizarStatusRefeicao = async (id: number, status: 'aprovada' | 'rejeitada', motivo: string = "") => {
+  const atualizarStatusRefeicao = async (id: number, status: 'aprovada' | 'rejeitada') => {
     try {
-      const updateData: { status: string; motivo_rejeicao?: string; motivo_comentario?: string } = { status };
-      
-      if (status === 'rejeitada' && motivo.trim()) {
-        updateData.motivo_rejeicao = motivo;
-      }
-      
-      // Adicionar comentário se fornecido, independente do status
-      if (motivo.trim()) {
-        updateData.motivo_comentario = motivo;
-      }
-      
-      console.log("Updating refeicao with data:", updateData);
-      
       const { error } = await supabase
         .from('solicitacoes_refeicao')
-        .update(updateData)
+        .update({ status })
         .eq('id', id);
         
       if (error) {
@@ -538,12 +470,7 @@ const Admin = () => {
       }
       
       setSolicitacoesRefeicao(prev => 
-        prev.map(s => s.id === id ? { 
-          ...s, 
-          status, 
-          motivo_rejeicao: status === 'rejeitada' ? motivo : undefined,
-          motivo_comentario: motivo || undefined
-        } : s)
+        prev.map(s => s.id === id ? { ...s, status } : s)
       );
       
       toast.success(`Solicitação ${status === 'aprovada' ? 'aprovada' : 'rejeitada'} com sucesso!`);
@@ -553,27 +480,11 @@ const Admin = () => {
     }
   };
 
-  const atualizarStatusGenerico = async (tabela: string, id: number, status: 'aprovada' | 'rejeitada', atualizarEstado: Function, motivo: string = "") => {
+  const atualizarStatusGenerico = async (tabela: string, id: number, status: 'aprovada' | 'rejeitada', atualizarEstado: Function) => {
     try {
-      const updateData: { status: string; motivo_rejeicao?: string; motivo_comentario?: string } = { status };
-      
-      if (status === 'rejeitada' && motivo.trim()) {
-        updateData.motivo_rejeicao = motivo;
-        console.log(`Setting motivo_rejeicao for ${tabela}:`, motivo);
-      }
-      
-      // Adicionar comentário se fornecido, independente do status
-      if (motivo.trim()) {
-        updateData.motivo_comentario = motivo;
-        console.log(`Setting motivo_comentario for ${tabela}:`, motivo);
-      }
-      
-      console.log(`Updating ${tabela} with data:`, updateData);
-      
-      // Use updateCustomTable from the client file
       const { error } = await updateCustomTable(
         tabela,
-        updateData,
+        { status },
         { column: 'id', value: id }
       );
         
@@ -584,12 +495,7 @@ const Admin = () => {
       }
       
       atualizarEstado((prev: any[]) => 
-        prev.map((s: any) => s.id === id ? { 
-          ...s, 
-          status, 
-          motivo_rejeicao: status === 'rejeitada' ? motivo : undefined,
-          motivo_comentario: motivo || undefined
-        } : s)
+        prev.map((s: any) => s.id === id ? { ...s, status } : s)
       );
       
       toast.success(`Solicitação ${status === 'aprovada' ? 'aprovada' : 'rejeitada'} com sucesso!`);
@@ -698,683 +604,657 @@ const Admin = () => {
               <div className="flex flex-col md:flex-row gap-4 mb-6">
                 <div className="flex-1">
                   <div className="relative">
-                    <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+                    <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                     <Input
-                      placeholder="Buscar por nome de colaborador"
-                      className="pl-8"
+                      placeholder="Filtrar por nome do colaborador"
                       value={filtroColaborador}
                       onChange={(e) => setFiltroColaborador(e.target.value)}
+                      className="pl-8"
                     />
                   </div>
                 </div>
-                <div className="w-full md:w-48">
-                  <Select value={filtroStatus} onValueChange={setFiltroStatus}>
+                <div className="w-full md:w-64">
+                  <Select
+                    value={filtroStatus}
+                    onValueChange={setFiltroStatus}
+                  >
                     <SelectTrigger>
-                      <SelectValue placeholder="Status" />
+                      <SelectValue placeholder="Filtrar por status" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="todos">Todos</SelectItem>
-                      <SelectItem value="pendente">Pendentes</SelectItem>
-                      <SelectItem value="aprovada">Aprovadas</SelectItem>
-                      <SelectItem value="rejeitada">Rejeitadas</SelectItem>
+                      <SelectItem value="todos">Todos os status</SelectItem>
+                      <SelectItem value="pendente">Pendente</SelectItem>
+                      <SelectItem value="aprovada">Aprovada</SelectItem>
+                      <SelectItem value="rejeitada">Rejeitada</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
               
               <Tabs defaultValue="rota">
-                <TabsList className="grid grid-cols-2 md:grid-cols-7 mb-4">
-                  <TabsTrigger value="rota" className="flex items-center gap-1.5">
-                    <Route className="h-4 w-4" /> Rotas
+                <TabsList className="grid w-full grid-cols-7">
+                  <TabsTrigger value="rota" className="flex items-center gap-1">
+                    <Route className="h-4 w-4" />
+                    Transporte Rota
                   </TabsTrigger>
-                  <TabsTrigger value="12x36" className="flex items-center gap-1.5">
-                    <Replace className="h-4 w-4" /> 12x36
+                  <TabsTrigger value="12x36" className="flex items-center gap-1">
+                    <Map className="h-4 w-4" />
+                    Transporte 12x36
                   </TabsTrigger>
-                  <TabsTrigger value="refeicao" className="flex items-center gap-1.5">
-                    <Utensils className="h-4 w-4" /> Refeição
+                  <TabsTrigger value="refeicao" className="flex items-center gap-1">
+                    <Utensils className="h-4 w-4" />
+                    Refeição
                   </TabsTrigger>
-                  <TabsTrigger value="abono" className="flex items-center gap-1.5">
-                    <ClipboardCheck className="h-4 w-4" /> Abono
+                  <TabsTrigger value="abono" className="flex items-center gap-1">
+                    <FileText className="h-4 w-4" />
+                    Abono Ponto
                   </TabsTrigger>
-                  <TabsTrigger value="adesao" className="flex items-center gap-1.5">
-                    <FileText className="h-4 w-4" /> Adesão
+                  <TabsTrigger value="adesao" className="flex items-center gap-1">
+                    <ClipboardCheck className="h-4 w-4" />
+                    Adesão/Cancelamento
                   </TabsTrigger>
-                  <TabsTrigger value="endereco" className="flex items-center gap-1.5">
-                    <Home className="h-4 w-4" /> Endereço
+                  <TabsTrigger value="endereco" className="flex items-center gap-1">
+                    <Home className="h-4 w-4" />
+                    Alteração Endereço
                   </TabsTrigger>
-                  <TabsTrigger value="turno" className="flex items-center gap-1.5">
-                    <Replace className="h-4 w-4" /> Turno
+                  <TabsTrigger value="turno" className="flex items-center gap-1">
+                    <Replace className="h-4 w-4" />
+                    Mudança Turno
                   </TabsTrigger>
                 </TabsList>
                 
-                <TabsContent value="rota">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Solicitações de Transporte por Rota</CardTitle>
-                      <CardDescription>
-                        Solicitações de transporte fretado por rotas específicas
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
+                <TabsContent value="rota" className="mt-4">
+                  {filtrarSolicitacoesRota().length > 0 ? (
+                    <div className="rounded-md border overflow-hidden">
                       <Table>
                         <TableHeader>
                           <TableRow>
                             <TableHead>Solicitante</TableHead>
                             <TableHead>Colaborador</TableHead>
+                            <TableHead>Cidade / Turno</TableHead>
+                            <TableHead>Rota</TableHead>
                             <TableHead>Período</TableHead>
-                            <TableHead>Rota</TableHead>
+                            <TableHead>Data de Solicitação</TableHead>
                             <TableHead>Status</TableHead>
-                            <TableHead>Ações</TableHead>
+                            <TableHead className="w-[180px]">Ações</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {filtrarSolicitacoesRota().length === 0 ? (
-                            <TableRow>
-                              <TableCell colSpan={6} className="text-center">
-                                Nenhuma solicitação encontrada
+                          {filtrarSolicitacoesRota().map((solicitacao) => (
+                            <TableRow key={solicitacao.id}>
+                              <TableCell>
+                                <SolicitanteInfo id={solicitacao.solicitante_id} />
+                              </TableCell>
+                              <TableCell className="font-medium">{solicitacao.colaborador_nome}</TableCell>
+                              <TableCell>{solicitacao.cidade} / {solicitacao.turno}</TableCell>
+                              <TableCell>{solicitacao.rota}</TableCell>
+                              <TableCell>
+                                {formatarData(solicitacao.periodo_inicio)} até {formatarData(solicitacao.periodo_fim)}
+                              </TableCell>
+                              <TableCell>{formatarTimestamp(solicitacao.created_at)}</TableCell>
+                              <TableCell>
+                                <StatusBadge status={solicitacao.status} />
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex space-x-2">
+                                  {solicitacao.status === "pendente" && (
+                                    <>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="flex-1 bg-green-50 hover:bg-green-100 text-green-600 border-green-200"
+                                        onClick={() => atualizarStatusRota(solicitacao.id, "aprovada")}
+                                      >
+                                        <CheckCircle className="h-4 w-4 mr-1" />
+                                        Aprovar
+                                      </Button>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 border-red-200"
+                                        onClick={() => atualizarStatusRota(solicitacao.id, "rejeitada")}
+                                      >
+                                        <XCircle className="h-4 w-4 mr-1" />
+                                        Rejeitar
+                                      </Button>
+                                    </>
+                                  )}
+                                  {solicitacao.status === "aprovada" && (
+                                    <Button variant="outline" size="sm" className="w-full">
+                                      <Download className="h-4 w-4 mr-1" />
+                                      Gerar Ticket
+                                    </Button>
+                                  )}
+                                  {solicitacao.status === "rejeitada" && (
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm" 
+                                      className="w-full"
+                                      onClick={() => atualizarStatusRota(solicitacao.id, "aprovada")}
+                                    >
+                                      <CheckCircle className="h-4 w-4 mr-1" />
+                                      Aprovar
+                                    </Button>
+                                  )}
+                                </div>
                               </TableCell>
                             </TableRow>
-                          ) : (
-                            filtrarSolicitacoesRota().map((s) => (
-                              <TableRow key={s.id}>
-                                <TableCell>
-                                  <SolicitanteInfo id={s.solicitante_id} />
-                                </TableCell>
-                                <TableCell>
-                                  <div className="font-medium">{s.colaborador_nome}</div>
-                                  <div className="text-muted-foreground text-xs">{s.cidade}</div>
-                                </TableCell>
-                                <TableCell>
-                                  <div>{formatarData(s.periodo_inicio)} a</div>
-                                  <div>{formatarData(s.periodo_fim)}</div>
-                                </TableCell>
-                                <TableCell>
-                                  <div>{s.rota}</div>
-                                  <div className="text-muted-foreground text-xs">Turno: {s.turno}</div>
-                                </TableCell>
-                                <TableCell>
-                                  <StatusBadge status={s.status} />
-                                </TableCell>
-                                <TableCell>
-                                  {s.status === "pendente" ? (
-                                    <div className="flex gap-2">
-                                      <Button
-                                        size="sm"
-                                        className="h-8 gap-1"
-                                        variant="default"
-                                        onClick={() => abrirDialogMotivo(s.id, "rota", "aprovada")}
-                                      >
-                                        <CheckCircle className="h-4 w-4" /> 
-                                      </Button>
-                                      <Button
-                                        size="sm"
-                                        className="h-8 gap-1"
-                                        variant="destructive"
-                                        onClick={() => abrirDialogMotivo(s.id, "rota", "rejeitada")}
-                                      >
-                                        <XCircle className="h-4 w-4" /> 
-                                      </Button>
-                                    </div>
-                                  ) : (
-                                    <div className="text-xs text-muted-foreground">
-                                      {formatarTimestamp(s.updated_at)}
-                                    </div>
-                                  )}
-                                </TableCell>
-                              </TableRow>
-                            ))
-                          )}
+                          ))}
                         </TableBody>
                       </Table>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  ) : (
+                    <p className="text-center py-10 text-muted-foreground">
+                      Nenhuma solicitação de transporte rota encontrada.
+                    </p>
+                  )}
                 </TabsContent>
                 
-                <TabsContent value="12x36">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Solicitações de Transporte 12x36</CardTitle>
-                      <CardDescription>
-                        Solicitações de transporte para escalas 12x36
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
+                <TabsContent value="12x36" className="mt-4">
+                  {filtrarSolicitacoes12x36().length > 0 ? (
+                    <div className="rounded-md border overflow-hidden">
                       <Table>
                         <TableHeader>
                           <TableRow>
                             <TableHead>Solicitante</TableHead>
                             <TableHead>Colaborador</TableHead>
+                            <TableHead>Telefone</TableHead>
                             <TableHead>Rota</TableHead>
-                            <TableHead>Endereço</TableHead>
+                            <TableHead>Data de Início</TableHead>
+                            <TableHead>Data de Solicitação</TableHead>
                             <TableHead>Status</TableHead>
-                            <TableHead>Ações</TableHead>
+                            <TableHead className="w-[180px]">Ações</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {filtrarSolicitacoes12x36().length === 0 ? (
-                            <TableRow>
-                              <TableCell colSpan={6} className="text-center">
-                                Nenhuma solicitação encontrada
+                          {filtrarSolicitacoes12x36().map((solicitacao) => (
+                            <TableRow key={solicitacao.id}>
+                              <TableCell>
+                                <SolicitanteInfo id={solicitacao.solicitante_id} />
+                              </TableCell>
+                              <TableCell className="font-medium">{solicitacao.colaborador_nome}</TableCell>
+                              <TableCell>{solicitacao.telefone}</TableCell>
+                              <TableCell>{solicitacao.rota}</TableCell>
+                              <TableCell>{formatarData(solicitacao.data_inicio)}</TableCell>
+                              <TableCell>{formatarTimestamp(solicitacao.created_at)}</TableCell>
+                              <TableCell>
+                                <StatusBadge status={solicitacao.status} />
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex space-x-2">
+                                  {solicitacao.status === "pendente" && (
+                                    <>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="flex-1 bg-green-50 hover:bg-green-100 text-green-600 border-green-200"
+                                        onClick={() => atualizarStatus12x36(solicitacao.id, "aprovada")}
+                                      >
+                                        <CheckCircle className="h-4 w-4 mr-1" />
+                                        Aprovar
+                                      </Button>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 border-red-200"
+                                        onClick={() => atualizarStatus12x36(solicitacao.id, "rejeitada")}
+                                      >
+                                        <XCircle className="h-4 w-4 mr-1" />
+                                        Rejeitar
+                                      </Button>
+                                    </>
+                                  )}
+                                  {solicitacao.status === "aprovada" && (
+                                    <Button variant="outline" size="sm" className="w-full">
+                                      <Download className="h-4 w-4 mr-1" />
+                                      Gerar Ticket
+                                    </Button>
+                                  )}
+                                  {solicitacao.status === "rejeitada" && (
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm" 
+                                      className="w-full"
+                                      onClick={() => atualizarStatus12x36(solicitacao.id, "aprovada")}
+                                    >
+                                      <CheckCircle className="h-4 w-4 mr-1" />
+                                      Aprovar
+                                    </Button>
+                                  )}
+                                </div>
                               </TableCell>
                             </TableRow>
-                          ) : (
-                            filtrarSolicitacoes12x36().map((s) => (
-                              <TableRow key={s.id}>
-                                <TableCell>
-                                  <SolicitanteInfo id={s.solicitante_id} />
-                                </TableCell>
-                                <TableCell>
-                                  <div className="font-medium">{s.colaborador_nome}</div>
-                                  <div className="text-muted-foreground text-xs">{s.telefone}</div>
-                                </TableCell>
-                                <TableCell>
-                                  <div>{s.rota}</div>
-                                  <div className="text-muted-foreground text-xs">
-                                    Início: {formatarData(s.data_inicio)}
-                                  </div>
-                                </TableCell>
-                                <TableCell>
-                                  <div className="text-sm truncate max-w-[12rem]">{s.endereco}</div>
-                                  <div className="text-muted-foreground text-xs">CEP: {s.cep}</div>
-                                </TableCell>
-                                <TableCell>
-                                  <StatusBadge status={s.status} />
-                                </TableCell>
-                                <TableCell>
-                                  {s.status === "pendente" ? (
-                                    <div className="flex gap-2">
-                                      <Button
-                                        size="sm"
-                                        className="h-8 gap-1"
-                                        variant="default"
-                                        onClick={() => abrirDialogMotivo(s.id, "12x36", "aprovada")}
-                                      >
-                                        <CheckCircle className="h-4 w-4" /> 
-                                      </Button>
-                                      <Button
-                                        size="sm"
-                                        className="h-8 gap-1"
-                                        variant="destructive"
-                                        onClick={() => abrirDialogMotivo(s.id, "12x36", "rejeitada")}
-                                      >
-                                        <XCircle className="h-4 w-4" /> 
-                                      </Button>
-                                    </div>
-                                  ) : (
-                                    <div className="text-xs text-muted-foreground">
-                                      {formatarTimestamp(s.updated_at)}
-                                    </div>
-                                  )}
-                                </TableCell>
-                              </TableRow>
-                            ))
-                          )}
+                          ))}
                         </TableBody>
                       </Table>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  ) : (
+                    <p className="text-center py-10 text-muted-foreground">
+                      Nenhuma solicitação de transporte 12x36 encontrada.
+                    </p>
+                  )}
                 </TabsContent>
                 
-                <TabsContent value="refeicao">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Solicitações de Refeição</CardTitle>
-                      <CardDescription>
-                        Solicitações de refeição para colaboradores e eventos
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
+                <TabsContent value="refeicao" className="mt-4">
+                  {filtrarSolicitacoesRefeicao().length > 0 ? (
+                    <div className="rounded-md border overflow-hidden">
                       <Table>
                         <TableHeader>
                           <TableRow>
                             <TableHead>Solicitante</TableHead>
                             <TableHead>Colaboradores</TableHead>
-                            <TableHead>Tipo</TableHead>
-                            <TableHead>Data</TableHead>
+                            <TableHead>Tipo de Refeição</TableHead>
+                            <TableHead>Data da Refeição</TableHead>
+                            <TableHead>Data de Solicitação</TableHead>
                             <TableHead>Status</TableHead>
-                            <TableHead>Ações</TableHead>
+                            <TableHead className="w-[180px]">Ações</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {filtrarSolicitacoesRefeicao().length === 0 ? (
-                            <TableRow>
-                              <TableCell colSpan={6} className="text-center">
-                                Nenhuma solicitação encontrada
+                          {filtrarSolicitacoesRefeicao().map((solicitacao) => (
+                            <TableRow key={solicitacao.id}>
+                              <TableCell>
+                                <SolicitanteInfo id={solicitacao.solicitante_id} />
+                              </TableCell>
+                              <TableCell className="font-medium">
+                                <div className="max-h-20 overflow-y-auto">
+                                  {solicitacao.colaboradores.map((nome, idx) => (
+                                    <div key={idx} className="mb-1 last:mb-0">
+                                      {nome}
+                                    </div>
+                                  ))}
+                                </div>
+                              </TableCell>
+                              <TableCell>{solicitacao.tipo_refeicao}</TableCell>
+                              <TableCell>{formatarData(solicitacao.data_refeicao)}</TableCell>
+                              <TableCell>{formatarTimestamp(solicitacao.created_at)}</TableCell>
+                              <TableCell>
+                                <StatusBadge status={solicitacao.status} />
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex space-x-2">
+                                  {solicitacao.status === "pendente" && (
+                                    <>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="flex-1 bg-green-50 hover:bg-green-100 text-green-600 border-green-200"
+                                        onClick={() => atualizarStatusRefeicao(solicitacao.id, "aprovada")}
+                                      >
+                                        <CheckCircle className="h-4 w-4 mr-1" />
+                                        Aprovar
+                                      </Button>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 border-red-200"
+                                        onClick={() => atualizarStatusRefeicao(solicitacao.id, "rejeitada")}
+                                      >
+                                        <XCircle className="h-4 w-4 mr-1" />
+                                        Rejeitar
+                                      </Button>
+                                    </>
+                                  )}
+                                  {solicitacao.status === "aprovada" && (
+                                    <Button variant="outline" size="sm" className="w-full">
+                                      <Download className="h-4 w-4 mr-1" />
+                                      Gerar Tickets
+                                    </Button>
+                                  )}
+                                  {solicitacao.status === "rejeitada" && (
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm" 
+                                      className="w-full"
+                                      onClick={() => atualizarStatusRefeicao(solicitacao.id, "aprovada")}
+                                    >
+                                      <CheckCircle className="h-4 w-4 mr-1" />
+                                      Aprovar
+                                    </Button>
+                                  )}
+                                </div>
                               </TableCell>
                             </TableRow>
-                          ) : (
-                            filtrarSolicitacoesRefeicao().map((s) => (
-                              <TableRow key={s.id}>
-                                <TableCell>
-                                  <SolicitanteInfo id={s.solicitante_id} />
-                                </TableCell>
-                                <TableCell>
-                                  <div className="text-sm">
-                                    {s.colaboradores.length} colaboradores
-                                  </div>
-                                </TableCell>
-                                <TableCell>
-                                  <div className="font-medium">{s.tipo_refeicao}</div>
-                                </TableCell>
-                                <TableCell>
-                                  <div>{formatarData(s.data_refeicao)}</div>
-                                </TableCell>
-                                <TableCell>
-                                  <StatusBadge status={s.status} />
-                                </TableCell>
-                                <TableCell>
-                                  {s.status === "pendente" ? (
-                                    <div className="flex gap-2">
-                                      <Button
-                                        size="sm"
-                                        className="h-8 gap-1"
-                                        variant="default"
-                                        onClick={() => abrirDialogMotivo(s.id, "refeicao", "aprovada")}
-                                      >
-                                        <CheckCircle className="h-4 w-4" /> 
-                                      </Button>
-                                      <Button
-                                        size="sm"
-                                        className="h-8 gap-1"
-                                        variant="destructive"
-                                        onClick={() => abrirDialogMotivo(s.id, "refeicao", "rejeitada")}
-                                      >
-                                        <XCircle className="h-4 w-4" /> 
-                                      </Button>
-                                    </div>
-                                  ) : (
-                                    <div className="text-xs text-muted-foreground">
-                                      {formatarTimestamp(s.updated_at)}
-                                    </div>
-                                  )}
-                                </TableCell>
-                              </TableRow>
-                            ))
-                          )}
+                          ))}
                         </TableBody>
                       </Table>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  ) : (
+                    <p className="text-center py-10 text-muted-foreground">
+                      Nenhuma solicitação de refeição encontrada.
+                    </p>
+                  )}
                 </TabsContent>
-                
-                <TabsContent value="abono">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Solicitações de Abono de Ponto</CardTitle>
-                      <CardDescription>
-                        Solicitações para abono de ponto e justificativas
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
+
+                <TabsContent value="abono" className="mt-4">
+                  {filtrarSolicitacoesAbonoPonto().length > 0 ? (
+                    <div className="rounded-md border overflow-hidden">
                       <Table>
                         <TableHeader>
                           <TableRow>
                             <TableHead>Solicitante</TableHead>
-                            <TableHead>Data</TableHead>
+                            <TableHead>Data da Ocorrência</TableHead>
                             <TableHead>Turno</TableHead>
                             <TableHead>Motivo</TableHead>
+                            <TableHead>Data de Solicitação</TableHead>
                             <TableHead>Status</TableHead>
-                            <TableHead>Ações</TableHead>
+                            <TableHead className="w-[180px]">Ações</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {filtrarSolicitacoesAbonoPonto().length === 0 ? (
-                            <TableRow>
-                              <TableCell colSpan={6} className="text-center">
-                                Nenhuma solicitação encontrada
+                          {filtrarSolicitacoesAbonoPonto().map((solicitacao) => (
+                            <TableRow key={solicitacao.id}>
+                              <TableCell>
+                                <SolicitanteInfo id={solicitacao.solicitante_id} />
+                              </TableCell>
+                              <TableCell>{formatarData(solicitacao.data_ocorrencia)}</TableCell>
+                              <TableCell>{solicitacao.turno}</TableCell>
+                              <TableCell>{solicitacao.motivo}</TableCell>
+                              <TableCell>{formatarTimestamp(solicitacao.created_at)}</TableCell>
+                              <TableCell>
+                                <StatusBadge status={solicitacao.status} />
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex space-x-2">
+                                  {solicitacao.status === "pendente" && (
+                                    <>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="flex-1 bg-green-50 hover:bg-green-100 text-green-600 border-green-200"
+                                        onClick={() => atualizarStatusGenerico('solicitacoes_abono_ponto', solicitacao.id, "aprovada", setSolicitacoesAbonoPonto)}
+                                      >
+                                        <CheckCircle className="h-4 w-4 mr-1" />
+                                        Aprovar
+                                      </Button>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 border-red-200"
+                                        onClick={() => atualizarStatusGenerico('solicitacoes_abono_ponto', solicitacao.id, "rejeitada", setSolicitacoesAbonoPonto)}
+                                      >
+                                        <XCircle className="h-4 w-4 mr-1" />
+                                        Rejeitar
+                                      </Button>
+                                    </>
+                                  )}
+                                  {solicitacao.status === "rejeitada" && (
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm" 
+                                      className="w-full"
+                                      onClick={() => atualizarStatusGenerico('solicitacoes_abono_ponto', solicitacao.id, "aprovada", setSolicitacoesAbonoPonto)}
+                                    >
+                                      <CheckCircle className="h-4 w-4 mr-1" />
+                                      Aprovar
+                                    </Button>
+                                  )}
+                                </div>
                               </TableCell>
                             </TableRow>
-                          ) : (
-                            filtrarSolicitacoesAbonoPonto().map((s) => (
-                              <TableRow key={s.id}>
-                                <TableCell>
-                                  <SolicitanteInfo id={s.solicitante_id} />
-                                </TableCell>
-                                <TableCell>
-                                  <div>{formatarData(s.data_ocorrencia)}</div>
-                                </TableCell>
-                                <TableCell>
-                                  <div>{s.turno}</div>
-                                </TableCell>
-                                <TableCell>
-                                  <div className="max-w-[10rem] truncate">{s.motivo}</div>
-                                </TableCell>
-                                <TableCell>
-                                  <StatusBadge status={s.status} />
-                                </TableCell>
-                                <TableCell>
-                                  {s.status === "pendente" ? (
-                                    <div className="flex gap-2">
-                                      <Button
-                                        size="sm"
-                                        className="h-8 gap-1"
-                                        variant="default"
-                                        onClick={() => abrirDialogMotivo(s.id, "abono", "aprovada")}
-                                      >
-                                        <CheckCircle className="h-4 w-4" /> 
-                                      </Button>
-                                      <Button
-                                        size="sm"
-                                        className="h-8 gap-1"
-                                        variant="destructive"
-                                        onClick={() => abrirDialogMotivo(s.id, "abono", "rejeitada")}
-                                      >
-                                        <XCircle className="h-4 w-4" /> 
-                                      </Button>
-                                    </div>
-                                  ) : (
-                                    <div className="text-xs text-muted-foreground">
-                                      {formatarTimestamp(s.updated_at)}
-                                    </div>
-                                  )}
-                                </TableCell>
-                              </TableRow>
-                            ))
-                          )}
+                          ))}
                         </TableBody>
                       </Table>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  ) : (
+                    <p className="text-center py-10 text-muted-foreground">
+                      Nenhuma solicitação de abono de ponto encontrada.
+                    </p>
+                  )}
                 </TabsContent>
-                
-                <TabsContent value="adesao">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Solicitações de Adesão/Cancelamento</CardTitle>
-                      <CardDescription>
-                        Solicitações para aderir ou cancelar serviços de transporte
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
+
+                <TabsContent value="adesao" className="mt-4">
+                  {filtrarSolicitacoesAdesaoCancelamento().length > 0 ? (
+                    <div className="rounded-md border overflow-hidden">
                       <Table>
                         <TableHeader>
                           <TableRow>
                             <TableHead>Solicitante</TableHead>
                             <TableHead>Tipo</TableHead>
                             <TableHead>Motivo</TableHead>
+                            <TableHead>Data de Solicitação</TableHead>
                             <TableHead>Status</TableHead>
-                            <TableHead>Ações</TableHead>
+                            <TableHead className="w-[180px]">Ações</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {filtrarSolicitacoesAdesaoCancelamento().length === 0 ? (
-                            <TableRow>
-                              <TableCell colSpan={5} className="text-center">
-                                Nenhuma solicitação encontrada
+                          {filtrarSolicitacoesAdesaoCancelamento().map((solicitacao) => (
+                            <TableRow key={solicitacao.id}>
+                              <TableCell>
+                                <SolicitanteInfo id={solicitacao.solicitante_id} />
+                              </TableCell>
+                              <TableCell>{solicitacao.tipo_solicitacao}</TableCell>
+                              <TableCell>{solicitacao.motivo}</TableCell>
+                              <TableCell>{formatarTimestamp(solicitacao.created_at)}</TableCell>
+                              <TableCell>
+                                <StatusBadge status={solicitacao.status} />
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex space-x-2">
+                                  {solicitacao.status === "pendente" && (
+                                    <>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="flex-1 bg-green-50 hover:bg-green-100 text-green-600 border-green-200"
+                                        onClick={() => atualizarStatusGenerico('solicitacoes_adesao_cancelamento', solicitacao.id, "aprovada", setSolicitacoesAdesaoCancelamento)}
+                                      >
+                                        <CheckCircle className="h-4 w-4 mr-1" />
+                                        Aprovar
+                                      </Button>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 border-red-200"
+                                        onClick={() => atualizarStatusGenerico('solicitacoes_adesao_cancelamento', solicitacao.id, "rejeitada", setSolicitacoesAdesaoCancelamento)}
+                                      >
+                                        <XCircle className="h-4 w-4 mr-1" />
+                                        Rejeitar
+                                      </Button>
+                                    </>
+                                  )}
+                                  {solicitacao.status === "rejeitada" && (
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm" 
+                                      className="w-full"
+                                      onClick={() => atualizarStatusGenerico('solicitacoes_adesao_cancelamento', solicitacao.id, "aprovada", setSolicitacoesAdesaoCancelamento)}
+                                    >
+                                      <CheckCircle className="h-4 w-4 mr-1" />
+                                      Aprovar
+                                    </Button>
+                                  )}
+                                </div>
                               </TableCell>
                             </TableRow>
-                          ) : (
-                            filtrarSolicitacoesAdesaoCancelamento().map((s) => (
-                              <TableRow key={s.id}>
-                                <TableCell>
-                                  <SolicitanteInfo id={s.solicitante_id} />
-                                </TableCell>
-                                <TableCell>
-                                  <div className="font-medium">{s.tipo_solicitacao}</div>
-                                </TableCell>
-                                <TableCell>
-                                  <div className="max-w-[15rem] truncate">{s.motivo}</div>
-                                </TableCell>
-                                <TableCell>
-                                  <StatusBadge status={s.status} />
-                                </TableCell>
-                                <TableCell>
-                                  {s.status === "pendente" ? (
-                                    <div className="flex gap-2">
-                                      <Button
-                                        size="sm"
-                                        className="h-8 gap-1"
-                                        variant="default"
-                                        onClick={() => abrirDialogMotivo(s.id, "adesao", "aprovada")}
-                                      >
-                                        <CheckCircle className="h-4 w-4" /> 
-                                      </Button>
-                                      <Button
-                                        size="sm"
-                                        className="h-8 gap-1"
-                                        variant="destructive"
-                                        onClick={() => abrirDialogMotivo(s.id, "adesao", "rejeitada")}
-                                      >
-                                        <XCircle className="h-4 w-4" /> 
-                                      </Button>
-                                    </div>
-                                  ) : (
-                                    <div className="text-xs text-muted-foreground">
-                                      {formatarTimestamp(s.updated_at)}
-                                    </div>
-                                  )}
-                                </TableCell>
-                              </TableRow>
-                            ))
-                          )}
+                          ))}
                         </TableBody>
                       </Table>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  ) : (
+                    <p className="text-center py-10 text-muted-foreground">
+                      Nenhuma solicitação de adesão/cancelamento encontrada.
+                    </p>
+                  )}
                 </TabsContent>
-                
-                <TabsContent value="endereco">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Solicitações de Alteração de Endereço</CardTitle>
-                      <CardDescription>
-                        Solicitações para alteração de endereço e rota
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
+
+                <TabsContent value="endereco" className="mt-4">
+                  {filtrarSolicitacoesAlteracaoEndereco().length > 0 ? (
+                    <div className="rounded-md border overflow-hidden">
                       <Table>
                         <TableHeader>
                           <TableRow>
                             <TableHead>Solicitante</TableHead>
                             <TableHead>Endereço Atual</TableHead>
                             <TableHead>Novo Endereço</TableHead>
-                            <TableHead>Data</TableHead>
+                            <TableHead>Data de Alteração</TableHead>
+                            <TableHead>Data de Solicitação</TableHead>
                             <TableHead>Status</TableHead>
-                            <TableHead>Ações</TableHead>
+                            <TableHead className="w-[240px]">Ações</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {filtrarSolicitacoesAlteracaoEndereco().length === 0 ? (
-                            <TableRow>
-                              <TableCell colSpan={6} className="text-center">
-                                Nenhuma solicitação encontrada
+                          {filtrarSolicitacoesAlteracaoEndereco().map((solicitacao) => (
+                            <TableRow key={solicitacao.id}>
+                              <TableCell>
+                                <SolicitanteInfo id={solicitacao.solicitante_id} />
                               </TableCell>
-                            </TableRow>
-                          ) : (
-                            filtrarSolicitacoesAlteracaoEndereco().map((s) => (
-                              <TableRow key={s.id}>
-                                <TableCell>
-                                  <SolicitanteInfo id={s.solicitante_id} />
-                                </TableCell>
-                                <TableCell>
-                                  <div className="max-w-[10rem] truncate">{s.endereco_atual}</div>
-                                </TableCell>
-                                <TableCell>
-                                  <div className="max-w-[10rem] truncate">{s.endereco_novo}</div>
-                                  {s.comprovante_url && (
-                                    <Button
-                                      variant="link"
+                              <TableCell>{solicitacao.endereco_atual}</TableCell>
+                              <TableCell>{solicitacao.endereco_novo}</TableCell>
+                              <TableCell>{formatarData(solicitacao.data_alteracao)}</TableCell>
+                              <TableCell>{formatarTimestamp(solicitacao.created_at)}</TableCell>
+                              <TableCell>
+                                <StatusBadge status={solicitacao.status} />
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex flex-col sm:flex-row gap-2">
+                                  {(solicitacao as any).comprovante_url && (
+                                    <Button 
+                                      variant="outline" 
                                       size="sm"
-                                      className="p-0 h-auto text-xs"
+                                      className="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-600 border-blue-200"
                                       onClick={() => handleDownloadComprovante(
-                                        s.comprovante_url || "", 
-                                        solicitantesInfo[s.solicitante_id]?.nome || "colaborador"
+                                        (solicitacao as any).comprovante_url,
+                                        solicitantesInfo[solicitacao.solicitante_id]?.nome || 'solicitante'
                                       )}
                                     >
-                                      <Download className="h-3 w-3 mr-1" /> Comprovante
+                                      <File className="h-4 w-4 mr-1" />
+                                      Comprovante
                                     </Button>
                                   )}
-                                </TableCell>
-                                <TableCell>
-                                  <div>{formatarData(s.data_alteracao)}</div>
-                                </TableCell>
-                                <TableCell>
-                                  <StatusBadge status={s.status} />
-                                </TableCell>
-                                <TableCell>
-                                  {s.status === "pendente" ? (
-                                    <div className="flex gap-2">
-                                      <Button
+                                  
+                                  {solicitacao.status === "pendente" && (
+                                    <>
+                                      <Button 
+                                        variant="outline" 
                                         size="sm"
-                                        className="h-8 gap-1"
-                                        variant="default"
-                                        onClick={() => abrirDialogMotivo(s.id, "endereco", "aprovada")}
+                                        className="flex-1 bg-green-50 hover:bg-green-100 text-green-600 border-green-200"
+                                        onClick={() => atualizarStatusGenerico('solicitacoes_alteracao_endereco', solicitacao.id, "aprovada", setSolicitacoesAlteracaoEndereco)}
                                       >
-                                        <CheckCircle className="h-4 w-4" /> 
+                                        <CheckCircle className="h-4 w-4 mr-1" />
+                                        Aprovar
                                       </Button>
-                                      <Button
+                                      <Button 
+                                        variant="outline" 
                                         size="sm"
-                                        className="h-8 gap-1"
-                                        variant="destructive"
-                                        onClick={() => abrirDialogMotivo(s.id, "endereco", "rejeitada")}
+                                        className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 border-red-200"
+                                        onClick={() => atualizarStatusGenerico('solicitacoes_alteracao_endereco', solicitacao.id, "rejeitada", setSolicitacoesAlteracaoEndereco)}
                                       >
-                                        <XCircle className="h-4 w-4" /> 
+                                        <XCircle className="h-4 w-4 mr-1" />
+                                        Rejeitar
                                       </Button>
-                                    </div>
-                                  ) : (
-                                    <div className="text-xs text-muted-foreground">
-                                      {formatarTimestamp(s.updated_at)}
-                                    </div>
+                                    </>
                                   )}
-                                </TableCell>
-                              </TableRow>
-                            ))
-                          )}
+                                  {solicitacao.status === "rejeitada" && (
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm" 
+                                      className="w-full"
+                                      onClick={() => atualizarStatusGenerico('solicitacoes_alteracao_endereco', solicitacao.id, "aprovada", setSolicitacoesAlteracaoEndereco)}
+                                    >
+                                      <CheckCircle className="h-4 w-4 mr-1" />
+                                      Aprovar
+                                    </Button>
+                                  )}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
                         </TableBody>
                       </Table>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  ) : (
+                    <p className="text-center py-10 text-muted-foreground">
+                      Nenhuma solicitação de alteração de endereço encontrada.
+                    </p>
+                  )}
                 </TabsContent>
-                
-                <TabsContent value="turno">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Solicitações de Mudança de Turno</CardTitle>
-                      <CardDescription>
-                        Solicitações para mudança de turno de trabalho
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
+
+                <TabsContent value="turno" className="mt-4">
+                  {filtrarSolicitacoesMudancaTurno().length > 0 ? (
+                    <div className="rounded-md border overflow-hidden">
                       <Table>
                         <TableHeader>
                           <TableRow>
                             <TableHead>Solicitante</TableHead>
                             <TableHead>Turno Atual</TableHead>
                             <TableHead>Novo Turno</TableHead>
-                            <TableHead>Data</TableHead>
+                            <TableHead>Data de Alteração</TableHead>
+                            <TableHead>Motivo</TableHead>
+                            <TableHead>Data de Solicitação</TableHead>
                             <TableHead>Status</TableHead>
-                            <TableHead>Ações</TableHead>
+                            <TableHead className="w-[180px]">Ações</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {filtrarSolicitacoesMudancaTurno().length === 0 ? (
-                            <TableRow>
-                              <TableCell colSpan={6} className="text-center">
-                                Nenhuma solicitação encontrada
+                          {filtrarSolicitacoesMudancaTurno().map((solicitacao) => (
+                            <TableRow key={solicitacao.id}>
+                              <TableCell>
+                                <SolicitanteInfo id={solicitacao.solicitante_id} />
+                              </TableCell>
+                              <TableCell>{solicitacao.turno_atual}</TableCell>
+                              <TableCell>{solicitacao.turno_novo}</TableCell>
+                              <TableCell>{formatarData(solicitacao.data_alteracao)}</TableCell>
+                              <TableCell>{solicitacao.motivo}</TableCell>
+                              <TableCell>{formatarTimestamp(solicitacao.created_at)}</TableCell>
+                              <TableCell>
+                                <StatusBadge status={solicitacao.status} />
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex space-x-2">
+                                  {solicitacao.status === "pendente" && (
+                                    <>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="flex-1 bg-green-50 hover:bg-green-100 text-green-600 border-green-200"
+                                        onClick={() => atualizarStatusGenerico('solicitacoes_mudanca_turno', solicitacao.id, "aprovada", setSolicitacoesMudancaTurno)}
+                                      >
+                                        <CheckCircle className="h-4 w-4 mr-1" />
+                                        Aprovar
+                                      </Button>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 border-red-200"
+                                        onClick={() => atualizarStatusGenerico('solicitacoes_mudanca_turno', solicitacao.id, "rejeitada", setSolicitacoesMudancaTurno)}
+                                      >
+                                        <XCircle className="h-4 w-4 mr-1" />
+                                        Rejeitar
+                                      </Button>
+                                    </>
+                                  )}
+                                  {solicitacao.status === "rejeitada" && (
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm" 
+                                      className="w-full"
+                                      onClick={() => atualizarStatusGenerico('solicitacoes_mudanca_turno', solicitacao.id, "aprovada", setSolicitacoesMudancaTurno)}
+                                    >
+                                      <CheckCircle className="h-4 w-4 mr-1" />
+                                      Aprovar
+                                    </Button>
+                                  )}
+                                </div>
                               </TableCell>
                             </TableRow>
-                          ) : (
-                            filtrarSolicitacoesMudancaTurno().map((s) => (
-                              <TableRow key={s.id}>
-                                <TableCell>
-                                  <SolicitanteInfo id={s.solicitante_id} />
-                                </TableCell>
-                                <TableCell>
-                                  <div>{s.turno_atual}</div>
-                                </TableCell>
-                                <TableCell>
-                                  <div>{s.turno_novo}</div>
-                                </TableCell>
-                                <TableCell>
-                                  <div>{formatarData(s.data_alteracao)}</div>
-                                </TableCell>
-                                <TableCell>
-                                  <StatusBadge status={s.status} />
-                                </TableCell>
-                                <TableCell>
-                                  {s.status === "pendente" ? (
-                                    <div className="flex gap-2">
-                                      <Button
-                                        size="sm"
-                                        className="h-8 gap-1"
-                                        variant="default"
-                                        onClick={() => abrirDialogMotivo(s.id, "turno", "aprovada")}
-                                      >
-                                        <CheckCircle className="h-4 w-4" /> 
-                                      </Button>
-                                      <Button
-                                        size="sm"
-                                        className="h-8 gap-1"
-                                        variant="destructive"
-                                        onClick={() => abrirDialogMotivo(s.id, "turno", "rejeitada")}
-                                      >
-                                        <XCircle className="h-4 w-4" /> 
-                                      </Button>
-                                    </div>
-                                  ) : (
-                                    <div className="text-xs text-muted-foreground">
-                                      {formatarTimestamp(s.updated_at)}
-                                    </div>
-                                  )}
-                                </TableCell>
-                              </TableRow>
-                            ))
-                          )}
+                          ))}
                         </TableBody>
                       </Table>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  ) : (
+                    <p className="text-center py-10 text-muted-foreground">
+                      Nenhuma solicitação de mudança de turno encontrada.
+                    </p>
+                  )}
                 </TabsContent>
               </Tabs>
             </>
           )}
         </CardContent>
       </Card>
-
-      {/* Dialog para motivo de rejeição ou comentário */}
-      <Dialog open={isOpenMotivo} onOpenChange={setIsOpenMotivo}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {selectedSolicitacao.status === 'rejeitada' 
-                ? 'Motivo da Rejeição'
-                : 'Comentário (Opcional)'}
-            </DialogTitle>
-            <DialogDescription>
-              {selectedSolicitacao.status === 'rejeitada'
-                ? 'Informe o motivo pelo qual esta solicitação está sendo rejeitada.'
-                : 'Adicione um comentário para essa solicitação (opcional).'}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <AdminCommentField
-            value={motivoRejeicao}
-            onChange={setMotivoRejeicao}
-            id="motivo-rejeicao"
-            label={selectedSolicitacao.status === 'rejeitada' ? "Motivo da Rejeição" : "Comentário do Administrador (opcional)"}
-            placeholder={selectedSolicitacao.status === 'rejeitada' 
-              ? "Detalhe o motivo da rejeição desta solicitação" 
-              : "Adicione um comentário sobre esta solicitação"
-            }
-          />
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsOpenMotivo(false)}>
-              Cancelar
-            </Button>
-            <Button 
-              onClick={handleConfirmarMotivo}
-              variant={selectedSolicitacao.status === 'rejeitada' ? 'destructive' : 'default'}
-              disabled={selectedSolicitacao.status === 'rejeitada' && !motivoRejeicao.trim()}
-            >
-              {selectedSolicitacao.status === 'rejeitada' ? 'Rejeitar' : 'Aprovar'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
 
 export default Admin;
-
