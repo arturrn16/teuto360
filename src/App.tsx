@@ -107,7 +107,6 @@ const App = () => (
                 }
               />
               
-              {/* New routes for announcements */}
               <Route
                 path="/comunicados"
                 element={
@@ -126,7 +125,6 @@ const App = () => (
                 }
               />
               
-              {/* New routes for cafeteria menu */}
               <Route
                 path="/cardapio-semana"
                 element={
@@ -145,7 +143,6 @@ const App = () => (
                 }
               />
               
-              {/* Routes for collaborators and comum users */}
               <Route
                 path="/adesao-cancelamento"
                 element={
@@ -218,7 +215,6 @@ const App = () => (
                 }
               />
 
-              {/* New Reports route for admins */}
               <Route
                 path="/relatorios"
                 element={

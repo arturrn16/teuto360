@@ -1,30 +1,58 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Lock, User } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui-components/Card";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuthLoaded } from "@/components/Layout";
 
 export const LoginForm = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { login } = useAuth();
+  const [authProviderAvailable, setAuthProviderAvailable] = useState(false);
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { authLoaded } = useAuthLoaded();
+
+  // Reference to auth
+  let auth: any = null;
+
+  // Check if AuthProvider is available
+  useEffect(() => {
+    if (authLoaded) {
+      try {
+        // Just testing if we can access the auth context
+        auth = useAuth();
+        setAuthProviderAvailable(true);
+      } catch (error) {
+        console.error("Auth provider not available:", error);
+      }
+    }
+  }, [authLoaded]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
+      if (!authProviderAvailable) {
+        console.error("Cannot login: Auth provider not available");
+        return;
+      }
+      
+      // Get the current auth context
+      const { login } = useAuth();
       const success = await login(username, password);
+      
       if (success) {
         navigate("/dashboard");
       }
+    } catch (error) {
+      console.error("Login error:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -108,7 +136,7 @@ export const LoginForm = () => {
 
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || !authProviderAvailable}
             className={cn(
               "w-full py-2 sm:py-2.5 text-sm font-medium rounded-lg text-white",
               "bg-primary hover:bg-primary/90",
@@ -116,7 +144,7 @@ export const LoginForm = () => {
               "transition-colors duration-200 ease-in-out",
               "flex justify-center items-center",
               isMobile && "touch-target",
-              isSubmitting && "opacity-70 cursor-not-allowed"
+              (isSubmitting || !authProviderAvailable) && "opacity-70 cursor-not-allowed"
             )}
           >
             {isSubmitting ? (
@@ -127,6 +155,8 @@ export const LoginForm = () => {
                 </svg>
                 Entrando...
               </>
+            ) : !authProviderAvailable ? (
+              "Inicializando..."
             ) : (
               "Entrar"
             )}

@@ -1,19 +1,32 @@
 
 import { useEffect } from "react";
 import { LoginForm } from "@/components/auth/LoginForm";
-import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Building2 } from "lucide-react";
+import { useAuthLoaded } from "@/components/Layout";
 
 const Login = () => {
-  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const { authLoaded } = useAuthLoaded();
+  
+  let isAuthenticated = false;
+  
+  // Only try to use auth if the provider is available
+  try {
+    if (authLoaded) {
+      const { useAuth } = require("@/context/AuthContext");
+      const auth = useAuth();
+      isAuthenticated = auth.isAuthenticated;
+    }
+  } catch (error) {
+    console.error("Auth context not available:", error);
+  }
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (authLoaded && isAuthenticated) {
       navigate("/dashboard");
     }
-  }, [isAuthenticated, navigate]);
+  }, [authLoaded, isAuthenticated, navigate]);
 
   return (
     <div className="min-h-screen flex flex-col justify-center items-center bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800 p-4">
