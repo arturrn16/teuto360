@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase, queryCustomTable } from "@/integrations/supabase/client";
@@ -11,13 +10,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// Custom colors for the charts with higher saturation for better visibility
 const COLORS = [
   "#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8", 
   "#82ca9d", "#ffc658", "#8dd1e1", "#a4de6c", "#d0ed57"
 ];
 
-// Updated colors with better contrast
 const TYPE_COLORS = {
   "Transporte Rota": "#0EA5E9",
   "Transporte 12x36": "#6366F1",
@@ -34,7 +31,6 @@ const Relatorios = () => {
   const currentYear = new Date().getFullYear();
   const yearsArray = Array.from({ length: 5 }, (_, i) => (currentYear - i).toString());
 
-  // Fetch all solicitations data
   const { data: allSolicitations, isLoading, error } = useQuery({
     queryKey: ["all-solicitations"],
     queryFn: async () => {
@@ -59,7 +55,7 @@ const Relatorios = () => {
 
           return data.map(item => ({
             ...item,
-            tabela: table // Add table name for categorization
+            tabela: table
           }));
         })
       );
@@ -68,7 +64,6 @@ const Relatorios = () => {
     }
   });
 
-  // Fetch users data to get sectors
   const { data: usersData } = useQuery({
     queryKey: ["users-data"],
     queryFn: async () => {
@@ -85,7 +80,6 @@ const Relatorios = () => {
     }
   });
 
-  // Process data for charts
   const getRequestsByType = () => {
     if (!allSolicitations) return [];
 
@@ -96,7 +90,6 @@ const Relatorios = () => {
       counts[type] = (counts[type] || 0) + 1;
     });
 
-    // Transform to array for pie chart and add color
     return Object.entries(counts).map(([name, value]) => ({ 
       name, 
       value,
@@ -140,20 +133,17 @@ const Relatorios = () => {
   const getRequestsByMonth = () => {
     if (!allSolicitations) return [];
 
-    // Filter items for selected year
     const filteredItems = allSolicitations.filter((item: any) => {
       const date = new Date(item.created_at);
       return date.getFullYear().toString() === year;
     });
 
-    // Initialize counts for all months
     const monthCounts: Record<string, number> = {};
     for (let i = 0; i < 12; i++) {
       const monthName = format(new Date(parseInt(year), i, 1), 'MMM', { locale: ptBR });
       monthCounts[monthName] = 0;
     }
     
-    // Count requests by month
     filteredItems.forEach((item: any) => {
       const date = new Date(item.created_at);
       const monthName = format(date, 'MMM', { locale: ptBR });
@@ -171,14 +161,13 @@ const Relatorios = () => {
       return date.getFullYear().toString() === year;
     });
 
-    // Get months with at least one request
     const monthsWithRequests = new Set();
     filteredItems.forEach((item: any) => {
       const date = new Date(item.created_at);
       monthsWithRequests.add(date.getMonth());
     });
 
-    const totalMonths = monthsWithRequests.size || 1; // Avoid division by zero
+    const totalMonths = monthsWithRequests.size || 1;
     return Math.round((filteredItems.length / totalMonths) * 100) / 100;
   };
 
@@ -204,15 +193,13 @@ const Relatorios = () => {
     return mapping[status] || status;
   };
 
-  // Custom label formatting for pie chart to prevent truncation
   const renderCustomizedLabel = (props: any) => {
     const { cx, cy, midAngle, innerRadius, outerRadius, percent, index, name } = props;
     const RADIAN = Math.PI / 180;
-    const radius = outerRadius * 1.2; // Position labels further out
+    const radius = outerRadius * 1.2;
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
     const y = cy + radius * Math.sin(-midAngle * RADIAN);
     
-    // Only render labels for segments that take up at least 5% of the pie
     return percent > 0.05 ? (
       <text 
         x={x} 
@@ -292,7 +279,7 @@ const Relatorios = () => {
                 <CardDescription>Distribuição de solicitações por tipo</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-[350px]"> {/* Increased height for better label placement */}
+                <div className="h-[350px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
@@ -333,7 +320,7 @@ const Relatorios = () => {
                     <BarChart
                       data={getRequestsBySector()}
                       layout="vertical"
-                      margin={{ top: 20, right: 30, left: 100, bottom: 5 }} {/* Increased left margin */}
+                      margin={{ top: 20, right: 30, left: 100, bottom: 5 }}
                     >
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis type="number" />
