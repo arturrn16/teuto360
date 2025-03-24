@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ChevronDown, ChevronRight } from "lucide-react";
@@ -62,7 +63,7 @@ export const SidebarNavigation = ({ items, userType, admin = false }: SidebarNav
 
   // Filter links based on user type
   const filteredLinks = items.filter(link => {
-    // Admin should see admin-specific pages
+    // Admin users should see all admin links and dashboard
     if (admin) {
       return link.allowedTypes.includes('admin') || link.name === "Dashboard";
     }

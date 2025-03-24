@@ -1,3 +1,4 @@
+
 import React from "react";
 
 // Types for user roles
@@ -17,7 +18,7 @@ export const navItems: NavItem[] = [
     name: "Dashboard", 
     href: "/dashboard", 
     icon: <span className="text-red-400 text-xl">🏠</span>,
-    allowedTypes: ["selecao", "refeicao", "colaborador", "comum"] as const
+    allowedTypes: ["admin", "selecao", "refeicao", "colaborador", "comum"] as const
   },
   { 
     name: "Minhas Solicitações", 
@@ -113,6 +114,7 @@ export const navItems: NavItem[] = [
     icon: <span className="text-blue-600 text-xl">💳</span>,
     allowedTypes: ["colaborador", "comum"] as const
   },
+  // Admin-specific menu items
   { 
     name: "Administração", 
     href: "/admin", 
