@@ -141,7 +141,6 @@ export type Database = {
           descricao: string
           id: number
           motivo: string
-          motivo_rejeicao: string | null
           rota: string
           solicitante_id: number | null
           status: string | null
@@ -155,7 +154,6 @@ export type Database = {
           descricao: string
           id?: number
           motivo: string
-          motivo_rejeicao?: string | null
           rota: string
           solicitante_id?: number | null
           status?: string | null
@@ -169,7 +167,6 @@ export type Database = {
           descricao?: string
           id?: number
           motivo?: string
-          motivo_rejeicao?: string | null
           rota?: string
           solicitante_id?: number | null
           status?: string | null
@@ -196,7 +193,6 @@ export type Database = {
           declaracao_url: string | null
           id: number
           motivo: string
-          motivo_rejeicao: string | null
           rua: string | null
           solicitante_id: number | null
           status: string | null
@@ -213,7 +209,6 @@ export type Database = {
           declaracao_url?: string | null
           id?: number
           motivo: string
-          motivo_rejeicao?: string | null
           rua?: string | null
           solicitante_id?: number | null
           status?: string | null
@@ -230,7 +225,6 @@ export type Database = {
           declaracao_url?: string | null
           id?: number
           motivo?: string
-          motivo_rejeicao?: string | null
           rua?: string | null
           solicitante_id?: number | null
           status?: string | null
@@ -262,7 +256,6 @@ export type Database = {
           endereco_atual: string | null
           endereco_novo: string | null
           id: number
-          motivo_rejeicao: string | null
           nova_rota: string | null
           rota_atual: string
           solicitante_id: number | null
@@ -283,7 +276,6 @@ export type Database = {
           endereco_atual?: string | null
           endereco_novo?: string | null
           id?: number
-          motivo_rejeicao?: string | null
           nova_rota?: string | null
           rota_atual: string
           solicitante_id?: number | null
@@ -304,7 +296,6 @@ export type Database = {
           endereco_atual?: string | null
           endereco_novo?: string | null
           id?: number
-          motivo_rejeicao?: string | null
           nova_rota?: string | null
           rota_atual?: string
           solicitante_id?: number | null
@@ -332,7 +323,6 @@ export type Database = {
           endereco: string
           id: number
           motivo: string
-          motivo_rejeicao: string | null
           nome_gestor: string
           nova_rota: string
           novo_turno: string
@@ -352,7 +342,6 @@ export type Database = {
           endereco: string
           id?: number
           motivo: string
-          motivo_rejeicao?: string | null
           nome_gestor: string
           nova_rota: string
           novo_turno: string
@@ -372,7 +361,6 @@ export type Database = {
           endereco?: string
           id?: number
           motivo?: string
-          motivo_rejeicao?: string | null
           nome_gestor?: string
           nova_rota?: string
           novo_turno?: string
@@ -399,7 +387,6 @@ export type Database = {
           created_at: string | null
           data_refeicao: string
           id: number
-          motivo_rejeicao: string | null
           solicitante_id: number | null
           status: string | null
           tipo_refeicao: string
@@ -410,7 +397,6 @@ export type Database = {
           created_at?: string | null
           data_refeicao: string
           id?: number
-          motivo_rejeicao?: string | null
           solicitante_id?: number | null
           status?: string | null
           tipo_refeicao: string
@@ -421,7 +407,6 @@ export type Database = {
           created_at?: string | null
           data_refeicao?: string
           id?: number
-          motivo_rejeicao?: string | null
           solicitante_id?: number | null
           status?: string | null
           tipo_refeicao?: string
@@ -445,7 +430,6 @@ export type Database = {
           data_inicio: string
           endereco: string
           id: number
-          motivo_rejeicao: string | null
           rota: string
           solicitante_id: number | null
           status: string | null
@@ -459,7 +443,6 @@ export type Database = {
           data_inicio: string
           endereco: string
           id?: number
-          motivo_rejeicao?: string | null
           rota: string
           solicitante_id?: number | null
           status?: string | null
@@ -473,7 +456,6 @@ export type Database = {
           data_inicio?: string
           endereco?: string
           id?: number
-          motivo_rejeicao?: string | null
           rota?: string
           solicitante_id?: number | null
           status?: string | null
@@ -498,7 +480,6 @@ export type Database = {
           id: number
           matricula: string | null
           motivo: string
-          motivo_rejeicao: string | null
           periodo_fim: string
           periodo_inicio: string
           rota: string
@@ -514,7 +495,6 @@ export type Database = {
           id?: number
           matricula?: string | null
           motivo: string
-          motivo_rejeicao?: string | null
           periodo_fim: string
           periodo_inicio: string
           rota: string
@@ -530,7 +510,6 @@ export type Database = {
           id?: number
           matricula?: string | null
           motivo?: string
-          motivo_rejeicao?: string | null
           periodo_fim?: string
           periodo_inicio?: string
           rota?: string
