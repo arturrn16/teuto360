@@ -7,8 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SolicitacaoAdesaoCancelamento } from "@/types/solicitacoes";
 import { Download } from "lucide-react";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+import { AdminCommentField } from "@/components/admin/AdminCommentField";
 
 interface SolicitacaoAdesaoCancelamentoViewProps {
   solicitacao: SolicitacaoAdesaoCancelamento;
@@ -44,12 +43,16 @@ export function SolicitacaoAdesaoCancelamentoView({
       // Adicionar motivo apenas se for rejeitada
       if (newStatus === 'rejeitada') {
         updateData.motivo_rejeicao = motivo;
+        console.log("Setting motivo_rejeicao:", motivo);
       }
       
       // Adicionar comentário se fornecido
       if (comentario.trim()) {
         updateData.motivo_comentario = comentario;
+        console.log("Setting motivo_comentario:", comentario);
       }
+      
+      console.log("Updating with data:", updateData);
       
       const { error } = await supabase
         .from('solicitacoes_adesao_cancelamento')
@@ -57,6 +60,7 @@ export function SolicitacaoAdesaoCancelamentoView({
         .eq('id', solicitacao.id);
 
       if (error) {
+        console.error('Erro ao atualizar status:', error);
         throw error;
       }
 
@@ -204,28 +208,24 @@ export function SolicitacaoAdesaoCancelamentoView({
       {solicitacao.status === "pendente" && (
         <CardFooter className="flex flex-col gap-4">
           {/* Campo de comentários (opcional) */}
-          <div className="w-full">
-            <Label htmlFor="comentario">Comentário do Administrador (opcional)</Label>
-            <Textarea 
-              id="comentario"
-              placeholder="Adicione um comentário sobre esta solicitação"
-              value={comentario}
-              onChange={(e) => setComentario(e.target.value)}
-              className="mt-1"
-            />
-          </div>
+          <AdminCommentField
+            value={comentario}
+            onChange={setComentario}
+            id="comentario"
+            label="Comentário do Administrador (opcional)"
+            placeholder="Adicione um comentário sobre esta solicitação"
+            className="mt-1"
+          />
           
           {/* Campo de motivo para rejeição */}
-          <div className="w-full">
-            <Label htmlFor="motivo_rejeicao">Motivo para rejeição (obrigatório caso rejeite)</Label>
-            <Textarea 
-              id="motivo_rejeicao"
-              placeholder="Informe o motivo caso decida rejeitar a solicitação"
-              value={motivo}
-              onChange={(e) => setMotivo(e.target.value)}
-              className="mt-1"
-            />
-          </div>
+          <AdminCommentField
+            value={motivo}
+            onChange={setMotivo}
+            id="motivo_rejeicao"
+            label="Motivo para rejeição (obrigatório caso rejeite)"
+            placeholder="Informe o motivo caso decida rejeitar a solicitação"
+            className="mt-1"
+          />
           
           <div className="flex justify-end gap-2 w-full">
             <Button

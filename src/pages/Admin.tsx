@@ -400,6 +400,8 @@ const Admin = () => {
       return;
     }
 
+    console.log(`Processing ${status} for ${tipo} with id ${id}, motivo: ${motivoRejeicao}`);
+
     switch (tipo) {
       case "rota":
         await atualizarStatusRota(id, status, motivoRejeicao);
@@ -437,6 +439,8 @@ const Admin = () => {
       if (motivo.trim()) {
         updateData.motivo_comentario = motivo;
       }
+      
+      console.log("Updating rota with data:", updateData);
       
       const { error } = await supabase
         .from('solicitacoes_transporte_rota')
@@ -478,6 +482,8 @@ const Admin = () => {
         updateData.motivo_comentario = motivo;
       }
       
+      console.log("Updating 12x36 with data:", updateData);
+      
       const { error } = await supabase
         .from('solicitacoes_transporte_12x36')
         .update(updateData)
@@ -518,6 +524,8 @@ const Admin = () => {
         updateData.motivo_comentario = motivo;
       }
       
+      console.log("Updating refeicao with data:", updateData);
+      
       const { error } = await supabase
         .from('solicitacoes_refeicao')
         .update(updateData)
@@ -551,14 +559,18 @@ const Admin = () => {
       
       if (status === 'rejeitada' && motivo.trim()) {
         updateData.motivo_rejeicao = motivo;
+        console.log(`Setting motivo_rejeicao for ${tabela}:`, motivo);
       }
       
       // Adicionar comentário se fornecido, independente do status
       if (motivo.trim()) {
         updateData.motivo_comentario = motivo;
+        console.log(`Setting motivo_comentario for ${tabela}:`, motivo);
       }
       
-      // Use updateCustomTable from the client file instead of supabase.from() directly
+      console.log(`Updating ${tabela} with data:`, updateData);
+      
+      // Use updateCustomTable from the client file
       const { error } = await updateCustomTable(
         tabela,
         updateData,
@@ -1365,3 +1377,4 @@ const Admin = () => {
 };
 
 export default Admin;
+
