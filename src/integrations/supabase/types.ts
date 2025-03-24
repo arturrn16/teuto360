@@ -582,39 +582,36 @@ export type Database = {
       usuarios: {
         Row: {
           admin: boolean | null
-          cargo: string
           created_at: string | null
           id: number
           matricula: string
           nome: string
           password: string
-          setor: string
+          rota: string | null
           tipo_usuario: string
           updated_at: string | null
           username: string
         }
         Insert: {
           admin?: boolean | null
-          cargo: string
           created_at?: string | null
           id?: number
           matricula: string
           nome: string
           password: string
-          setor: string
+          rota?: string | null
           tipo_usuario: string
           updated_at?: string | null
           username: string
         }
         Update: {
           admin?: boolean | null
-          cargo?: string
           created_at?: string | null
           id?: number
           matricula?: string
           nome?: string
           password?: string
-          setor?: string
+          rota?: string | null
           tipo_usuario?: string
           updated_at?: string | null
           username?: string

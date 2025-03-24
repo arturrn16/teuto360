@@ -92,11 +92,16 @@ export const useAuth = (): AuthContextType => {
   return context;
 };
 
-// Protected route component - update to accept readonly arrays and fix error handling
+// Updated ProtectedRoute to check for specific user requirements
 export const ProtectedRoute: React.FC<{
   children: React.ReactNode;
   allowedTypes?: ReadonlyArray<'admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum'>;
-}> = ({ children, allowedTypes = ["admin", "selecao", "refeicao", "colaborador", "comum"] as const }) => {
+  requiredUser?: string;
+}> = ({ 
+  children, 
+  allowedTypes = ["admin", "selecao", "refeicao", "colaborador", "comum"] as const,
+  requiredUser
+}) => {
   const { user, isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
 
@@ -105,22 +110,32 @@ export const ProtectedRoute: React.FC<{
       if (!isAuthenticated) {
         navigate("/login");
       } else if (user) {
-        // Corrigindo a verificação de permissões
+        // Check for permission types
         const isAllowed = user.admin || allowedTypes.includes(user.tipo_usuario);
+        
+        // Check for specific user requirement
+        const isUserAllowed = requiredUser ? user.username === requiredUser : true;
+        
+        const hasAccess = isAllowed && isUserAllowed;
+        
         console.log("Route access check:", {
           userType: user.tipo_usuario,
           admin: user.admin,
           allowedTypes,
-          isAllowed
+          requiredUser,
+          username: user.username,
+          isAllowed,
+          isUserAllowed,
+          hasAccess
         });
         
-        if (!isAllowed) {
+        if (!hasAccess) {
           toast.error("Você não tem permissão para acessar esta página");
           navigate("/dashboard");
         }
       }
     }
-  }, [isAuthenticated, isLoading, navigate, user, allowedTypes]);
+  }, [isAuthenticated, isLoading, navigate, user, allowedTypes, requiredUser]);
 
   if (isLoading) {
     return <div className="flex justify-center items-center h-screen">

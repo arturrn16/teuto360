@@ -1,237 +1,309 @@
+import { lazy, Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-import { Layout } from "@/components/Layout";
-import { ProtectedRoute } from "@/context/AuthContext";
-
-// Import pages
+import { useAuth, ProtectedRoute } from "@/context/AuthContext";
+import { PageLoader } from "@/components/ui/loader-spinner";
+import Layout from "@/components/Layout";
+import Login from "@/pages/Login";
 import Index from "@/pages/Index";
 import Dashboard from "@/pages/Dashboard";
-import TransporteRota from "@/pages/TransporteRota";
-import Transporte12x36 from "@/pages/Transporte12x36";
-import Refeicao from "@/pages/Refeicao";
-import MinhasSolicitacoes from "@/pages/MinhasSolicitacoes";
-import Admin from "@/pages/Admin";
-import Comunicados from "@/pages/Comunicados";
-import GerenciarComunicados from "@/pages/GerenciarComunicados";
-import Relatorios from "@/pages/Relatorios";
-import CardapioSemana from "@/pages/CardapioSemana";
-import GerenciarCardapio from "@/pages/GerenciarCardapio";
-import AdesaoCancelamento from "@/pages/AdesaoCancelamento";
-import MudancaTurno from "@/pages/MudancaTurno";
-import AlteracaoEndereco from "@/pages/AlteracaoEndereco";
-import AbonoPonto from "@/pages/AbonoPonto";
-import Avaliacao from "@/pages/Avaliacao";
-import Plantao from "@/pages/Plantao";
-import MapaRotas from "@/pages/MapaRotas";
-import OfertaCaronas from "@/pages/OfertaCaronas";
-import ConsultaCartao from "@/pages/ConsultaCartao";
-import GerenciarCartoes from "@/pages/GerenciarCartoes";
+import NotFound from "@/pages/NotFound";
+
+// Lazy loading for better performance
+const Comunicados = lazy(() => import("@/pages/Comunicados"));
+const CardapioSemana = lazy(() => import("@/pages/CardapioSemana"));
+const MapaRotas = lazy(() => import("@/pages/MapaRotas"));
+const TransporteRota = lazy(() => import("@/pages/TransporteRota"));
+const Transporte12x36 = lazy(() => import("@/pages/Transporte12x36"));
+const Refeicao = lazy(() => import("@/pages/Refeicao"));
+const Avaliacao = lazy(() => import("@/pages/Avaliacao"));
+const OfertaCaronas = lazy(() => import("@/pages/OfertaCaronas"));
+const GerenciarComunicados = lazy(() => import("@/pages/GerenciarComunicados"));
+const GerenciarCardapio = lazy(() => import("@/pages/GerenciarCardapio"));
+const GerenciarCartoes = lazy(() => import("@/pages/GerenciarCartoes"));
+const ConsultaCartao = lazy(() => import("@/pages/ConsultaCartao"));
+const AbonoPonto = lazy(() => import("@/pages/AbonoPonto"));
+const AdesaoCancelamento = lazy(() => import("@/pages/AdesaoCancelamento"));
+const AlteracaoEndereco = lazy(() => import("@/pages/AlteracaoEndereco"));
+const MudancaTurno = lazy(() => import("@/pages/MudancaTurno"));
+const MinhasSolicitacoes = lazy(() => import("@/pages/MinhasSolicitacoes"));
+const Admin = lazy(() => import("@/pages/Admin"));
+const GerenciarUsuarios = lazy(() => import("@/pages/GerenciarUsuarios"));
+
+const LoadingPage = () => <PageLoader />;
 
 const AppRoutes = () => {
+  const { isAuthenticated } = useAuth();
+
   return (
-    <Layout>
-      <Routes>
-        {/* Root route */}
-        <Route index element={<Index />} />
-        
-        {/* Protected routes */}
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
+    <Routes>
+      <Route path="/" element={<Index />} />
+      <Route path="/login" element={<Login />} />
+      
+      {/* Protected Routes with Layout */}
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <Layout>
               <Dashboard />
-            </ProtectedRoute>
-          }
-        />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
 
-        <Route
-          path="/transporte-rota"
-          element={
-            <ProtectedRoute allowedTypes={["admin", "selecao", "comum"]}>
-              <TransporteRota />
-            </ProtectedRoute>
-          }
-        />
+      <Route
+        path="/comunicados"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <Suspense fallback={<LoadingPage />}>
+                <Comunicados />
+              </Suspense>
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
 
-        <Route
-          path="/transporte-12x36"
-          element={
-            <ProtectedRoute allowedTypes={["admin", "selecao", "refeicao"]}>
-              <Transporte12x36 />
-            </ProtectedRoute>
-          }
-        />
+      <Route
+        path="/cardapio-semana"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <Suspense fallback={<LoadingPage />}>
+                <CardapioSemana />
+              </Suspense>
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
 
-        <Route
-          path="/refeicao"
-          element={
-            <ProtectedRoute allowedTypes={["admin", "refeicao"]}>
-              <Refeicao />
-            </ProtectedRoute>
-          }
-        />
+      <Route
+        path="/mapa-rotas"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <Suspense fallback={<LoadingPage />}>
+                <MapaRotas />
+              </Suspense>
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
 
-        <Route
-          path="/minhas-solicitacoes"
-          element={
-            <ProtectedRoute allowedTypes={["selecao", "refeicao", "colaborador", "comum"]}>
-              <MinhasSolicitacoes />
-            </ProtectedRoute>
-          }
-        />
+      <Route
+        path="/transporte-rota"
+        element={
+          <ProtectedRoute allowedTypes={["selecao", "admin"] as const}>
+            <Layout>
+              <Suspense fallback={<LoadingPage />}>
+                <TransporteRota />
+              </Suspense>
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
 
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute allowedTypes={["admin"]}>
-              <Admin />
-            </ProtectedRoute>
-          }
-        />
-        
-        {/* Announcements routes */}
-        <Route
-          path="/comunicados"
-          element={
-            <ProtectedRoute allowedTypes={["selecao", "refeicao", "colaborador", "comum"]}>
-              <Comunicados />
-            </ProtectedRoute>
-          }
-        />
+      <Route
+        path="/transporte-12x36"
+        element={
+          <ProtectedRoute allowedTypes={["selecao", "admin"] as const}>
+            <Layout>
+              <Suspense fallback={<LoadingPage />}>
+                <Transporte12x36 />
+              </Suspense>
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
 
-        <Route
-          path="/gerenciar-comunicados"
-          element={
-            <ProtectedRoute allowedTypes={["admin"]}>
-              <GerenciarComunicados />
-            </ProtectedRoute>
-          }
-        />
-        
-        {/* Cafeteria menu routes - updated to exclude 'refeicao' user type */}
-        <Route
-          path="/cardapio-semana"
-          element={
-            <ProtectedRoute allowedTypes={["selecao", "colaborador", "comum"]}>
-              <CardapioSemana />
-            </ProtectedRoute>
-          }
-        />
+      <Route
+        path="/refeicao"
+        element={
+          <ProtectedRoute allowedTypes={["admin", "refeicao"] as const}>
+            <Layout>
+              <Suspense fallback={<LoadingPage />}>
+                <Refeicao />
+              </Suspense>
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
 
-        <Route
-          path="/gerenciar-cardapio"
-          element={
-            <ProtectedRoute allowedTypes={["admin"]}>
-              <GerenciarCardapio />
-            </ProtectedRoute>
-          }
-        />
-        
-        {/* Collaborator routes */}
-        <Route
-          path="/adesao-cancelamento"
-          element={
-            <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
-              <AdesaoCancelamento />
-            </ProtectedRoute>
-          }
-        />
-        
-        <Route
-          path="/mudanca-turno"
-          element={
-            <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
-              <MudancaTurno />
-            </ProtectedRoute>
-          }
-        />
-        
-        <Route
-          path="/alteracao-endereco"
-          element={
-            <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
-              <AlteracaoEndereco />
-            </ProtectedRoute>
-          }
-        />
-        
-        <Route
-          path="/abono-ponto"
-          element={
-            <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
-              <AbonoPonto />
-            </ProtectedRoute>
-          }
-        />
-        
-        <Route
-          path="/avaliacao"
-          element={
-            <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
-              <Avaliacao />
-            </ProtectedRoute>
-          }
-        />
-        
-        <Route
-          path="/plantao"
-          element={
-            <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
-              <Plantao />
-            </ProtectedRoute>
-          }
-        />
-        
-        <Route
-          path="/mapa-rotas"
-          element={
-            <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
-              <MapaRotas />
-            </ProtectedRoute>
-          }
-        />
-        
-        <Route
-          path="/oferta-caronas"
-          element={
-            <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
-              <OfertaCaronas />
-            </ProtectedRoute>
-          }
-        />
+      <Route
+        path="/avaliacao"
+        element={
+          <ProtectedRoute allowedTypes={["admin", "refeicao"] as const}>
+            <Layout>
+              <Suspense fallback={<LoadingPage />}>
+                <Avaliacao />
+              </Suspense>
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
 
-        {/* Reports route */}
-        <Route
-          path="/relatorios"
-          element={
-            <ProtectedRoute allowedTypes={["admin"]}>
-              <Relatorios />
-            </ProtectedRoute>
-          }
-        />
+      <Route
+        path="/oferta-caronas"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <Suspense fallback={<LoadingPage />}>
+                <OfertaCaronas />
+              </Suspense>
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
 
-        {/* Card routes */}
-        <Route
-          path="/consulta-cartao"
-          element={
-            <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
-              <ConsultaCartao />
-            </ProtectedRoute>
-          }
-        />
+      <Route
+        path="/gerenciar-comunicados"
+        element={
+          <ProtectedRoute allowedTypes={["admin"] as const}>
+            <Layout>
+              <Suspense fallback={<LoadingPage />}>
+                <GerenciarComunicados />
+              </Suspense>
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
 
-        <Route
-          path="/gerenciar-cartoes"
-          element={
-            <ProtectedRoute allowedTypes={["admin"]}>
-              <GerenciarCartoes />
-            </ProtectedRoute>
-          }
-        />
+      <Route
+        path="/gerenciar-cardapio"
+        element={
+          <ProtectedRoute allowedTypes={["admin"] as const}>
+            <Layout>
+              <Suspense fallback={<LoadingPage />}>
+                <GerenciarCardapio />
+              </Suspense>
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
 
-        {/* Fallback for routes inside Layout */}
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
-      </Routes>
-    </Layout>
+      <Route
+        path="/gerenciar-cartoes"
+        element={
+          <ProtectedRoute allowedTypes={["admin"] as const}>
+            <Layout>
+              <Suspense fallback={<LoadingPage />}>
+                <GerenciarCartoes />
+              </Suspense>
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/consulta-cartao"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <Suspense fallback={<LoadingPage />}>
+                <ConsultaCartao />
+              </Suspense>
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/abono-ponto"
+        element={
+          <ProtectedRoute allowedTypes={["selecao", "admin", "colaborador"] as const}>
+            <Layout>
+              <Suspense fallback={<LoadingPage />}>
+                <AbonoPonto />
+              </Suspense>
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/adesao-cancelamento"
+        element={
+          <ProtectedRoute allowedTypes={["selecao", "admin", "colaborador"] as const}>
+            <Layout>
+              <Suspense fallback={<LoadingPage />}>
+                <AdesaoCancelamento />
+              </Suspense>
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/alteracao-endereco"
+        element={
+          <ProtectedRoute allowedTypes={["selecao", "admin", "colaborador"] as const}>
+            <Layout>
+              <Suspense fallback={<LoadingPage />}>
+                <AlteracaoEndereco />
+              </Suspense>
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/mudanca-turno"
+        element={
+          <ProtectedRoute allowedTypes={["selecao", "admin", "colaborador"] as const}>
+            <Layout>
+              <Suspense fallback={<LoadingPage />}>
+                <MudancaTurno />
+              </Suspense>
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/minhas-solicitacoes"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <Suspense fallback={<LoadingPage />}>
+                <MinhasSolicitacoes />
+              </Suspense>
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute allowedTypes={["admin"] as const}>
+            <Layout>
+              <Suspense fallback={<LoadingPage />}>
+                <Admin />
+              </Suspense>
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      
+      <Route
+        path="/gerenciar-usuarios"
+        element={
+          <ProtectedRoute allowedTypes={["admin"] as const} requiredUser="artur.neto">
+            <Layout>
+              <Suspense fallback={<LoadingPage />}>
+                <GerenciarUsuarios />
+              </Suspense>
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Redirect to Dashboard if user is authenticated but hits unknown route */}
+      <Route
+        path="*"
+        element={isAuthenticated ? <Navigate to="/dashboard" /> : <NotFound />}
+      />
+    </Routes>
   );
 };
 

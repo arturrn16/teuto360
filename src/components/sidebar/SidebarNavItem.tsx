@@ -1,45 +1,56 @@
 
+import { createElement } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 import { cn } from "@/lib/utils";
-import { SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
 
-interface SidebarNavItemProps {
+type SidebarNavItemProps = {
   href: string;
-  icon: React.ReactNode;
-  name: string;
-  isActive: boolean;
-  onClick?: () => void;
-  suffix?: React.ReactNode;
-  className?: string;
-}
+  title: string;
+  icon: React.FC;
+  allowedTypes: ReadonlyArray<'admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum'>;
+  requiredUser?: string;
+};
 
-export const SidebarNavItem = ({ 
-  href, 
-  icon, 
-  name, 
-  isActive, 
-  onClick,
-  suffix,
-  className
+export const SidebarNavItem = ({
+  href,
+  title,
+  icon,
+  allowedTypes,
+  requiredUser
 }: SidebarNavItemProps) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { user, shouldShowRoute } = useAuth();
+
+  const isActive = location.pathname === href;
+
+  // Check if this route should be visible to the current user
+  const shouldShow = shouldShowRoute(allowedTypes) && 
+    // Added check for requiredUser property
+    (requiredUser ? user?.username === requiredUser : true);
+
+  if (!shouldShow) {
+    return null;
+  }
+
   return (
-    <SidebarMenuItem>
-      <SidebarMenuButton 
-        asChild={false} 
-        isActive={isActive}
-        onClick={onClick}
-        className={className}
-      >
-        <button 
-          className={cn(
-            "flex items-center w-full text-gray-700 hover:text-blue-500",
-            isActive && "text-blue-500 bg-blue-50"
-          )}
-        >
-          {icon && <span className="flex items-center justify-center w-6 h-6 mr-2">{icon}</span>}
-          <span className={cn("text-[15px]", icon ? "ml-2" : "ml-8")}>{name}</span>
-          {suffix && <span className="ml-auto">{suffix}</span>}
-        </button>
-      </SidebarMenuButton>
-    </SidebarMenuItem>
+    <button
+      type="button"
+      onClick={() => navigate(href)}
+      className={cn(
+        "flex items-center w-full px-3 py-2 text-sm font-medium rounded-md transition-colors",
+        "hover:bg-primary-foreground hover:text-primary",
+        "dark:hover:bg-primary-foreground/10",
+        isActive
+          ? "bg-primary-foreground text-primary dark:bg-primary-foreground/20 dark:text-primary-foreground"
+          : "text-muted-foreground"
+      )}
+    >
+      {createElement(icon, {
+        className: "h-4 w-4 mr-3 shrink-0",
+      })}
+      <span>{title}</span>
+    </button>
   );
 };
