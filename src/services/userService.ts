@@ -69,18 +69,19 @@ export const getUserById = async (id: number): Promise<User | null> => {
 
 export const createUser = async (user: NewUser): Promise<User | null> => {
   try {
+    console.log("Criando usuário:", user);
     const { data, error } = await supabase
       .from("usuarios")
       .insert([user])
-      .select()
-      .single();
+      .select();
 
     if (error) {
+      console.error("Erro ao criar usuário:", error);
       throw error;
     }
     
     toast.success("Usuário cadastrado com sucesso");
-    return data as User;
+    return data[0] as User;
   } catch (error: any) {
     console.error("Error creating user:", error);
     
@@ -88,7 +89,7 @@ export const createUser = async (user: NewUser): Promise<User | null> => {
       // Unique constraint violation
       toast.error("Usuário já existe (matrícula ou username duplicado)");
     } else {
-      toast.error("Erro ao cadastrar usuário");
+      toast.error("Erro ao cadastrar usuário: " + error.message);
     }
     
     return null;
@@ -97,6 +98,8 @@ export const createUser = async (user: NewUser): Promise<User | null> => {
 
 export const updateUser = async (id: number, user: Partial<User>): Promise<User | null> => {
   try {
+    console.log("Atualizando usuário:", id, user);
+    
     // Don't allow password updates through this function for security
     if ('password' in user) {
       delete (user as any).password;
@@ -106,58 +109,66 @@ export const updateUser = async (id: number, user: Partial<User>): Promise<User 
       .from("usuarios")
       .update(user)
       .eq("id", id)
-      .select()
-      .single();
+      .select();
 
     if (error) {
+      console.error("Erro na atualização:", error);
       throw error;
     }
     
+    if (!data || data.length === 0) {
+      throw new Error("Nenhum dado retornado após atualização");
+    }
+    
     toast.success("Usuário atualizado com sucesso");
-    return data as User;
-  } catch (error) {
+    return data[0] as User;
+  } catch (error: any) {
     console.error(`Error updating user with id ${id}:`, error);
-    toast.error("Erro ao atualizar usuário");
+    toast.error("Erro ao atualizar usuário: " + error.message);
     return null;
   }
 };
 
 export const updateUserPassword = async (id: number, password: string): Promise<boolean> => {
   try {
+    console.log("Atualizando senha do usuário:", id);
     const { error } = await supabase
       .from("usuarios")
       .update({ password })
       .eq("id", id);
 
     if (error) {
+      console.error("Erro na atualização de senha:", error);
       throw error;
     }
     
     toast.success("Senha atualizada com sucesso");
     return true;
-  } catch (error) {
+  } catch (error: any) {
     console.error(`Error updating password for user with id ${id}:`, error);
-    toast.error("Erro ao atualizar senha");
+    toast.error("Erro ao atualizar senha: " + error.message);
     return false;
   }
 };
 
 export const deleteUser = async (id: number): Promise<boolean> => {
   try {
+    console.log("Excluindo usuário:", id);
     const { error } = await supabase
       .from("usuarios")
       .delete()
       .eq("id", id);
 
     if (error) {
+      console.error("Erro na exclusão:", error);
       throw error;
     }
     
     toast.success("Usuário excluído com sucesso");
     return true;
-  } catch (error) {
+  } catch (error: any) {
     console.error(`Error deleting user with id ${id}:`, error);
-    toast.error("Erro ao excluir usuário");
+    toast.error("Erro ao excluir usuário: " + error.message);
     return false;
   }
 };

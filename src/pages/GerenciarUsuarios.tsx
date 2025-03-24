@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
@@ -193,6 +194,7 @@ const GerenciarUsuarios = () => {
     if (!selectedUser) return;
     
     try {
+      console.log("Enviando atualização para o usuário:", selectedUser.id, editUser);
       const updated = await updateUser(selectedUser.id, editUser);
       if (updated) {
         setUsers(prev => prev.map(u => u.id === selectedUser.id ? updated : u));
@@ -219,6 +221,7 @@ const GerenciarUsuarios = () => {
     }
     
     try {
+      console.log("Enviando atualização de senha para o usuário:", selectedUser.id);
       const success = await updateUserPassword(selectedUser.id, newPassword);
       if (success) {
         setIsPasswordDialogOpen(false);
@@ -242,6 +245,7 @@ const GerenciarUsuarios = () => {
     }
     
     try {
+      console.log("Enviando criação de novo usuário:", newUser);
       const created = await createUser(newUser);
       if (created) {
         setUsers(prev => [...prev, created]);
@@ -267,6 +271,7 @@ const GerenciarUsuarios = () => {
     if (!selectedUser) return;
     
     try {
+      console.log("Excluindo usuário:", selectedUser.id);
       const success = await deleteUser(selectedUser.id);
       if (success) {
         setUsers(prev => prev.filter(u => u.id !== selectedUser.id));
@@ -568,25 +573,35 @@ const GerenciarUsuarios = () => {
                 <Label htmlFor="edit-tipo" className="text-right">
                   Tipo de Usuário*
                 </Label>
-                <Form {...editUserForm}>
-                  <Select
-                    value={editUser.tipo_usuario || "comum"}
-                    onValueChange={(value) => setEditUser({...editUser, tipo_usuario: value as UserType})}
-                  >
-                    <FormControl>
-                      <SelectTrigger className="form-select-input">
-                        <SelectValue placeholder="Selecione o tipo" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="comum">Comum</SelectItem>
-                      <SelectItem value="colaborador">Colaborador</SelectItem>
-                      <SelectItem value="selecao">Seleção</SelectItem>
-                      <SelectItem value="gestor">Gestor</SelectItem>
-                      <SelectItem value="admin">Administrador</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </Form>
+                <div className="col-span-3">
+                  <Form {...editUserForm}>
+                    <FormField
+                      control={editUserForm.control}
+                      name="tipo_usuario"
+                      render={({ field }) => (
+                        <FormItem>
+                          <Select
+                            value={editUser.tipo_usuario || "comum"}
+                            onValueChange={(value) => setEditUser({...editUser, tipo_usuario: value as UserType})}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecione o tipo" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="comum">Comum</SelectItem>
+                              <SelectItem value="colaborador">Colaborador</SelectItem>
+                              <SelectItem value="selecao">Seleção</SelectItem>
+                              <SelectItem value="gestor">Gestor</SelectItem>
+                              <SelectItem value="admin">Administrador</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </FormItem>
+                      )}
+                    />
+                  </Form>
+                </div>
               </div>
               <div className="grid grid-cols-4 items-center gap-2">
                 <Label htmlFor="edit-admin" className="text-right">
@@ -762,25 +777,35 @@ const GerenciarUsuarios = () => {
                 <Label htmlFor="new-tipo" className="text-right">
                   Tipo de Usuário*
                 </Label>
-                <Form {...newUserForm}>
-                  <Select
-                    value={newUser.tipo_usuario}
-                    onValueChange={(value) => setNewUser({...newUser, tipo_usuario: value as UserType})}
-                  >
-                    <FormControl>
-                      <SelectTrigger className="col-span-3">
-                        <SelectValue placeholder="Selecione o tipo" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="comum">Comum</SelectItem>
-                      <SelectItem value="colaborador">Colaborador</SelectItem>
-                      <SelectItem value="selecao">Seleção</SelectItem>
-                      <SelectItem value="gestor">Gestor</SelectItem>
-                      <SelectItem value="admin">Administrador</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </Form>
+                <div className="col-span-3">
+                  <Form {...newUserForm}>
+                    <FormField
+                      control={newUserForm.control}
+                      name="tipo_usuario"
+                      render={({ field }) => (
+                        <FormItem>
+                          <Select
+                            value={newUser.tipo_usuario}
+                            onValueChange={(value) => setNewUser({...newUser, tipo_usuario: value as UserType})}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecione o tipo" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="comum">Comum</SelectItem>
+                              <SelectItem value="colaborador">Colaborador</SelectItem>
+                              <SelectItem value="selecao">Seleção</SelectItem>
+                              <SelectItem value="gestor">Gestor</SelectItem>
+                              <SelectItem value="admin">Administrador</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </FormItem>
+                      )}
+                    />
+                  </Form>
+                </div>
               </div>
               <div className="grid grid-cols-4 items-center gap-2">
                 <Label htmlFor="new-admin" className="text-right">
