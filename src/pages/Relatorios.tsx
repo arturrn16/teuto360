@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase, queryCustomTable } from "@/integrations/supabase/client";
@@ -10,11 +11,22 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// Custom colors for the charts
+// Custom colors for the charts with higher saturation for better visibility
 const COLORS = [
   "#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8", 
   "#82ca9d", "#ffc658", "#8dd1e1", "#a4de6c", "#d0ed57"
 ];
+
+// Updated colors with better contrast
+const TYPE_COLORS = {
+  "Transporte Rota": "#0EA5E9",
+  "Transporte 12x36": "#6366F1",
+  "Refeição": "#10B981",
+  "Adesão/Cancelamento": "#F59E0B",
+  "Alteração de Endereço": "#F97316",
+  "Mudança de Turno": "#8B5CF6",
+  "Abono de Ponto": "#4ADE80"
+};
 
 const Relatorios = () => {
   const { user } = useAuth();
@@ -84,7 +96,12 @@ const Relatorios = () => {
       counts[type] = (counts[type] || 0) + 1;
     });
 
-    return Object.entries(counts).map(([name, value]) => ({ name, value }));
+    // Transform to array for pie chart and add color
+    return Object.entries(counts).map(([name, value]) => ({ 
+      name, 
+      value,
+      color: TYPE_COLORS[name as keyof typeof TYPE_COLORS] || COLORS[0]
+    }));
   };
 
   const getRequestsBySector = () => {
@@ -187,6 +204,30 @@ const Relatorios = () => {
     return mapping[status] || status;
   };
 
+  // Custom label formatting for pie chart to prevent truncation
+  const renderCustomizedLabel = (props: any) => {
+    const { cx, cy, midAngle, innerRadius, outerRadius, percent, index, name } = props;
+    const RADIAN = Math.PI / 180;
+    const radius = outerRadius * 1.2; // Position labels further out
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+    
+    // Only render labels for segments that take up at least 5% of the pie
+    return percent > 0.05 ? (
+      <text 
+        x={x} 
+        y={y} 
+        fill={TYPE_COLORS[name as keyof typeof TYPE_COLORS] || "#333"}
+        textAnchor={x > cx ? 'start' : 'end'} 
+        dominantBaseline="central"
+        fontSize={12}
+        fontWeight={500}
+      >
+        {`${name} (${(percent * 100).toFixed(0)}%)`}
+      </text>
+    ) : null;
+  };
+
   if (isLoading) {
     return (
       <div className="p-6 space-y-6">
@@ -251,7 +292,7 @@ const Relatorios = () => {
                 <CardDescription>Distribuição de solicitações por tipo</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-[300px]">
+                <div className="h-[350px]"> {/* Increased height for better label placement */}
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
@@ -259,17 +300,22 @@ const Relatorios = () => {
                         cx="50%"
                         cy="50%"
                         labelLine={true}
-                        outerRadius={100}
+                        outerRadius={90}
                         fill="#8884d8"
                         dataKey="value"
-                        label={({name, percent}) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                        nameKey="name"
+                        label={renderCustomizedLabel}
+                        labelLine={false}
                       >
                         {getRequestsByType().map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          <Cell 
+                            key={`cell-${index}`} 
+                            fill={entry.color || COLORS[index % COLORS.length]} 
+                          />
                         ))}
                       </Pie>
                       <Tooltip formatter={(value) => [`${value} solicitações`, '']} />
-                      <Legend />
+                      <Legend layout="horizontal" verticalAlign="bottom" align="center" />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
@@ -282,18 +328,23 @@ const Relatorios = () => {
                 <CardDescription>Número de solicitações por setor da empresa</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-[300px]">
+                <div className="h-[350px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                       data={getRequestsBySector()}
                       layout="vertical"
-                      margin={{ top: 20, right: 30, left: 80, bottom: 5 }}
+                      margin={{ top: 20, right: 30, left: 100, bottom: 5 }} {/* Increased left margin */}
                     >
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis type="number" />
-                      <YAxis dataKey="name" type="category" width={80} />
+                      <YAxis 
+                        dataKey="name" 
+                        type="category" 
+                        width={100} 
+                        tick={{ fontSize: 12 }}
+                      />
                       <Tooltip formatter={(value) => [`${value} solicitações`, 'Quantidade']} />
-                      <Bar dataKey="value" fill="#0088FE" />
+                      <Bar dataKey="value" fill="#0EA5E9" />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -306,7 +357,7 @@ const Relatorios = () => {
                 <CardDescription>Distribuição por status (aprovadas, pendentes, rejeitadas)</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-[300px]">
+                <div className="h-[350px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
@@ -314,7 +365,7 @@ const Relatorios = () => {
                         cx="50%"
                         cy="50%"
                         labelLine={true}
-                        outerRadius={100}
+                        outerRadius={90}
                         fill="#8884d8"
                         dataKey="value"
                         label={({name, percent}) => `${name} (${(percent * 100).toFixed(0)}%)`}
@@ -388,7 +439,7 @@ const Relatorios = () => {
                       type="monotone" 
                       dataKey="value" 
                       name="Solicitações"
-                      stroke="#0088FE" 
+                      stroke="#0EA5E9" 
                       strokeWidth={2}
                       activeDot={{ r: 8 }} 
                     />
