@@ -436,31 +436,6 @@ const MinhasSolicitacoes = () => {
     return `${date.toLocaleDateString('pt-BR')} às ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
   };
 
-  if (loading) {
-    return <div className="flex justify-center items-center h-screen">Carregando suas solicitações...</div>;
-  }
-
-  if (error) {
-    return <div className="text-red-500">Erro ao carregar solicitações: {error}</div>;
-  }
-
-  const getSolicitacaoDescricao = (solicitacao: Solicitacao): string => {
-    if (isRefeicaoSolicitacao(solicitacao)) {
-      return `Solicitação de almoço para dia específico.`;
-    } else if (isTransporteSolicitacao(solicitacao) && solicitacao.tipo === 'Uso de Rota') {
-      return `Solicitação para uso da rota do ${solicitacao.rota}.`;
-    } else if (solicitacao.tipo === 'Alteração de Endereço') {
-      return 'Solicitação para alteração de endereço residencial.';
-    } else if (solicitacao.tipo === 'Abono de Ponto') {
-      return 'Solicitação para abono de ponto.';
-    } else if (solicitacao.tipo === 'Mudança de Turno') {
-      return 'Solicitação para mudança de turno.';
-    } else if (solicitacao.tipo === 'Adesão/Cancelamento') {
-      return 'Solicitação para adesão ou cancelamento de serviço.';
-    }
-    return '';
-  };
-
   const renderDetalhes = () => {
     if (!solicitacaoSelecionada) return null;
     
@@ -487,6 +462,13 @@ const MinhasSolicitacoes = () => {
               ))}
             </ul>
           </div>
+          
+          {solicitacaoSelecionada.motivo_comentario && (
+            <div className="mt-4 p-3 border border-blue-200 bg-blue-50 rounded-md">
+              <p className="text-sm text-blue-600 font-medium">Comentário do Administrador</p>
+              <p className="text-blue-700">{solicitacaoSelecionada.motivo_comentario}</p>
+            </div>
+          )}
         </>
       );
     } else if (isTransporteSolicitacao(solicitacaoSelecionada)) {
@@ -526,6 +508,13 @@ const MinhasSolicitacoes = () => {
               <p className="font-medium">{solicitacaoSelecionada.motivo}</p>
             </div>
           )}
+          
+          {solicitacaoSelecionada.motivo_comentario && (
+            <div className="mt-4 p-3 border border-blue-200 bg-blue-50 rounded-md">
+              <p className="text-sm text-blue-600 font-medium">Comentário do Administrador</p>
+              <p className="text-blue-700">{solicitacaoSelecionada.motivo_comentario}</p>
+            </div>
+          )}
         </>
       );
     } else if (isAbonoPontoSolicitacao(solicitacaoSelecionada)) {
@@ -557,6 +546,13 @@ const MinhasSolicitacoes = () => {
             <p className="text-sm text-gray-500">Descrição</p>
             <p className="font-medium">{solicitacaoSelecionada.descricao}</p>
           </div>
+          
+          {solicitacaoSelecionada.motivo_comentario && (
+            <div className="mt-4 p-3 border border-blue-200 bg-blue-50 rounded-md">
+              <p className="text-sm text-blue-600 font-medium">Comentário do Administrador</p>
+              <p className="text-blue-700">{solicitacaoSelecionada.motivo_comentario}</p>
+            </div>
+          )}
         </>
       );
     } else if (isAdesaoCancelamentoSolicitacao(solicitacaoSelecionada)) {
@@ -584,6 +580,13 @@ const MinhasSolicitacoes = () => {
             <p className="text-sm text-gray-500">Motivo</p>
             <p className="font-medium">{solicitacaoSelecionada.motivo}</p>
           </div>
+          
+          {solicitacaoSelecionada.motivo_comentario && (
+            <div className="mt-4 p-3 border border-blue-200 bg-blue-50 rounded-md">
+              <p className="text-sm text-blue-600 font-medium">Comentário do Administrador</p>
+              <p className="text-blue-700">{solicitacaoSelecionada.motivo_comentario}</p>
+            </div>
+          )}
           
           {solicitacaoSelecionada.status === "aprovada" && (
             <div className="mt-4 p-3 border border-green-200 bg-green-50 rounded-md">
@@ -647,6 +650,13 @@ const MinhasSolicitacoes = () => {
               </div>
             )}
           </div>
+          
+          {solicitacaoSelecionada.motivo_comentario && (
+            <div className="mt-4 p-3 border border-blue-200 bg-blue-50 rounded-md">
+              <p className="text-sm text-blue-600 font-medium">Comentário do Administrador</p>
+              <p className="text-blue-700">{solicitacaoSelecionada.motivo_comentario}</p>
+            </div>
+          )}
         </>
       );
     } else if (isMudancaTurnoSolicitacao(solicitacaoSelecionada)) {
@@ -694,6 +704,13 @@ const MinhasSolicitacoes = () => {
             <p className="text-sm text-gray-500">Motivo</p>
             <p className="font-medium">{solicitacaoSelecionada.motivo}</p>
           </div>
+          
+          {solicitacaoSelecionada.motivo_comentario && (
+            <div className="mt-4 p-3 border border-blue-200 bg-blue-50 rounded-md">
+              <p className="text-sm text-blue-600 font-medium">Comentário do Administrador</p>
+              <p className="text-blue-700">{solicitacaoSelecionada.motivo_comentario}</p>
+            </div>
+          )}
         </>
       );
     }
@@ -760,6 +777,31 @@ const MinhasSolicitacoes = () => {
         </DialogContent>
       </Dialog>
     );
+  };
+
+  if (loading) {
+    return <div className="flex justify-center items-center h-screen">Carregando suas solicitações...</div>;
+  }
+
+  if (error) {
+    return <div className="text-red-500">Erro ao carregar solicitações: {error}</div>;
+  }
+
+  const getSolicitacaoDescricao = (solicitacao: Solicitacao): string => {
+    if (isRefeicaoSolicitacao(solicitacao)) {
+      return `Solicitação de almoço para dia específico.`;
+    } else if (isTransporteSolicitacao(solicitacao) && solicitacao.tipo === 'Uso de Rota') {
+      return `Solicitação para uso da rota do ${solicitacao.rota}.`;
+    } else if (solicitacao.tipo === 'Alteração de Endereço') {
+      return 'Solicitação para alteração de endereço residencial.';
+    } else if (solicitacao.tipo === 'Abono de Ponto') {
+      return 'Solicitação para abono de ponto.';
+    } else if (solicitacao.tipo === 'Mudança de Turno') {
+      return 'Solicitação para mudança de turno.';
+    } else if (solicitacao.tipo === 'Adesão/Cancelamento') {
+      return 'Solicitação para adesão ou cancelamento de serviço.';
+    }
+    return '';
   };
 
   return (
