@@ -27,6 +27,7 @@ export interface SolicitacaoAbonoPonto extends BaseSolicitacao {
   descricao: string;
   data_ocorrencia: string;
   motivo: string;
+  motivo_rejeicao?: string;
 }
 
 export interface SolicitacaoAlteracaoEndereco extends BaseSolicitacao {
@@ -42,6 +43,7 @@ export interface SolicitacaoAlteracaoEndereco extends BaseSolicitacao {
   endereco_atual: string;
   endereco_novo: string;
   data_alteracao: string;
+  motivo_rejeicao?: string;
 }
 
 export interface SolicitacaoMudancaTurno extends BaseSolicitacao {
@@ -57,6 +59,7 @@ export interface SolicitacaoMudancaTurno extends BaseSolicitacao {
   nome_gestor: string;
   motivo: string;
   data_alteracao: string;
+  motivo_rejeicao?: string;
 }
 
 export interface SolicitacaoTransporteRota extends BaseSolicitacao {
@@ -68,6 +71,7 @@ export interface SolicitacaoTransporteRota extends BaseSolicitacao {
   rota: string;
   motivo: string;
   cidade: string;
+  motivo_rejeicao?: string;
 }
 
 export interface SolicitacaoTransporte12x36 extends BaseSolicitacao {
@@ -77,10 +81,12 @@ export interface SolicitacaoTransporte12x36 extends BaseSolicitacao {
   cep: string;
   rota: string;
   data_inicio: string;
+  motivo_rejeicao?: string;
 }
 
 export interface SolicitacaoRefeicao extends BaseSolicitacao {
   colaboradores: string[];
   tipo_refeicao: string;
   data_refeicao: string;
+  motivo_rejeicao?: string;
 }
