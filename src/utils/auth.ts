@@ -7,8 +7,8 @@ export interface User {
   id: number;
   matricula: string;
   nome: string;
-  cargo?: string; // Make cargo optional since it might not exist in the database
-  setor?: string; // Make setor optional since it might not exist in the database
+  cargo: string; // Make cargo required since it's used in components
+  setor: string; // Make setor required since it's used in components
   username: string;
   password?: string; // Make password optional as it might not be returned in all queries
   admin: boolean;

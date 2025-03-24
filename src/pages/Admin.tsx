@@ -319,7 +319,7 @@ const Admin = () => {
       if (solicitanteIds.size > 0) {
         const { data: solicitantesData, error: solicitantesError } = await supabase
           .from("usuarios")
-          .select("id, nome")
+          .select("id, nome, setor, cargo")
           .in("id", Array.from(solicitanteIds));
             
         if (solicitantesError) {

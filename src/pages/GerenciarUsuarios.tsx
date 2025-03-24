@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -140,8 +141,8 @@ const GerenciarUsuarios = () => {
           id: dbUser.id,
           matricula: dbUser.matricula,
           nome: dbUser.nome,
-          cargo: dbUser.cargo || "",
-          setor: dbUser.setor || "",
+          cargo: dbUser.cargo || "",  // Ensure cargo is always a string
+          setor: dbUser.setor || "",  // Ensure setor is always a string
           username: dbUser.username,
           admin: dbUser.admin || false,
           tipo_usuario: dbUser.tipo_usuario as User["tipo_usuario"],
@@ -189,8 +190,8 @@ const GerenciarUsuarios = () => {
       id: user.id,
       matricula: user.matricula,
       nome: user.nome,
-      cargo: user.cargo || "",
-      setor: user.setor || "",
+      cargo: user.cargo || "",  // Ensure cargo is always a string
+      setor: user.setor || "",  // Ensure setor is always a string
       username: user.username,
       admin: user.admin,
       tipo_usuario: user.tipo_usuario,
@@ -252,8 +253,8 @@ const GerenciarUsuarios = () => {
         username: values.username,
         tipo_usuario: values.tipo_usuario,
         admin: values.admin,
-        cargo: values.cargo,
-        setor: values.setor
+        cargo: values.cargo || "",  // Ensure cargo is always a string
+        setor: values.setor || ""   // Ensure setor is always a string
       };
       
       if (values.password) {
@@ -281,8 +282,8 @@ const GerenciarUsuarios = () => {
             id: data[0].id,
             matricula: data[0].matricula,
             nome: data[0].nome,
-            cargo: data[0].cargo || "",
-            setor: data[0].setor || "",
+            cargo: data[0].cargo || "",  // Ensure cargo is always a string
+            setor: data[0].setor || "",  // Ensure setor is always a string
             username: data[0].username,
             admin: data[0].admin || false,
             tipo_usuario: data[0].tipo_usuario as User["tipo_usuario"],
@@ -311,8 +312,8 @@ const GerenciarUsuarios = () => {
             id: data[0].id,
             matricula: data[0].matricula,
             nome: data[0].nome,
-            cargo: data[0].cargo || "",
-            setor: data[0].setor || "",
+            cargo: data[0].cargo || "",  // Ensure cargo is always a string
+            setor: data[0].setor || "",  // Ensure setor is always a string
             username: data[0].username,
             admin: data[0].admin || false,
             tipo_usuario: data[0].tipo_usuario as User["tipo_usuario"],
