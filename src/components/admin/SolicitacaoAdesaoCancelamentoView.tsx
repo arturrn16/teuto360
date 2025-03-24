@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, updateCustomTable } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SolicitacaoAdesaoCancelamento } from "@/types/solicitacoes";
 import { Download } from "lucide-react";
@@ -54,10 +54,11 @@ export function SolicitacaoAdesaoCancelamentoView({
       
       console.log("Updating with data:", updateData);
       
-      const { error } = await supabase
-        .from('solicitacoes_adesao_cancelamento')
-        .update(updateData)
-        .eq('id', solicitacao.id);
+      const { error } = await updateCustomTable(
+        'solicitacoes_adesao_cancelamento',
+        updateData,
+        { column: 'id', value: solicitacao.id }
+      );
 
       if (error) {
         console.error('Erro ao atualizar status:', error);

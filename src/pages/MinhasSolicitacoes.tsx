@@ -125,7 +125,7 @@ const MinhasSolicitacoes = () => {
             if (table === 'solicitacoes_refeicao') {
               const { data, error } = await (supabase as any)
                 .from(table)
-                .select('id, created_at, status, tipo_refeicao, data_refeicao, colaboradores')
+                .select('id, created_at, status, tipo_refeicao, data_refeicao, colaboradores, motivo_rejeicao, motivo_comentario')
                 .eq('solicitante_id', user.id)
                 .order('created_at', { ascending: false });
 
@@ -145,6 +145,8 @@ const MinhasSolicitacoes = () => {
                   colaboradores: item.colaboradores,
                   solicitante_id: user.id,
                   updated_at: item.updated_at || item.created_at,
+                  motivo_rejeicao: item.motivo_rejeicao,
+                  motivo_comentario: item.motivo_comentario,
                 }));
                 allSolicitacoes = [...allSolicitacoes, ...solicitacoesWithType];
               }
@@ -152,7 +154,7 @@ const MinhasSolicitacoes = () => {
             else if (table === 'solicitacoes_transporte_rota') {
               const { data, error } = await (supabase as any)
                 .from(table)
-                .select('id, created_at, status, colaborador_nome, rota, periodo_inicio, periodo_fim, motivo')
+                .select('id, created_at, status, colaborador_nome, rota, periodo_inicio, periodo_fim, motivo, motivo_rejeicao, motivo_comentario')
                 .eq('solicitante_id', user.id)
                 .order('created_at', { ascending: false });
 
@@ -174,6 +176,8 @@ const MinhasSolicitacoes = () => {
                   motivo: item.motivo,
                   solicitante_id: user.id,
                   updated_at: item.updated_at || item.created_at,
+                  motivo_rejeicao: item.motivo_rejeicao,
+                  motivo_comentario: item.motivo_comentario,
                 }));
                 allSolicitacoes = [...allSolicitacoes, ...solicitacoesWithType];
               }
@@ -551,6 +555,13 @@ const MinhasSolicitacoes = () => {
             <div className="mt-4 p-3 border border-blue-200 bg-blue-50 rounded-md">
               <p className="text-sm text-blue-600 font-medium">Comentário do Administrador</p>
               <p className="text-blue-700">{solicitacaoSelecionada.motivo_comentario}</p>
+            </div>
+          )}
+        
+          {solicitacaoSelecionada.status === "rejeitada" && solicitacaoSelecionada.motivo_rejeicao && (
+            <div className="mt-4 p-3 border border-red-200 bg-red-50 rounded-md">
+              <p className="text-sm text-red-600 font-medium">Motivo da Rejeição</p>
+              <p className="text-red-700">{solicitacaoSelecionada.motivo_rejeicao}</p>
             </div>
           )}
         </>
