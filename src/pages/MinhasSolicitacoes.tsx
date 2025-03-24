@@ -98,7 +98,7 @@ const MinhasSolicitacoes = () => {
       try {
         let tables = [];
         
-        if (user.tipo_usuario === 'refeicao') {
+        if (user.tipo_usuario === 'gestor') {
           tables = [{ table: 'solicitacoes_refeicao', tipo: 'Refeição' }];
         } 
         else if (user.tipo_usuario === 'selecao') {

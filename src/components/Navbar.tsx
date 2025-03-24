@@ -14,8 +14,8 @@ export const Navbar = () => {
           <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{user?.nome}</span>
           <span className="text-xs text-gray-500 dark:text-gray-400">
             {user?.tipo_usuario === 'admin' ? 'Administrador' : 
-             user?.tipo_usuario === 'refeicao' ? 'Refeição' : 
              user?.tipo_usuario === 'selecao' ? 'Seleção' :
+             user?.tipo_usuario === 'gestor' ? 'Gestor' :
              user?.tipo_usuario === 'comum' ? 'Colaborador' : 'Colaborador'}
           </span>
         </div>
