@@ -36,7 +36,6 @@ export interface SolicitacaoAlteracaoEndereco extends BaseSolicitacao {
   bairro: string;
   cidade: string;
   complemento?: string;
-  telefone_whatsapp: string;
   rota_atual: string;
   alterar_rota: boolean;
   nova_rota?: string;
