@@ -196,7 +196,7 @@ const Relatorios = () => {
   const renderCustomizedLabel = (props: any) => {
     const { cx, cy, midAngle, innerRadius, outerRadius, percent, index, name } = props;
     const RADIAN = Math.PI / 180;
-    const radius = outerRadius * 1.2;
+    const radius = outerRadius * 1.4;
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
     const y = cy + radius * Math.sin(-midAngle * RADIAN);
     
@@ -210,7 +210,7 @@ const Relatorios = () => {
         fontSize={12}
         fontWeight={500}
       >
-        {`${name} (${(percent * 100).toFixed(0)}%)`}
+        {`${name.length > 10 ? name.substring(0, 10) + '...' : name} (${(percent * 100).toFixed(0)}%)`}
       </text>
     ) : null;
   };
@@ -279,14 +279,14 @@ const Relatorios = () => {
                 <CardDescription>Distribuição de solicitações por tipo</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-[350px]">
+                <div className="h-[380px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
                         data={getRequestsByType()}
                         cx="50%"
-                        cy="50%"
-                        outerRadius={90}
+                        cy="45%"
+                        outerRadius={80}
                         fill="#8884d8"
                         dataKey="value"
                         nameKey="name"
@@ -343,15 +343,15 @@ const Relatorios = () => {
                 <CardDescription>Distribuição por status (aprovadas, pendentes, rejeitadas)</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-[350px]">
+                <div className="h-[380px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
                         data={getRequestsByStatus()}
                         cx="50%"
-                        cy="50%"
+                        cy="45%"
                         labelLine={true}
-                        outerRadius={90}
+                        outerRadius={80}
                         fill="#8884d8"
                         dataKey="value"
                         label={({name, percent}) => `${name} (${(percent * 100).toFixed(0)}%)`}
@@ -369,7 +369,7 @@ const Relatorios = () => {
                         ))}
                       </Pie>
                       <Tooltip formatter={(value) => [`${value} solicitações`, '']} />
-                      <Legend />
+                      <Legend verticalAlign="bottom" align="center" />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
@@ -467,3 +467,4 @@ const Relatorios = () => {
 };
 
 export default Relatorios;
+

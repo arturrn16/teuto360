@@ -170,7 +170,7 @@ const Dashboard = () => {
       description: "Confira o cardápio do refeitório para a semana",
       icon: <CalendarDays className="h-8 w-8 text-green-500" />,
       to: "/cardapio-semana",
-      allowedTypes: ["selecao", "refeicao", "colaborador", "comum"],
+      allowedTypes: ["selecao", "colaborador", "comum"] as const, // Removed "refeicao"
       color: "from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20",
       textColor: "text-green-600 dark:text-green-400"
     },

@@ -1,4 +1,3 @@
-
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Layout } from "@/components/Layout";
 import { ProtectedRoute } from "@/context/AuthContext";
@@ -106,11 +105,11 @@ const AppRoutes = () => {
           }
         />
         
-        {/* Cafeteria menu routes */}
+        {/* Cafeteria menu routes - updated to exclude 'refeicao' user type */}
         <Route
           path="/cardapio-semana"
           element={
-            <ProtectedRoute allowedTypes={["selecao", "refeicao", "colaborador", "comum"]}>
+            <ProtectedRoute allowedTypes={["selecao", "colaborador", "comum"]}>
               <CardapioSemana />
             </ProtectedRoute>
           }
