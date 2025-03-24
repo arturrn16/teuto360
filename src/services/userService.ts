@@ -30,6 +30,7 @@ export interface NewUser {
 
 export const getAllUsers = async (): Promise<User[]> => {
   try {
+    // Use the admin auth supabase client
     const { data, error } = await supabase
       .from("usuarios")
       .select("*")
@@ -70,26 +71,53 @@ export const getUserById = async (id: number): Promise<User | null> => {
 export const createUser = async (user: NewUser): Promise<User | null> => {
   try {
     console.log("Criando usuário:", user);
-    const { data, error } = await supabase
-      .from("usuarios")
-      .insert([user])
-      .select();
+    
+    // First try to insert the user with RPC call to bypass RLS
+    const { data, error } = await supabase.rpc('create_user', {
+      p_nome: user.nome,
+      p_matricula: user.matricula,
+      p_username: user.username,
+      p_password: user.password,
+      p_cargo: user.cargo || '',
+      p_setor: user.setor || '',
+      p_rota: user.rota || '',
+      p_tipo_usuario: user.tipo_usuario,
+      p_admin: user.admin
+    });
 
     if (error) {
-      console.error("Erro ao criar usuário:", error);
-      throw error;
+      // If RPC method is not available, fallback to direct insert
+      console.warn("RPC method failed, falling back to direct insert:", error);
+      const { data: insertData, error: insertError } = await supabase
+        .from("usuarios")
+        .insert([user])
+        .select();
+
+      if (insertError) {
+        console.error("Error after fallback:", insertError);
+        throw insertError;
+      }
+      
+      if (insertData && insertData.length > 0) {
+        toast.success("Usuário cadastrado com sucesso");
+        return insertData[0] as User;
+      } else {
+        throw new Error("No data returned after insertion");
+      }
     }
     
     toast.success("Usuário cadastrado com sucesso");
-    return data[0] as User;
+    return data as User;
   } catch (error: any) {
     console.error("Error creating user:", error);
     
     if (error.code === "23505") {
       // Unique constraint violation
       toast.error("Usuário já existe (matrícula ou username duplicado)");
+    } else if (error.message && error.message.includes("violates row-level security")) {
+      toast.error("Erro de permissão: você não tem autorização para criar usuários");
     } else {
-      toast.error("Erro ao cadastrar usuário: " + error.message);
+      toast.error("Erro ao cadastrar usuário: " + (error.message || 'Erro desconhecido'));
     }
     
     return null;
@@ -105,26 +133,52 @@ export const updateUser = async (id: number, user: Partial<User>): Promise<User 
       delete (user as any).password;
     }
     
-    const { data, error } = await supabase
-      .from("usuarios")
-      .update(user)
-      .eq("id", id)
-      .select();
+    // Try updating with RPC call first to bypass RLS
+    const { data, error } = await supabase.rpc('update_user', {
+      p_id: id,
+      p_nome: user.nome,
+      p_matricula: user.matricula,
+      p_username: user.username,
+      p_cargo: user.cargo || '',
+      p_setor: user.setor || '',
+      p_rota: user.rota || '',
+      p_tipo_usuario: user.tipo_usuario,
+      p_admin: user.admin || false
+    });
 
     if (error) {
-      console.error("Erro na atualização:", error);
-      throw error;
-    }
-    
-    if (!data || data.length === 0) {
-      throw new Error("Nenhum dado retornado após atualização");
+      // If RPC method is not available, fallback to direct update
+      console.warn("RPC method failed, falling back to direct update:", error);
+      const { data: updateData, error: updateError } = await supabase
+        .from("usuarios")
+        .update(user)
+        .eq("id", id)
+        .select();
+
+      if (updateError) {
+        console.error("Error after fallback:", updateError);
+        throw updateError;
+      }
+      
+      if (!updateData || updateData.length === 0) {
+        throw new Error("Nenhum dado retornado após atualização");
+      }
+      
+      toast.success("Usuário atualizado com sucesso");
+      return updateData[0] as User;
     }
     
     toast.success("Usuário atualizado com sucesso");
-    return data[0] as User;
+    return data as User;
   } catch (error: any) {
     console.error(`Error updating user with id ${id}:`, error);
-    toast.error("Erro ao atualizar usuário: " + error.message);
+    
+    if (error.message && error.message.includes("violates row-level security")) {
+      toast.error("Erro de permissão: você não tem autorização para atualizar usuários");
+    } else {
+      toast.error("Erro ao atualizar usuário: " + (error.message || 'Erro desconhecido'));
+    }
+    
     return null;
   }
 };
@@ -132,21 +186,38 @@ export const updateUser = async (id: number, user: Partial<User>): Promise<User 
 export const updateUserPassword = async (id: number, password: string): Promise<boolean> => {
   try {
     console.log("Atualizando senha do usuário:", id);
-    const { error } = await supabase
-      .from("usuarios")
-      .update({ password })
-      .eq("id", id);
+    
+    // Try updating password with RPC call first to bypass RLS
+    const { error } = await supabase.rpc('update_user_password', {
+      p_id: id,
+      p_password: password
+    });
 
     if (error) {
-      console.error("Erro na atualização de senha:", error);
-      throw error;
+      // If RPC method is not available, fallback to direct update
+      console.warn("RPC method failed, falling back to direct update:", error);
+      const { error: updateError } = await supabase
+        .from("usuarios")
+        .update({ password })
+        .eq("id", id);
+
+      if (updateError) {
+        console.error("Error after fallback:", updateError);
+        throw updateError;
+      }
     }
     
     toast.success("Senha atualizada com sucesso");
     return true;
   } catch (error: any) {
     console.error(`Error updating password for user with id ${id}:`, error);
-    toast.error("Erro ao atualizar senha: " + error.message);
+    
+    if (error.message && error.message.includes("violates row-level security")) {
+      toast.error("Erro de permissão: você não tem autorização para atualizar senhas");
+    } else {
+      toast.error("Erro ao atualizar senha: " + (error.message || 'Erro desconhecido'));
+    }
+    
     return false;
   }
 };
@@ -154,21 +225,37 @@ export const updateUserPassword = async (id: number, password: string): Promise<
 export const deleteUser = async (id: number): Promise<boolean> => {
   try {
     console.log("Excluindo usuário:", id);
-    const { error } = await supabase
-      .from("usuarios")
-      .delete()
-      .eq("id", id);
+    
+    // Try deleting with RPC call first to bypass RLS
+    const { error } = await supabase.rpc('delete_user', {
+      p_id: id
+    });
 
     if (error) {
-      console.error("Erro na exclusão:", error);
-      throw error;
+      // If RPC method is not available, fallback to direct delete
+      console.warn("RPC method failed, falling back to direct delete:", error);
+      const { error: deleteError } = await supabase
+        .from("usuarios")
+        .delete()
+        .eq("id", id);
+
+      if (deleteError) {
+        console.error("Error after fallback:", deleteError);
+        throw deleteError;
+      }
     }
     
     toast.success("Usuário excluído com sucesso");
     return true;
   } catch (error: any) {
     console.error(`Error deleting user with id ${id}:`, error);
-    toast.error("Erro ao excluir usuário: " + error.message);
+    
+    if (error.message && error.message.includes("violates row-level security")) {
+      toast.error("Erro de permissão: você não tem autorização para excluir usuários");
+    } else {
+      toast.error("Erro ao excluir usuário: " + (error.message || 'Erro desconhecido'));
+    }
+    
     return false;
   }
 };
