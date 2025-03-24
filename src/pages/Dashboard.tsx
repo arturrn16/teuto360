@@ -1,9 +1,8 @@
-
 import { useAuth } from "@/context/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui-components/Card";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
-import { Clock, FileText, Route, Map, Utensils, Shield, Home, UserCheck, Phone, Star, MapPin, ClipboardCheck, Replace, Car, CalendarDays } from "lucide-react";
+import { Clock, FileText, Route, Map, Utensils, Shield, Home, UserCheck, Phone, Star, MapPin, ClipboardCheck, Replace, Car, CalendarDays, CreditCard } from "lucide-react";
 import { useEffect, useState } from "react";
 import { UserType } from "@/components/sidebar/navigationConfig";
 
@@ -65,6 +64,15 @@ const Dashboard = () => {
       allowedTypes: ["admin"],
       color: "from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20",
       textColor: "text-purple-600 dark:text-purple-400"
+    },
+    {
+      title: "Gerenciar Cartões",
+      description: "Adicione e gerencie cartões para retirada",
+      icon: <CreditCard className="h-8 w-8 text-blue-600" />,
+      to: "/gerenciar-cartoes",
+      allowedTypes: ["admin"],
+      color: "from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20",
+      textColor: "text-blue-600 dark:text-blue-400"
     },
     
     {
@@ -192,6 +200,15 @@ const Dashboard = () => {
       allowedTypes: ["colaborador", "comum"] as const,
       color: "from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20",
       textColor: "text-purple-600 dark:text-purple-400"
+    },
+    {
+      title: "Consulta de Cartão",
+      description: "Verifique se seu cartão est�� disponível para retirada",
+      icon: <CreditCard className="h-8 w-8 text-lime-500" />,
+      to: "/consulta-cartao",
+      allowedTypes: ["colaborador", "comum"] as const,
+      color: "from-lime-50 to-lime-100 dark:from-lime-900/20 dark:to-lime-800/20",
+      textColor: "text-lime-600 dark:text-lime-400"
     },
     {
       title: "Cardápio da Semana",

@@ -23,6 +23,8 @@ import Avaliacao from "@/pages/Avaliacao";
 import Plantao from "@/pages/Plantao";
 import MapaRotas from "@/pages/MapaRotas";
 import OfertaCaronas from "@/pages/OfertaCaronas";
+import ConsultaCartao from "@/pages/ConsultaCartao";
+import GerenciarCartoes from "@/pages/GerenciarCartoes";
 
 const AppRoutes = () => {
   return (
@@ -203,6 +205,25 @@ const AppRoutes = () => {
           element={
             <ProtectedRoute allowedTypes={["admin"]}>
               <Relatorios />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Card routes */}
+        <Route
+          path="/consulta-cartao"
+          element={
+            <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
+              <ConsultaCartao />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/gerenciar-cartoes"
+          element={
+            <ProtectedRoute allowedTypes={["admin"]}>
+              <GerenciarCartoes />
             </ProtectedRoute>
           }
         />

@@ -36,6 +36,36 @@ export type Database = {
         }
         Relationships: []
       }
+      cartoes: {
+        Row: {
+          data_chegada: string
+          data_retirada: string | null
+          id: number
+          matricula: string
+          nome_colaborador: string
+          status: string
+          tipo_cartao: string
+        }
+        Insert: {
+          data_chegada?: string
+          data_retirada?: string | null
+          id?: number
+          matricula: string
+          nome_colaborador: string
+          status?: string
+          tipo_cartao: string
+        }
+        Update: {
+          data_chegada?: string
+          data_retirada?: string | null
+          id?: number
+          matricula?: string
+          nome_colaborador?: string
+          status?: string
+          tipo_cartao?: string
+        }
+        Relationships: []
+      }
       comunicados: {
         Row: {
           arquivado: boolean | null

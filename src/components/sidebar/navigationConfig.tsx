@@ -108,6 +108,12 @@ export const navItems: NavItem[] = [
     icon: <span className="text-red-600 text-xl">🚗</span>,
     allowedTypes: ["colaborador", "comum"] as const
   },
+  { 
+    name: "Consulta de Cartão", 
+    href: "/consulta-cartao", 
+    icon: <span className="text-blue-600 text-xl">💳</span>,
+    allowedTypes: ["colaborador", "comum"] as const
+  },
   // Admin sections - keep these for admin users
   { 
     name: "Transporte Rota", 
@@ -155,6 +161,12 @@ export const navItems: NavItem[] = [
     name: "Gerenciar Cardápio", 
     href: "/gerenciar-cardapio", 
     icon: <span className="text-purple-600 text-xl">🍽️</span>,
+    allowedTypes: ["admin"] as const
+  },
+  { 
+    name: "Gerenciar Cartões", 
+    href: "/gerenciar-cartoes", 
+    icon: <span className="text-green-600 text-xl">💳</span>,
     allowedTypes: ["admin"] as const
   },
 ];
