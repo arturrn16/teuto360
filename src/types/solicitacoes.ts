@@ -1,4 +1,5 @@
 
+
 export interface BaseSolicitacao {
   id: number;
   solicitante_id: number;
@@ -86,3 +87,4 @@ export interface SolicitacaoRefeicao extends BaseSolicitacao {
   tipo_refeicao: string;
   data_refeicao: string;
 }
+
