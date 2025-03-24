@@ -22,11 +22,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     // Verifica se o usuário já está logado
-    const storedUser = getStoredUser();
-    if (storedUser) {
-      setUser(storedUser);
+    try {
+      const storedUser = getStoredUser();
+      if (storedUser) {
+        setUser(storedUser);
+      }
+    } catch (error) {
+      console.error("Erro ao recuperar usuário do storage:", error);
+    } finally {
+      // Sempre marca o carregamento como completo, mesmo em caso de erro
+      setIsLoading(false);
     }
-    setIsLoading(false);
   }, []);
 
   const login = async (username: string, password: string): Promise<boolean> => {
@@ -94,14 +100,16 @@ export const ProtectedRoute: React.FC<{
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      navigate("/login");
-    } else if (!isLoading && isAuthenticated && user) {
-      // Verifica permissões do tipo de usuário
-      const isAllowed = user.admin || allowedTypes.includes(user.tipo_usuario);
-      if (!isAllowed) {
-        toast.error("Você não tem permissão para acessar esta página");
-        navigate("/dashboard");
+    if (!isLoading) {
+      if (!isAuthenticated) {
+        navigate("/login");
+      } else if (user) {
+        // Verifica permissões do tipo de usuário
+        const isAllowed = user.admin || allowedTypes.includes(user.tipo_usuario);
+        if (!isAllowed) {
+          toast.error("Você não tem permissão para acessar esta página");
+          navigate("/dashboard");
+        }
       }
     }
   }, [isAuthenticated, isLoading, navigate, user, allowedTypes]);

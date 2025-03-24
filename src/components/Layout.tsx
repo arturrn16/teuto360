@@ -36,6 +36,7 @@ export const Layout = () => {
     window.scrollTo(0, 0);
   }, [location.pathname]);
 
+  // Exibe uma tela de carregamento durante a verificação de autenticação
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-screen w-full bg-white">
@@ -44,10 +45,12 @@ export const Layout = () => {
     );
   }
 
+  // Se não estiver autenticado, apenas renderiza o conteúdo (que deve ser a página de login)
   if (!isAuthenticated) {
     return <Outlet />;
   }
 
+  // Se estiver autenticado, renderiza o layout completo com o sidebar
   return (
     <SidebarProvider>
       <div className="min-h-screen flex flex-col w-full bg-gray-50 text-gray-800">

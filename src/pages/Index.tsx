@@ -1,22 +1,24 @@
 
 import { useAuth } from "@/context/AuthContext";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Index = () => {
   const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
+  const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
-    // Se autenticado, redirecionar para o dashboard, caso contrário para o login
-    if (!isLoading) {
+    // Evitar loop infinito e redirecionamentos múltiplos
+    if (!isLoading && !redirecting) {
+      setRedirecting(true);
       if (isAuthenticated) {
         navigate("/dashboard");
       } else {
         navigate("/login");
       }
     }
-  }, [isAuthenticated, isLoading, navigate]);
+  }, [isAuthenticated, isLoading, navigate, redirecting]);
 
   // Renderiza uma tela de carregamento enquanto verifica o status de autenticação
   return (
