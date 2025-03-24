@@ -1,4 +1,3 @@
-
 import { useAuth } from "@/context/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui-components/Card";
 import { cn } from "@/lib/utils";
@@ -22,11 +21,48 @@ const Dashboard = () => {
 
   const cards = [
     {
+      title: "Administração",
+      description: "Gerencie todas as solicitações",
+      icon: <Shield className="h-8 w-8 text-rose-500" />,
+      to: "/admin",
+      allowedTypes: ["admin"],
+      color: "from-rose-50 to-rose-100 dark:from-rose-900/20 dark:to-rose-800/20",
+      textColor: "text-rose-600 dark:text-rose-400"
+    },
+    {
+      title: "Relatórios",
+      description: "Visualize relatórios e estatísticas",
+      icon: <FileText className="h-8 w-8 text-indigo-600" />,
+      to: "/relatorios",
+      allowedTypes: ["admin"],
+      color: "from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20",
+      textColor: "text-indigo-600 dark:text-indigo-400"
+    },
+    {
+      title: "Gerenciar Comunicados",
+      description: "Publique e gerencie comunicados para colaboradores",
+      icon: <FileText className="h-8 w-8 text-orange-500" />,
+      to: "/gerenciar-comunicados",
+      allowedTypes: ["admin"],
+      color: "from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20",
+      textColor: "text-orange-600 dark:text-orange-400"
+    },
+    {
+      title: "Gerenciar Cardápio",
+      description: "Publique e gerencie cardápios do refeitório",
+      icon: <Utensils className="h-8 w-8 text-purple-600" />,
+      to: "/gerenciar-cardapio",
+      allowedTypes: ["admin"],
+      color: "from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20",
+      textColor: "text-purple-600 dark:text-purple-400"
+    },
+    
+    {
       title: "Transporte Rota",
       description: "Solicite transporte para rotas regulares",
       icon: <Route className="h-8 w-8 text-blue-500" />,
       to: "/transporte-rota",
-      allowedTypes: ["admin", "selecao"],
+      allowedTypes: ["selecao"],
       color: "from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20",
       textColor: "text-blue-600 dark:text-blue-400"
     },
@@ -35,7 +71,7 @@ const Dashboard = () => {
       description: "Solicite transporte para turnos 12x36",
       icon: <Map className="h-8 w-8 text-indigo-500" />,
       to: "/transporte-12x36",
-      allowedTypes: ["admin", "selecao", "refeicao"],
+      allowedTypes: ["selecao", "refeicao"],
       color: "from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20",
       textColor: "text-indigo-600 dark:text-indigo-400"
     },
@@ -62,18 +98,9 @@ const Dashboard = () => {
       description: "Solicite refeições para colaboradores",
       icon: <Utensils className="h-8 w-8 text-emerald-500" />,
       to: "/refeicao",
-      allowedTypes: ["admin", "refeicao"],
+      allowedTypes: ["refeicao"],
       color: "from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20",
       textColor: "text-emerald-600 dark:text-emerald-400"
-    },
-    {
-      title: "Administração",
-      description: "Gerencie todas as solicitações",
-      icon: <Shield className="h-8 w-8 text-rose-500" />,
-      to: "/admin",
-      allowedTypes: ["admin"],
-      color: "from-rose-50 to-rose-100 dark:from-rose-900/20 dark:to-rose-800/20",
-      textColor: "text-rose-600 dark:text-rose-400"
     },
     {
       title: "Comunicados",
@@ -83,15 +110,6 @@ const Dashboard = () => {
       allowedTypes: ["selecao", "refeicao", "colaborador", "comum"],
       color: "from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20",
       textColor: "text-amber-600 dark:text-amber-400"
-    },
-    {
-      title: "Gerenciar Comunicados",
-      description: "Publique e gerencie comunicados para colaboradores",
-      icon: <FileText className="h-8 w-8 text-orange-500" />,
-      to: "/gerenciar-comunicados",
-      allowedTypes: ["admin"],
-      color: "from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20",
-      textColor: "text-orange-600 dark:text-orange-400"
     },
     {
       title: "Adesão/Cancelamento de Rota",
@@ -170,7 +188,7 @@ const Dashboard = () => {
       description: "Confira o cardápio do refeitório para a semana",
       icon: <CalendarDays className="h-8 w-8 text-green-500" />,
       to: "/cardapio-semana",
-      allowedTypes: ["selecao", "colaborador", "comum"] as const, // Removed "refeicao"
+      allowedTypes: ["selecao", "colaborador", "comum"] as const,
       color: "from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20",
       textColor: "text-green-600 dark:text-green-400"
     },
@@ -179,10 +197,9 @@ const Dashboard = () => {
   const filteredCards = cards.filter(card => {
     if (!user) return false;
     
-    // Debug cada card para verificar permissões
-    console.log(`Card: ${card.title}, User can access: ${user.admin || card.allowedTypes.includes(user.tipo_usuario)}`);
-    
-    if (user.admin) return true;
+    if (user.admin) {
+      return card.allowedTypes.includes('admin');
+    }
     
     return card.allowedTypes.includes(user.tipo_usuario);
   });
