@@ -104,11 +104,23 @@ export const getUserById = async (id: number): Promise<UserDetailed | null> => {
 // Add a new user
 export const addUser = async (user: UserFormData): Promise<UserDetailed | null> => {
   try {
+    // Ensure password is provided for new users
+    if (!user.password) {
+      toast.error('Senha é obrigatória para novos usuários');
+      return null;
+    }
+
     const { data, error } = await supabase
       .from('usuarios')
       .insert({
-        ...user,
-        tipo_usuario: user.tipo_usuario as 'admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum'
+        matricula: user.matricula,
+        nome: user.nome,
+        username: user.username,
+        password: user.password,
+        cargo: user.cargo || '',
+        setor: user.setor || '',
+        tipo_usuario: user.tipo_usuario,
+        admin: user.admin || false
       })
       .select()
       .single();
@@ -144,8 +156,14 @@ export const updateUser = async (id: number, userData: Partial<UserFormData>): P
     const { data, error } = await supabase
       .from('usuarios')
       .update({
-        ...updateData,
-        tipo_usuario: userData.tipo_usuario as 'admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum'
+        nome: updateData.nome,
+        matricula: updateData.matricula,
+        username: updateData.username,
+        ...(updateData.password ? { password: updateData.password } : {}),
+        cargo: updateData.cargo,
+        setor: updateData.setor,
+        tipo_usuario: updateData.tipo_usuario,
+        admin: updateData.admin
       })
       .eq('id', id)
       .select()
