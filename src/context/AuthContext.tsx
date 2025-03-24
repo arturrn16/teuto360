@@ -26,6 +26,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const storedUser = getStoredUser();
       if (storedUser) {
         setUser(storedUser);
+        console.log("User loaded from storage:", storedUser.nome, "Type:", storedUser.tipo_usuario);
       }
     } catch (error) {
       console.error("Erro ao recuperar usuário do storage:", error);

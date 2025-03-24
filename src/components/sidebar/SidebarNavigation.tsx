@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ChevronDown, ChevronRight } from "lucide-react";
@@ -71,6 +70,11 @@ export const SidebarNavigation = ({ items, userType, admin = false }: SidebarNav
     // Otherwise, check if user type is in the allowed types
     return link.allowedTypes.includes(userType);
   });
+
+  // For debugging - log what's being filtered
+  console.log("User type:", userType);
+  console.log("Admin:", admin);
+  console.log("Filtered links:", filteredLinks.map(link => link.name));
 
   // Check if icon is empty (for transport sub-menu items)
   const isEmptyIcon = (icon: React.ReactNode): boolean => {

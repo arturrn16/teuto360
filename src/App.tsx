@@ -74,7 +74,7 @@ const App = () => (
               <Route
                 path="/transporte-12x36"
                 element={
-                  <ProtectedRoute allowedTypes={["admin", "selecao"]}>
+                  <ProtectedRoute allowedTypes={["admin", "selecao", "refeicao"]}>
                     <Transporte12x36 />
                   </ProtectedRoute>
                 }
