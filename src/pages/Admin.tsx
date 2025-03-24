@@ -7,7 +7,8 @@ import {
   SolicitacaoAbonoPonto as AbonoPontoType,
   SolicitacaoAdesaoCancelamento as AdesaoCancelamentoType,
   SolicitacaoAlteracaoEndereco as AlteracaoEnderecoType,
-  SolicitacaoMudancaTurno as MudancaTurnoType
+  SolicitacaoMudancaTurno as MudancaTurnoType,
+  updateCustomTable
 } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -83,6 +84,7 @@ interface SolicitacaoTransporteRota extends Solicitacao {
   periodo_inicio: string;
   periodo_fim: string;
   motivo: string;
+  updated_at: string;
 }
 
 interface SolicitacaoTransporte12x36 extends Solicitacao {
@@ -92,23 +94,27 @@ interface SolicitacaoTransporte12x36 extends Solicitacao {
   cep: string;
   rota: string;
   data_inicio: string;
+  updated_at: string;
 }
 
 interface SolicitacaoRefeicao extends Solicitacao {
   colaboradores: string[];
   tipo_refeicao: string;
   data_refeicao: string;
+  updated_at: string;
 }
 
 interface SolicitacaoAbonosPonto extends Solicitacao {
   data_ocorrencia: string;
   turno: string;
   motivo: string;
+  updated_at: string;
 }
 
 interface SolicitacaoAdesaoCancelamento extends Solicitacao {
   tipo_solicitacao: string;
   motivo: string;
+  updated_at: string;
 }
 
 interface SolicitacaoAlteracaoEndereco extends Solicitacao {
@@ -116,6 +122,7 @@ interface SolicitacaoAlteracaoEndereco extends Solicitacao {
   endereco_novo: string;
   data_alteracao: string;
   comprovante_url?: string;
+  updated_at: string;
 }
 
 interface SolicitacaoMudancaTurno extends Solicitacao {
@@ -123,6 +130,7 @@ interface SolicitacaoMudancaTurno extends Solicitacao {
   turno_novo: string;
   data_alteracao: string;
   motivo: string;
+  updated_at: string;
 }
 
 const Admin = () => {
@@ -550,10 +558,12 @@ const Admin = () => {
         updateData.motivo_comentario = motivo;
       }
       
-      const { error } = await supabase
-        .from(tabela)
-        .update(updateData)
-        .eq('id', id);
+      // Use updateCustomTable from the client file instead of supabase.from() directly
+      const { error } = await updateCustomTable(
+        tabela,
+        updateData,
+        { column: 'id', value: id }
+      );
         
       if (error) {
         console.error(`Erro ao atualizar status em ${tabela}:`, error);
