@@ -72,18 +72,21 @@ export const createUser = async (user: NewUser): Promise<User | null> => {
   try {
     console.log("Criando usuário:", user);
     
-    // First try to insert the user with RPC call to bypass RLS
-    const { data, error } = await supabase.rpc('create_user', {
-      p_nome: user.nome,
-      p_matricula: user.matricula,
-      p_username: user.username,
-      p_password: user.password,
-      p_cargo: user.cargo || '',
-      p_setor: user.setor || '',
-      p_rota: user.rota || '',
-      p_tipo_usuario: user.tipo_usuario,
-      p_admin: user.admin
-    });
+    // Call the RPC function to create user and bypass RLS
+    const { data, error } = await supabase.rpc(
+      'create_user' as any, // Using 'as any' to bypass TypeScript error
+      {
+        p_nome: user.nome,
+        p_matricula: user.matricula,
+        p_username: user.username,
+        p_password: user.password,
+        p_cargo: user.cargo || '',
+        p_setor: user.setor || '',
+        p_rota: user.rota || '',
+        p_tipo_usuario: user.tipo_usuario,
+        p_admin: user.admin
+      }
+    );
 
     if (error) {
       // If RPC method is not available, fallback to direct insert
@@ -107,7 +110,8 @@ export const createUser = async (user: NewUser): Promise<User | null> => {
     }
     
     toast.success("Usuário cadastrado com sucesso");
-    return data as User;
+    // The RPC returns a JSON object directly, not an array
+    return data as unknown as User;
   } catch (error: any) {
     console.error("Error creating user:", error);
     
@@ -133,18 +137,21 @@ export const updateUser = async (id: number, user: Partial<User>): Promise<User 
       delete (user as any).password;
     }
     
-    // Try updating with RPC call first to bypass RLS
-    const { data, error } = await supabase.rpc('update_user', {
-      p_id: id,
-      p_nome: user.nome,
-      p_matricula: user.matricula,
-      p_username: user.username,
-      p_cargo: user.cargo || '',
-      p_setor: user.setor || '',
-      p_rota: user.rota || '',
-      p_tipo_usuario: user.tipo_usuario,
-      p_admin: user.admin || false
-    });
+    // Call the RPC function to update user and bypass RLS
+    const { data, error } = await supabase.rpc(
+      'update_user' as any, // Using 'as any' to bypass TypeScript error
+      {
+        p_id: id,
+        p_nome: user.nome,
+        p_matricula: user.matricula,
+        p_username: user.username,
+        p_cargo: user.cargo || '',
+        p_setor: user.setor || '',
+        p_rota: user.rota || '',
+        p_tipo_usuario: user.tipo_usuario,
+        p_admin: user.admin || false
+      }
+    );
 
     if (error) {
       // If RPC method is not available, fallback to direct update
@@ -169,7 +176,8 @@ export const updateUser = async (id: number, user: Partial<User>): Promise<User 
     }
     
     toast.success("Usuário atualizado com sucesso");
-    return data as User;
+    // The RPC returns a JSON object directly, not an array
+    return data as unknown as User;
   } catch (error: any) {
     console.error(`Error updating user with id ${id}:`, error);
     
@@ -187,11 +195,14 @@ export const updateUserPassword = async (id: number, password: string): Promise<
   try {
     console.log("Atualizando senha do usuário:", id);
     
-    // Try updating password with RPC call first to bypass RLS
-    const { error } = await supabase.rpc('update_user_password', {
-      p_id: id,
-      p_password: password
-    });
+    // Call the RPC function to update user password and bypass RLS
+    const { error } = await supabase.rpc(
+      'update_user_password' as any, // Using 'as any' to bypass TypeScript error
+      {
+        p_id: id,
+        p_password: password
+      }
+    );
 
     if (error) {
       // If RPC method is not available, fallback to direct update
@@ -226,10 +237,13 @@ export const deleteUser = async (id: number): Promise<boolean> => {
   try {
     console.log("Excluindo usuário:", id);
     
-    // Try deleting with RPC call first to bypass RLS
-    const { error } = await supabase.rpc('delete_user', {
-      p_id: id
-    });
+    // Call the RPC function to delete user and bypass RLS
+    const { error } = await supabase.rpc(
+      'delete_user' as any, // Using 'as any' to bypass TypeScript error
+      {
+        p_id: id
+      }
+    );
 
     if (error) {
       // If RPC method is not available, fallback to direct delete

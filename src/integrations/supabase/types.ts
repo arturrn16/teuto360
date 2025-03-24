@@ -629,6 +629,26 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_user: {
+        Args: {
+          p_nome: string
+          p_matricula: string
+          p_username: string
+          p_password: string
+          p_cargo?: string
+          p_setor?: string
+          p_rota?: string
+          p_tipo_usuario?: string
+          p_admin?: boolean
+        }
+        Returns: Json
+      }
+      delete_user: {
+        Args: {
+          p_id: number
+        }
+        Returns: undefined
+      }
       format_date_dmy: {
         Args: {
           date_value: string
@@ -658,6 +678,27 @@ export type Database = {
           p_assinatura_url?: string
           p_declaracao_url?: string
           p_status?: string
+        }
+        Returns: undefined
+      }
+      update_user: {
+        Args: {
+          p_id: number
+          p_nome?: string
+          p_matricula?: string
+          p_username?: string
+          p_cargo?: string
+          p_setor?: string
+          p_rota?: string
+          p_tipo_usuario?: string
+          p_admin?: boolean
+        }
+        Returns: Json
+      }
+      update_user_password: {
+        Args: {
+          p_id: number
+          p_password: string
         }
         Returns: undefined
       }
