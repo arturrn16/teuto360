@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { 
@@ -62,6 +63,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { AdminCommentField } from "@/components/admin/AdminCommentField";
 
 interface Solicitacao {
   id: number;
@@ -724,4 +726,682 @@ const Admin = () => {
               <div className="flex flex-col md:flex-row gap-4 mb-6">
                 <div className="flex-1">
                   <div className="relative">
-                    <Search className="absolute left-2 top-1/2 transform -
+                    <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      placeholder="Buscar por nome de colaborador"
+                      className="pl-8"
+                      value={filtroColaborador}
+                      onChange={(e) => setFiltroColaborador(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="w-full md:w-48">
+                  <Select value={filtroStatus} onValueChange={setFiltroStatus}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todos">Todos</SelectItem>
+                      <SelectItem value="pendente">Pendentes</SelectItem>
+                      <SelectItem value="aprovada">Aprovadas</SelectItem>
+                      <SelectItem value="rejeitada">Rejeitadas</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <Tabs defaultValue="rota">
+                <TabsList className="grid grid-cols-2 md:grid-cols-7 mb-4">
+                  <TabsTrigger value="rota" className="flex items-center gap-1.5">
+                    <Route className="h-4 w-4" /> Rotas
+                  </TabsTrigger>
+                  <TabsTrigger value="12x36" className="flex items-center gap-1.5">
+                    <Replace className="h-4 w-4" /> 12x36
+                  </TabsTrigger>
+                  <TabsTrigger value="refeicao" className="flex items-center gap-1.5">
+                    <Utensils className="h-4 w-4" /> Refeição
+                  </TabsTrigger>
+                  <TabsTrigger value="abono" className="flex items-center gap-1.5">
+                    <ClipboardCheck className="h-4 w-4" /> Abono
+                  </TabsTrigger>
+                  <TabsTrigger value="adesao" className="flex items-center gap-1.5">
+                    <FileText className="h-4 w-4" /> Adesão
+                  </TabsTrigger>
+                  <TabsTrigger value="endereco" className="flex items-center gap-1.5">
+                    <Home className="h-4 w-4" /> Endereço
+                  </TabsTrigger>
+                  <TabsTrigger value="turno" className="flex items-center gap-1.5">
+                    <Replace className="h-4 w-4" /> Turno
+                  </TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="rota">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Solicitações de Transporte por Rota</CardTitle>
+                      <CardDescription>
+                        Solicitações de transporte fretado por rotas específicas
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Solicitante</TableHead>
+                            <TableHead>Colaborador</TableHead>
+                            <TableHead>Período</TableHead>
+                            <TableHead>Rota</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Ações</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filtrarSolicitacoesRota().length === 0 ? (
+                            <TableRow>
+                              <TableCell colSpan={6} className="text-center">
+                                Nenhuma solicitação encontrada
+                              </TableCell>
+                            </TableRow>
+                          ) : (
+                            filtrarSolicitacoesRota().map((s) => (
+                              <TableRow key={s.id}>
+                                <TableCell>
+                                  <SolicitanteInfo id={s.solicitante_id} />
+                                </TableCell>
+                                <TableCell>
+                                  <div className="font-medium">{s.colaborador_nome}</div>
+                                  <div className="text-muted-foreground text-xs">{s.cidade}</div>
+                                </TableCell>
+                                <TableCell>
+                                  <div>{formatarData(s.periodo_inicio)} a</div>
+                                  <div>{formatarData(s.periodo_fim)}</div>
+                                </TableCell>
+                                <TableCell>
+                                  <div>{s.rota}</div>
+                                  <div className="text-muted-foreground text-xs">Turno: {s.turno}</div>
+                                </TableCell>
+                                <TableCell>
+                                  <StatusBadge status={s.status} />
+                                </TableCell>
+                                <TableCell>
+                                  {s.status === "pendente" ? (
+                                    <div className="flex gap-2">
+                                      <Button
+                                        size="sm"
+                                        className="h-8 gap-1"
+                                        variant="default"
+                                        onClick={() => abrirDialogMotivo(s.id, "rota", "aprovada")}
+                                      >
+                                        <CheckCircle className="h-4 w-4" /> 
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        className="h-8 gap-1"
+                                        variant="destructive"
+                                        onClick={() => abrirDialogMotivo(s.id, "rota", "rejeitada")}
+                                      >
+                                        <XCircle className="h-4 w-4" /> 
+                                      </Button>
+                                    </div>
+                                  ) : (
+                                    <div className="text-xs text-muted-foreground">
+                                      {formatarTimestamp(s.updated_at)}
+                                    </div>
+                                  )}
+                                </TableCell>
+                              </TableRow>
+                            ))
+                          )}
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+                
+                <TabsContent value="12x36">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Solicitações de Transporte 12x36</CardTitle>
+                      <CardDescription>
+                        Solicitações de transporte para escalas 12x36
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Solicitante</TableHead>
+                            <TableHead>Colaborador</TableHead>
+                            <TableHead>Rota</TableHead>
+                            <TableHead>Endereço</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Ações</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filtrarSolicitacoes12x36().length === 0 ? (
+                            <TableRow>
+                              <TableCell colSpan={6} className="text-center">
+                                Nenhuma solicitação encontrada
+                              </TableCell>
+                            </TableRow>
+                          ) : (
+                            filtrarSolicitacoes12x36().map((s) => (
+                              <TableRow key={s.id}>
+                                <TableCell>
+                                  <SolicitanteInfo id={s.solicitante_id} />
+                                </TableCell>
+                                <TableCell>
+                                  <div className="font-medium">{s.colaborador_nome}</div>
+                                  <div className="text-muted-foreground text-xs">{s.telefone}</div>
+                                </TableCell>
+                                <TableCell>
+                                  <div>{s.rota}</div>
+                                  <div className="text-muted-foreground text-xs">
+                                    Início: {formatarData(s.data_inicio)}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="text-sm truncate max-w-[12rem]">{s.endereco}</div>
+                                  <div className="text-muted-foreground text-xs">CEP: {s.cep}</div>
+                                </TableCell>
+                                <TableCell>
+                                  <StatusBadge status={s.status} />
+                                </TableCell>
+                                <TableCell>
+                                  {s.status === "pendente" ? (
+                                    <div className="flex gap-2">
+                                      <Button
+                                        size="sm"
+                                        className="h-8 gap-1"
+                                        variant="default"
+                                        onClick={() => abrirDialogMotivo(s.id, "12x36", "aprovada")}
+                                      >
+                                        <CheckCircle className="h-4 w-4" /> 
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        className="h-8 gap-1"
+                                        variant="destructive"
+                                        onClick={() => abrirDialogMotivo(s.id, "12x36", "rejeitada")}
+                                      >
+                                        <XCircle className="h-4 w-4" /> 
+                                      </Button>
+                                    </div>
+                                  ) : (
+                                    <div className="text-xs text-muted-foreground">
+                                      {formatarTimestamp(s.updated_at)}
+                                    </div>
+                                  )}
+                                </TableCell>
+                              </TableRow>
+                            ))
+                          )}
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+                
+                <TabsContent value="refeicao">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Solicitações de Refeição</CardTitle>
+                      <CardDescription>
+                        Solicitações de refeição para colaboradores e eventos
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Solicitante</TableHead>
+                            <TableHead>Colaboradores</TableHead>
+                            <TableHead>Tipo</TableHead>
+                            <TableHead>Data</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Ações</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filtrarSolicitacoesRefeicao().length === 0 ? (
+                            <TableRow>
+                              <TableCell colSpan={6} className="text-center">
+                                Nenhuma solicitação encontrada
+                              </TableCell>
+                            </TableRow>
+                          ) : (
+                            filtrarSolicitacoesRefeicao().map((s) => (
+                              <TableRow key={s.id}>
+                                <TableCell>
+                                  <SolicitanteInfo id={s.solicitante_id} />
+                                </TableCell>
+                                <TableCell>
+                                  <div className="text-sm">
+                                    {s.colaboradores.length} colaboradores
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="font-medium">{s.tipo_refeicao}</div>
+                                </TableCell>
+                                <TableCell>
+                                  <div>{formatarData(s.data_refeicao)}</div>
+                                </TableCell>
+                                <TableCell>
+                                  <StatusBadge status={s.status} />
+                                </TableCell>
+                                <TableCell>
+                                  {s.status === "pendente" ? (
+                                    <div className="flex gap-2">
+                                      <Button
+                                        size="sm"
+                                        className="h-8 gap-1"
+                                        variant="default"
+                                        onClick={() => abrirDialogMotivo(s.id, "refeicao", "aprovada")}
+                                      >
+                                        <CheckCircle className="h-4 w-4" /> 
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        className="h-8 gap-1"
+                                        variant="destructive"
+                                        onClick={() => abrirDialogMotivo(s.id, "refeicao", "rejeitada")}
+                                      >
+                                        <XCircle className="h-4 w-4" /> 
+                                      </Button>
+                                    </div>
+                                  ) : (
+                                    <div className="text-xs text-muted-foreground">
+                                      {formatarTimestamp(s.updated_at)}
+                                    </div>
+                                  )}
+                                </TableCell>
+                              </TableRow>
+                            ))
+                          )}
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+                
+                <TabsContent value="abono">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Solicitações de Abono de Ponto</CardTitle>
+                      <CardDescription>
+                        Solicitações para abono de ponto e justificativas
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Solicitante</TableHead>
+                            <TableHead>Data</TableHead>
+                            <TableHead>Turno</TableHead>
+                            <TableHead>Motivo</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Ações</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filtrarSolicitacoesAbonoPonto().length === 0 ? (
+                            <TableRow>
+                              <TableCell colSpan={6} className="text-center">
+                                Nenhuma solicitação encontrada
+                              </TableCell>
+                            </TableRow>
+                          ) : (
+                            filtrarSolicitacoesAbonoPonto().map((s) => (
+                              <TableRow key={s.id}>
+                                <TableCell>
+                                  <SolicitanteInfo id={s.solicitante_id} />
+                                </TableCell>
+                                <TableCell>
+                                  <div>{formatarData(s.data_ocorrencia)}</div>
+                                </TableCell>
+                                <TableCell>
+                                  <div>{s.turno}</div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="max-w-[10rem] truncate">{s.motivo}</div>
+                                </TableCell>
+                                <TableCell>
+                                  <StatusBadge status={s.status} />
+                                </TableCell>
+                                <TableCell>
+                                  {s.status === "pendente" ? (
+                                    <div className="flex gap-2">
+                                      <Button
+                                        size="sm"
+                                        className="h-8 gap-1"
+                                        variant="default"
+                                        onClick={() => abrirDialogMotivo(s.id, "abono", "aprovada")}
+                                      >
+                                        <CheckCircle className="h-4 w-4" /> 
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        className="h-8 gap-1"
+                                        variant="destructive"
+                                        onClick={() => abrirDialogMotivo(s.id, "abono", "rejeitada")}
+                                      >
+                                        <XCircle className="h-4 w-4" /> 
+                                      </Button>
+                                    </div>
+                                  ) : (
+                                    <div className="text-xs text-muted-foreground">
+                                      {formatarTimestamp(s.updated_at)}
+                                    </div>
+                                  )}
+                                </TableCell>
+                              </TableRow>
+                            ))
+                          )}
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+                
+                <TabsContent value="adesao">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Solicitações de Adesão/Cancelamento</CardTitle>
+                      <CardDescription>
+                        Solicitações para aderir ou cancelar serviços de transporte
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Solicitante</TableHead>
+                            <TableHead>Tipo</TableHead>
+                            <TableHead>Motivo</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Ações</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filtrarSolicitacoesAdesaoCancelamento().length === 0 ? (
+                            <TableRow>
+                              <TableCell colSpan={5} className="text-center">
+                                Nenhuma solicitação encontrada
+                              </TableCell>
+                            </TableRow>
+                          ) : (
+                            filtrarSolicitacoesAdesaoCancelamento().map((s) => (
+                              <TableRow key={s.id}>
+                                <TableCell>
+                                  <SolicitanteInfo id={s.solicitante_id} />
+                                </TableCell>
+                                <TableCell>
+                                  <div className="font-medium">{s.tipo_solicitacao}</div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="max-w-[15rem] truncate">{s.motivo}</div>
+                                </TableCell>
+                                <TableCell>
+                                  <StatusBadge status={s.status} />
+                                </TableCell>
+                                <TableCell>
+                                  {s.status === "pendente" ? (
+                                    <div className="flex gap-2">
+                                      <Button
+                                        size="sm"
+                                        className="h-8 gap-1"
+                                        variant="default"
+                                        onClick={() => abrirDialogMotivo(s.id, "adesao", "aprovada")}
+                                      >
+                                        <CheckCircle className="h-4 w-4" /> 
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        className="h-8 gap-1"
+                                        variant="destructive"
+                                        onClick={() => abrirDialogMotivo(s.id, "adesao", "rejeitada")}
+                                      >
+                                        <XCircle className="h-4 w-4" /> 
+                                      </Button>
+                                    </div>
+                                  ) : (
+                                    <div className="text-xs text-muted-foreground">
+                                      {formatarTimestamp(s.updated_at)}
+                                    </div>
+                                  )}
+                                </TableCell>
+                              </TableRow>
+                            ))
+                          )}
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+                
+                <TabsContent value="endereco">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Solicitações de Alteração de Endereço</CardTitle>
+                      <CardDescription>
+                        Solicitações para alteração de endereço e rota
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Solicitante</TableHead>
+                            <TableHead>Endereço Atual</TableHead>
+                            <TableHead>Novo Endereço</TableHead>
+                            <TableHead>Data</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Ações</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filtrarSolicitacoesAlteracaoEndereco().length === 0 ? (
+                            <TableRow>
+                              <TableCell colSpan={6} className="text-center">
+                                Nenhuma solicitação encontrada
+                              </TableCell>
+                            </TableRow>
+                          ) : (
+                            filtrarSolicitacoesAlteracaoEndereco().map((s) => (
+                              <TableRow key={s.id}>
+                                <TableCell>
+                                  <SolicitanteInfo id={s.solicitante_id} />
+                                </TableCell>
+                                <TableCell>
+                                  <div className="max-w-[10rem] truncate">{s.endereco_atual}</div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="max-w-[10rem] truncate">{s.endereco_novo}</div>
+                                  {s.comprovante_url && (
+                                    <Button
+                                      variant="link"
+                                      size="sm"
+                                      className="p-0 h-auto text-xs"
+                                      onClick={() => handleDownloadComprovante(
+                                        s.comprovante_url || "", 
+                                        solicitantesInfo[s.solicitante_id]?.nome || "colaborador"
+                                      )}
+                                    >
+                                      <Download className="h-3 w-3 mr-1" /> Comprovante
+                                    </Button>
+                                  )}
+                                </TableCell>
+                                <TableCell>
+                                  <div>{formatarData(s.data_alteracao)}</div>
+                                </TableCell>
+                                <TableCell>
+                                  <StatusBadge status={s.status} />
+                                </TableCell>
+                                <TableCell>
+                                  {s.status === "pendente" ? (
+                                    <div className="flex gap-2">
+                                      <Button
+                                        size="sm"
+                                        className="h-8 gap-1"
+                                        variant="default"
+                                        onClick={() => abrirDialogMotivo(s.id, "endereco", "aprovada")}
+                                      >
+                                        <CheckCircle className="h-4 w-4" /> 
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        className="h-8 gap-1"
+                                        variant="destructive"
+                                        onClick={() => abrirDialogMotivo(s.id, "endereco", "rejeitada")}
+                                      >
+                                        <XCircle className="h-4 w-4" /> 
+                                      </Button>
+                                    </div>
+                                  ) : (
+                                    <div className="text-xs text-muted-foreground">
+                                      {formatarTimestamp(s.updated_at)}
+                                    </div>
+                                  )}
+                                </TableCell>
+                              </TableRow>
+                            ))
+                          )}
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+                
+                <TabsContent value="turno">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Solicitações de Mudança de Turno</CardTitle>
+                      <CardDescription>
+                        Solicitações para mudança de turno de trabalho
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Solicitante</TableHead>
+                            <TableHead>Turno Atual</TableHead>
+                            <TableHead>Novo Turno</TableHead>
+                            <TableHead>Data</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Ações</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filtrarSolicitacoesMudancaTurno().length === 0 ? (
+                            <TableRow>
+                              <TableCell colSpan={6} className="text-center">
+                                Nenhuma solicitação encontrada
+                              </TableCell>
+                            </TableRow>
+                          ) : (
+                            filtrarSolicitacoesMudancaTurno().map((s) => (
+                              <TableRow key={s.id}>
+                                <TableCell>
+                                  <SolicitanteInfo id={s.solicitante_id} />
+                                </TableCell>
+                                <TableCell>
+                                  <div>{s.turno_atual}</div>
+                                </TableCell>
+                                <TableCell>
+                                  <div>{s.turno_novo}</div>
+                                </TableCell>
+                                <TableCell>
+                                  <div>{formatarData(s.data_alteracao)}</div>
+                                </TableCell>
+                                <TableCell>
+                                  <StatusBadge status={s.status} />
+                                </TableCell>
+                                <TableCell>
+                                  {s.status === "pendente" ? (
+                                    <div className="flex gap-2">
+                                      <Button
+                                        size="sm"
+                                        className="h-8 gap-1"
+                                        variant="default"
+                                        onClick={() => abrirDialogMotivo(s.id, "turno", "aprovada")}
+                                      >
+                                        <CheckCircle className="h-4 w-4" /> 
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        className="h-8 gap-1"
+                                        variant="destructive"
+                                        onClick={() => abrirDialogMotivo(s.id, "turno", "rejeitada")}
+                                      >
+                                        <XCircle className="h-4 w-4" /> 
+                                      </Button>
+                                    </div>
+                                  ) : (
+                                    <div className="text-xs text-muted-foreground">
+                                      {formatarTimestamp(s.updated_at)}
+                                    </div>
+                                  )}
+                                </TableCell>
+                              </TableRow>
+                            ))
+                          )}
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              </Tabs>
+            </>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Dialog para motivo de rejeição ou comentário */}
+      <Dialog open={isOpenMotivo} onOpenChange={setIsOpenMotivo}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {selectedSolicitacao.status === 'rejeitada' 
+                ? 'Motivo da Rejeição'
+                : 'Comentário (Opcional)'}
+            </DialogTitle>
+            <DialogDescription>
+              {selectedSolicitacao.status === 'rejeitada'
+                ? 'Informe o motivo pelo qual esta solicitação está sendo rejeitada.'
+                : 'Adicione um comentário para essa solicitação (opcional).'}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <AdminCommentField
+            value={motivoRejeicao}
+            onChange={setMotivoRejeicao}
+            id="motivo-rejeicao"
+            label={selectedSolicitacao.status === 'rejeitada' ? "Motivo da Rejeição" : "Comentário do Administrador (opcional)"}
+            placeholder={selectedSolicitacao.status === 'rejeitada' 
+              ? "Detalhe o motivo da rejeição desta solicitação" 
+              : "Adicione um comentário sobre esta solicitação"
+            }
+          />
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsOpenMotivo(false)}>
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleConfirmarMotivo}
+              variant={selectedSolicitacao.status === 'rejeitada' ? 'destructive' : 'default'}
+              disabled={selectedSolicitacao.status === 'rejeitada' && !motivoRejeicao.trim()}
+            >
+              {selectedSolicitacao.status === 'rejeitada' ? 'Rejeitar' : 'Aprovar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+export default Admin;
