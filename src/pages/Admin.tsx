@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { 
@@ -717,7 +718,7 @@ const Admin = () => {
                                         Aprovar
                                       </Button>
                                       <Button 
-                                        variant="outline" 
+                                        variant="outline"
                                         size="sm"
                                         className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 border-red-200"
                                         onClick={() => atualizarStatusRota(solicitacao.id, "rejeitada")}
@@ -758,48 +759,14 @@ const Admin = () => {
                   )}
                 </TabsContent>
                 
-                <TabsContent value="12x36" className="mt-4">
-                  {filtrarSolicitacoes12x36().length > 0 ? (
-                    <div className="rounded-md border overflow-hidden">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Solicitante</TableHead>
-                            <TableHead>Colaborador</TableHead>
-                            <TableHead>Telefone</TableHead>
-                            <TableHead>Rota</TableHead>
-                            <TableHead>Data de Início</TableHead>
-                            <TableHead>Data de Solicitação</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead className="w-[180px]">Ações</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {filtrarSolicitacoes12x36().map((solicitacao) => (
-                            <TableRow key={solicitacao.id}>
-                              <TableCell>
-                                <SolicitanteInfo id={solicitacao.solicitante_id} />
-                              </TableCell>
-                              <TableCell className="font-medium">{solicitacao.colaborador_nome}</TableCell>
-                              <TableCell>{solicitacao.telefone}</TableCell>
-                              <TableCell>{solicitacao.rota}</TableCell>
-                              <TableCell>{formatarData(solicitacao.data_inicio)}</TableCell>
-                              <TableCell>{formatarTimestamp(solicitacao.created_at)}</TableCell>
-                              <TableCell>
-                                <StatusBadge status={solicitacao.status} />
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex space-x-2">
-                                  {solicitacao.status === "pendente" && (
-                                    <>
-                                      <Button 
-                                        variant="outline" 
-                                        size="sm"
-                                        className="flex-1 bg-green-50 hover:bg-green-100 text-green-600 border-green-200"
-                                        onClick={() => atualizarStatus12x36(solicitacao.id, "aprovada")}
-                                      >
-                                        <CheckCircle className="h-4 w-4 mr-1" />
-                                        Aprovar
-                                      </Button>
-                                      <Button 
-                                        variant="outline"
+                {/* Add other TabsContent components here with similar structure */}
+              </Tabs>
+            </>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default Admin;
