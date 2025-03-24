@@ -803,4 +803,4 @@ const Admin = () => {
                                       </Button>
                                       <Button 
                                         variant="outline" 
-                                        size="sm"
+                                        size="sm
