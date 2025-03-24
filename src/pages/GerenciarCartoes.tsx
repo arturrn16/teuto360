@@ -1,5 +1,6 @@
+
 import { useState, useEffect } from "react";
-import { toast } from "sonner";
+import { useToast } from "sonner";
 import { getAllCards, addCard, updateCardStatus, deleteCard, Card as CardType } from "@/services/cardService";
 import { 
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
@@ -32,7 +33,7 @@ const GerenciarCartoes = () => {
   // For receipt generation
   const [selectedCard, setSelectedCard] = useState<CardType | null>(null);
   
-  
+  const toast = useToast();
 
   const loadCards = async () => {
     setIsLoading(true);
