@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -49,6 +50,8 @@ const TransporteRota = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [openStartDate, setOpenStartDate] = useState(false);
+  const [openEndDate, setOpenEndDate] = useState(false);
   
   const form = useForm<FormValues>({
     defaultValues: {
@@ -297,7 +300,7 @@ const TransporteRota = () => {
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
                       <FormLabel>Data de Início</FormLabel>
-                      <Popover>
+                      <Popover open={openStartDate} onOpenChange={setOpenStartDate}>
                         <PopoverTrigger asChild>
                           <FormControl>
                             <Button
@@ -317,9 +320,13 @@ const TransporteRota = () => {
                           <Calendar
                             mode="single"
                             selected={field.value}
-                            onSelect={field.onChange}
+                            onSelect={(date) => {
+                              field.onChange(date);
+                              setOpenStartDate(false);
+                            }}
                             disabled={(date) => date < new Date()}
                             initialFocus
+                            className="pointer-events-auto"
                           />
                         </PopoverContent>
                       </Popover>
@@ -341,7 +348,7 @@ const TransporteRota = () => {
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
                       <FormLabel>Data de Término</FormLabel>
-                      <Popover>
+                      <Popover open={openEndDate} onOpenChange={setOpenEndDate}>
                         <PopoverTrigger asChild>
                           <FormControl>
                             <Button
@@ -361,9 +368,13 @@ const TransporteRota = () => {
                           <Calendar
                             mode="single"
                             selected={field.value}
-                            onSelect={field.onChange}
+                            onSelect={(date) => {
+                              field.onChange(date);
+                              setOpenEndDate(false);
+                            }}
                             disabled={(date) => date < form.getValues("periodoInicio")}
                             initialFocus
+                            className="pointer-events-auto"
                           />
                         </PopoverContent>
                       </Popover>
