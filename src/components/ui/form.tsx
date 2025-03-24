@@ -9,6 +9,7 @@ import {
   FieldValues,
   FormProvider,
   useFormContext,
+  FormState,
 } from "react-hook-form"
 
 import { cn } from "@/lib/utils"
@@ -40,19 +41,41 @@ const FormField = <
   )
 }
 
-const useFormField = () => {
+type FormItemContextValue = {
+  id: string
+}
+
+const FormItemContext = React.createContext<FormItemContextValue>(
+  {} as FormItemContextValue
+)
+
+// Define a proper return type for useFormField that includes the error property
+type FormFieldContextReturn = {
+  id: string
+  name: string
+  formItemId: string
+  formDescriptionId: string
+  formMessageId: string
+  error?: {
+    message?: string
+  }
+}
+
+const useFormField = (): FormFieldContextReturn => {
   const fieldContext = React.useContext(FormFieldContext)
   const itemContext = React.useContext(FormItemContext)
   const { getFieldState, formState } = useFormContext() || { 
     getFieldState: () => ({}),
-    formState: {},
+    formState: {} as FormState<FieldValues>,
   }
 
   if (!fieldContext) {
     throw new Error("useFormField should be used within <FormField>")
   }
 
-  const fieldState = getFieldState(fieldContext.name, formState)
+  const fieldState = fieldContext.name ? 
+    getFieldState(fieldContext.name, formState) : 
+    {}
 
   const { id } = itemContext
 
@@ -62,17 +85,9 @@ const useFormField = () => {
     formItemId: `${id}-form-item`,
     formDescriptionId: `${id}-form-item-description`,
     formMessageId: `${id}-form-item-message`,
-    ...fieldState,
+    ...(fieldState as { error?: { message?: string } }),
   }
 }
-
-type FormItemContextValue = {
-  id: string
-}
-
-const FormItemContext = React.createContext<FormItemContextValue>(
-  {} as FormItemContextValue
-)
 
 const FormItem = React.forwardRef<
   HTMLDivElement,
