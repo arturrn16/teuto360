@@ -119,7 +119,7 @@ export const navItems: NavItem[] = [
     name: "Transporte 12x36", 
     href: "/transporte-12x36", 
     icon: <span className="text-fuchsia-500 text-xl">🗺️</span>,
-    allowedTypes: ["selecao"] as const
+    allowedTypes: ["selecao", "refeicao"] as const  // Added "refeicao" here
   },
   { 
     name: "Refeição", 
@@ -173,3 +173,4 @@ export const getUserRoleLabel = (roleType: string): string => {
       return 'Colaborador';
   }
 };
+

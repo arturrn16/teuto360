@@ -1,4 +1,3 @@
-
 import { useAuth } from "@/context/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui-components/Card";
 import { cn } from "@/lib/utils";
@@ -32,7 +31,7 @@ const Dashboard = () => {
       description: "Solicite transporte para turnos 12x36",
       icon: <Map className="h-8 w-8 text-indigo-500" />,
       to: "/transporte-12x36",
-      allowedTypes: ["admin", "selecao"],
+      allowedTypes: ["admin", "selecao", "refeicao"],
       color: "from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20",
       textColor: "text-indigo-600 dark:text-indigo-400"
     },
