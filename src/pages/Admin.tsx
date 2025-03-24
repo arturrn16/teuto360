@@ -796,3 +796,78 @@ const Admin = () => {
                                       >
                                         <XCircle className="h-4 w-4 mr-1" />
                                         Rejeitar
+                                      </Button>
+                                    </>
+                                  )}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  ) : (
+                    <p className="text-center py-4 text-muted-foreground">
+                      Nenhuma solicitação de transporte encontrada
+                    </p>
+                  )}
+                </TabsContent>
+
+                {/* Add other TabsContent sections for the remaining tabs here */}
+                {/* ... keep existing code (other TabsContent blocks) */}
+              </Tabs>
+            </>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Dialog for motivo input */}
+      <Dialog open={isOpenMotivo} onOpenChange={setIsOpenMotivo}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {selectedSolicitacao.status === "aprovada" 
+                ? "Informe um comentário para aprovação" 
+                : "Informe o motivo da rejeição"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="motivo">
+                {selectedSolicitacao.status === "aprovada" 
+                  ? "Comentário (opcional)" 
+                  : "Motivo da rejeição"}
+              </Label>
+              <Textarea
+                id="motivo"
+                placeholder={selectedSolicitacao.status === "aprovada" 
+                  ? "Insira um comentário opcional para a aprovação" 
+                  : "Descreva o motivo da rejeição"}
+                value={motivoRejeicao}
+                onChange={(e) => setMotivoRejeicao(e.target.value)}
+                className="min-h-[100px]"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setIsOpenMotivo(false)}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleConfirmarMotivo}
+              variant={selectedSolicitacao.status === "aprovada" ? "default" : "destructive"}
+            >
+              {selectedSolicitacao.status === "aprovada" ? "Aprovar" : "Rejeitar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+export default Admin;
+
