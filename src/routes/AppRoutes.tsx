@@ -25,213 +25,224 @@ import MapaRotas from "@/pages/MapaRotas";
 import OfertaCaronas from "@/pages/OfertaCaronas";
 import ConsultaCartao from "@/pages/ConsultaCartao";
 import GerenciarCartoes from "@/pages/GerenciarCartoes";
+import GerenciarUsuarios from "@/pages/GerenciarUsuarios";
 
 const AppRoutes = () => {
   return (
-    <Layout>
-      <Routes>
-        {/* Root route */}
-        <Route index element={<Index />} />
-        
-        {/* Protected routes */}
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
+    <Routes>
+      {/* Root route */}
+      <Route index element={<Index />} />
+      
+      {/* Protected routes */}
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
 
-        <Route
-          path="/transporte-rota"
-          element={
-            <ProtectedRoute allowedTypes={["admin", "selecao", "comum"]}>
-              <TransporteRota />
-            </ProtectedRoute>
-          }
-        />
+      <Route
+        path="/transporte-rota"
+        element={
+          <ProtectedRoute allowedTypes={["admin", "selecao", "comum"]}>
+            <TransporteRota />
+          </ProtectedRoute>
+        }
+      />
 
-        <Route
-          path="/transporte-12x36"
-          element={
-            <ProtectedRoute allowedTypes={["admin", "selecao", "refeicao"]}>
-              <Transporte12x36 />
-            </ProtectedRoute>
-          }
-        />
+      <Route
+        path="/transporte-12x36"
+        element={
+          <ProtectedRoute allowedTypes={["admin", "selecao", "refeicao"]}>
+            <Transporte12x36 />
+          </ProtectedRoute>
+        }
+      />
 
-        <Route
-          path="/refeicao"
-          element={
-            <ProtectedRoute allowedTypes={["admin", "refeicao"]}>
-              <Refeicao />
-            </ProtectedRoute>
-          }
-        />
+      <Route
+        path="/refeicao"
+        element={
+          <ProtectedRoute allowedTypes={["admin", "refeicao"]}>
+            <Refeicao />
+          </ProtectedRoute>
+        }
+      />
 
-        <Route
-          path="/minhas-solicitacoes"
-          element={
-            <ProtectedRoute allowedTypes={["selecao", "refeicao", "colaborador", "comum"]}>
-              <MinhasSolicitacoes />
-            </ProtectedRoute>
-          }
-        />
+      <Route
+        path="/minhas-solicitacoes"
+        element={
+          <ProtectedRoute allowedTypes={["selecao", "refeicao", "colaborador", "comum"]}>
+            <MinhasSolicitacoes />
+          </ProtectedRoute>
+        }
+      />
 
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute allowedTypes={["admin"]}>
-              <Admin />
-            </ProtectedRoute>
-          }
-        />
-        
-        {/* Announcements routes */}
-        <Route
-          path="/comunicados"
-          element={
-            <ProtectedRoute allowedTypes={["selecao", "refeicao", "colaborador", "comum"]}>
-              <Comunicados />
-            </ProtectedRoute>
-          }
-        />
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute allowedTypes={["admin"]}>
+            <Admin />
+          </ProtectedRoute>
+        }
+      />
+      
+      {/* Announcements routes */}
+      <Route
+        path="/comunicados"
+        element={
+          <ProtectedRoute allowedTypes={["selecao", "refeicao", "colaborador", "comum"]}>
+            <Comunicados />
+          </ProtectedRoute>
+        }
+      />
 
-        <Route
-          path="/gerenciar-comunicados"
-          element={
-            <ProtectedRoute allowedTypes={["admin"]}>
-              <GerenciarComunicados />
-            </ProtectedRoute>
-          }
-        />
-        
-        {/* Cafeteria menu routes - updated to exclude 'refeicao' user type */}
-        <Route
-          path="/cardapio-semana"
-          element={
-            <ProtectedRoute allowedTypes={["selecao", "colaborador", "comum"]}>
-              <CardapioSemana />
-            </ProtectedRoute>
-          }
-        />
+      <Route
+        path="/gerenciar-comunicados"
+        element={
+          <ProtectedRoute allowedTypes={["admin"]}>
+            <GerenciarComunicados />
+          </ProtectedRoute>
+        }
+      />
+      
+      {/* Cafeteria menu routes - updated to exclude 'refeicao' user type */}
+      <Route
+        path="/cardapio-semana"
+        element={
+          <ProtectedRoute allowedTypes={["selecao", "colaborador", "comum"]}>
+            <CardapioSemana />
+          </ProtectedRoute>
+        }
+      />
 
-        <Route
-          path="/gerenciar-cardapio"
-          element={
-            <ProtectedRoute allowedTypes={["admin"]}>
-              <GerenciarCardapio />
-            </ProtectedRoute>
-          }
-        />
-        
-        {/* Collaborator routes */}
-        <Route
-          path="/adesao-cancelamento"
-          element={
-            <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
-              <AdesaoCancelamento />
-            </ProtectedRoute>
-          }
-        />
-        
-        <Route
-          path="/mudanca-turno"
-          element={
-            <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
-              <MudancaTurno />
-            </ProtectedRoute>
-          }
-        />
-        
-        <Route
-          path="/alteracao-endereco"
-          element={
-            <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
-              <AlteracaoEndereco />
-            </ProtectedRoute>
-          }
-        />
-        
-        <Route
-          path="/abono-ponto"
-          element={
-            <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
-              <AbonoPonto />
-            </ProtectedRoute>
-          }
-        />
-        
-        <Route
-          path="/avaliacao"
-          element={
-            <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
-              <Avaliacao />
-            </ProtectedRoute>
-          }
-        />
-        
-        <Route
-          path="/plantao"
-          element={
-            <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
-              <Plantao />
-            </ProtectedRoute>
-          }
-        />
-        
-        <Route
-          path="/mapa-rotas"
-          element={
-            <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
-              <MapaRotas />
-            </ProtectedRoute>
-          }
-        />
-        
-        <Route
-          path="/oferta-caronas"
-          element={
-            <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
-              <OfertaCaronas />
-            </ProtectedRoute>
-          }
-        />
+      <Route
+        path="/gerenciar-cardapio"
+        element={
+          <ProtectedRoute allowedTypes={["admin"]}>
+            <GerenciarCardapio />
+          </ProtectedRoute>
+        }
+      />
+      
+      {/* Collaborator routes */}
+      <Route
+        path="/adesao-cancelamento"
+        element={
+          <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
+            <AdesaoCancelamento />
+          </ProtectedRoute>
+        }
+      />
+      
+      <Route
+        path="/mudanca-turno"
+        element={
+          <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
+            <MudancaTurno />
+          </ProtectedRoute>
+        }
+      />
+      
+      <Route
+        path="/alteracao-endereco"
+        element={
+          <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
+            <AlteracaoEndereco />
+          </ProtectedRoute>
+        }
+      />
+      
+      <Route
+        path="/abono-ponto"
+        element={
+          <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
+            <AbonoPonto />
+          </ProtectedRoute>
+        }
+      />
+      
+      <Route
+        path="/avaliacao"
+        element={
+          <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
+            <Avaliacao />
+          </ProtectedRoute>
+        }
+      />
+      
+      <Route
+        path="/plantao"
+        element={
+          <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
+            <Plantao />
+          </ProtectedRoute>
+        }
+      />
+      
+      <Route
+        path="/mapa-rotas"
+        element={
+          <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
+            <MapaRotas />
+          </ProtectedRoute>
+        }
+      />
+      
+      <Route
+        path="/oferta-caronas"
+        element={
+          <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
+            <OfertaCaronas />
+          </ProtectedRoute>
+        }
+      />
 
-        {/* Reports route */}
-        <Route
-          path="/relatorios"
-          element={
-            <ProtectedRoute allowedTypes={["admin"]}>
-              <Relatorios />
-            </ProtectedRoute>
-          }
-        />
+      {/* Reports route */}
+      <Route
+        path="/relatorios"
+        element={
+          <ProtectedRoute allowedTypes={["admin"]}>
+            <Relatorios />
+          </ProtectedRoute>
+        }
+      />
 
-        {/* Card routes */}
-        <Route
-          path="/consulta-cartao"
-          element={
-            <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
-              <ConsultaCartao />
-            </ProtectedRoute>
-          }
-        />
+      {/* Card routes */}
+      <Route
+        path="/consulta-cartao"
+        element={
+          <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
+            <ConsultaCartao />
+          </ProtectedRoute>
+        }
+      />
 
-        <Route
-          path="/gerenciar-cartoes"
-          element={
-            <ProtectedRoute allowedTypes={["admin"]}>
-              <GerenciarCartoes />
-            </ProtectedRoute>
-          }
-        />
+      <Route
+        path="/gerenciar-cartoes"
+        element={
+          <ProtectedRoute allowedTypes={["admin"]}>
+            <GerenciarCartoes />
+          </ProtectedRoute>
+        }
+      />
 
-        {/* Fallback for routes inside Layout */}
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
-      </Routes>
-    </Layout>
+      {/* Fallback for routes inside Layout */}
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+
+      {/* Add the new route */}
+      <Route 
+        path="/gerenciar-usuarios" 
+        element={
+          <ProtectedRoute allowedTypes={["admin"] as const}>
+            <Layout>
+              <GerenciarUsuarios />
+            </Layout>
+          </ProtectedRoute>
+        } 
+      />
+    </Routes>
   );
 };
 
