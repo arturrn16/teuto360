@@ -281,8 +281,8 @@ const GerenciarUsuarios = () => {
         return 'Administrador';
       case 'selecao':
         return 'Seleção';
-      case 'refeicao':
-        return 'Refeição';
+      case 'gestor':
+        return 'Gestor';
       case 'colaborador':
         return 'Colaborador';
       case 'comum':
@@ -559,14 +559,16 @@ const GerenciarUsuarios = () => {
                   value={editUser.tipo_usuario || "comum"}
                   onValueChange={(value) => setEditUser({...editUser, tipo_usuario: value as UserType})}
                 >
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Selecione o tipo" />
-                  </SelectTrigger>
+                  <FormControl>
+                    <SelectTrigger className="form-select-input">
+                      <SelectValue placeholder="Selecione o tipo" />
+                    </SelectTrigger>
+                  </FormControl>
                   <SelectContent>
                     <SelectItem value="comum">Comum</SelectItem>
                     <SelectItem value="colaborador">Colaborador</SelectItem>
                     <SelectItem value="selecao">Seleção</SelectItem>
-                    <SelectItem value="refeicao">Refeição</SelectItem>
+                    <SelectItem value="gestor">Gestor</SelectItem>
                     <SelectItem value="admin">Administrador</SelectItem>
                   </SelectContent>
                 </Select>
@@ -749,14 +751,16 @@ const GerenciarUsuarios = () => {
                   value={newUser.tipo_usuario}
                   onValueChange={(value) => setNewUser({...newUser, tipo_usuario: value as UserType})}
                 >
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Selecione o tipo" />
-                  </SelectTrigger>
+                  <FormControl>
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="Selecione o tipo" />
+                    </SelectTrigger>
+                  </FormControl>
                   <SelectContent>
                     <SelectItem value="comum">Comum</SelectItem>
                     <SelectItem value="colaborador">Colaborador</SelectItem>
                     <SelectItem value="selecao">Seleção</SelectItem>
-                    <SelectItem value="refeicao">Refeição</SelectItem>
+                    <SelectItem value="gestor">Gestor</SelectItem>
                     <SelectItem value="admin">Administrador</SelectItem>
                   </SelectContent>
                 </Select>

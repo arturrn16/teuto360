@@ -113,7 +113,7 @@ export const AppRoutes = () => {
         <Route
           path="/transporte-12x36"
           element={
-            <ProtectedRoute allowedTypes={["admin", "selecao", "refeicao"]}>
+            <ProtectedRoute allowedTypes={["admin", "selecao", "gestor"]}>
               <Transporte12x36 />
             </ProtectedRoute>
           }
@@ -122,7 +122,7 @@ export const AppRoutes = () => {
         <Route
           path="/refeicao"
           element={
-            <ProtectedRoute allowedTypes={["admin", "refeicao"]}>
+            <ProtectedRoute allowedTypes={["admin", "gestor"]}>
               <Refeicao />
             </ProtectedRoute>
           }
@@ -131,7 +131,7 @@ export const AppRoutes = () => {
         <Route
           path="/minhas-solicitacoes"
           element={
-            <ProtectedRoute allowedTypes={["selecao", "refeicao", "colaborador", "comum"]}>
+            <ProtectedRoute allowedTypes={["selecao", "gestor", "colaborador", "comum"]}>
               <MinhasSolicitacoes />
             </ProtectedRoute>
           }
@@ -140,7 +140,7 @@ export const AppRoutes = () => {
         <Route
           path="/comunicados"
           element={
-            <ProtectedRoute allowedTypes={["selecao", "refeicao", "colaborador", "comum"]}>
+            <ProtectedRoute allowedTypes={["selecao", "gestor", "colaborador", "comum"]}>
               <Comunicados />
             </ProtectedRoute>
           }
@@ -158,7 +158,7 @@ export const AppRoutes = () => {
         <Route
           path="/cardapio-semana"
           element={
-            <ProtectedRoute allowedTypes={["selecao", "colaborador", "comum"]}>
+            <ProtectedRoute allowedTypes={["selecao", "comum"]}>
               <CardapioSemana />
             </ProtectedRoute>
           }
@@ -176,7 +176,7 @@ export const AppRoutes = () => {
         <Route
           path="/adesao-cancelamento"
           element={
-            <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
+            <ProtectedRoute allowedTypes={["gestor", "comum"]}>
               <AdesaoCancelamento />
             </ProtectedRoute>
           }
@@ -185,7 +185,7 @@ export const AppRoutes = () => {
         <Route
           path="/mudanca-turno"
           element={
-            <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
+            <ProtectedRoute allowedTypes={["gestor", "comum"]}>
               <MudancaTurno />
             </ProtectedRoute>
           }
@@ -194,7 +194,7 @@ export const AppRoutes = () => {
         <Route
           path="/alteracao-endereco"
           element={
-            <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
+            <ProtectedRoute allowedTypes={["gestor", "comum"]}>
               <AlteracaoEndereco />
             </ProtectedRoute>
           }
@@ -203,7 +203,7 @@ export const AppRoutes = () => {
         <Route
           path="/abono-ponto"
           element={
-            <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
+            <ProtectedRoute allowedTypes={["gestor", "comum"]}>
               <AbonoPonto />
             </ProtectedRoute>
           }
@@ -212,7 +212,7 @@ export const AppRoutes = () => {
         <Route
           path="/avaliacao"
           element={
-            <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
+            <ProtectedRoute allowedTypes={["gestor", "comum"]}>
               <Avaliacao />
             </ProtectedRoute>
           }
@@ -221,7 +221,7 @@ export const AppRoutes = () => {
         <Route
           path="/plantao"
           element={
-            <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
+            <ProtectedRoute allowedTypes={["gestor", "comum"]}>
               <Plantao />
             </ProtectedRoute>
           }
@@ -230,7 +230,7 @@ export const AppRoutes = () => {
         <Route
           path="/mapa-rotas"
           element={
-            <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
+            <ProtectedRoute allowedTypes={["gestor", "comum"]}>
               <MapaRotas />
             </ProtectedRoute>
           }
@@ -239,7 +239,7 @@ export const AppRoutes = () => {
         <Route
           path="/oferta-caronas"
           element={
-            <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
+            <ProtectedRoute allowedTypes={["gestor", "comum"]}>
               <OfertaCaronas />
             </ProtectedRoute>
           }
@@ -257,7 +257,7 @@ export const AppRoutes = () => {
         <Route
           path="/consulta-cartao"
           element={
-            <ProtectedRoute allowedTypes={["colaborador", "comum"]}>
+            <ProtectedRoute allowedTypes={["gestor", "comum"]}>
               <ConsultaCartao />
             </ProtectedRoute>
           }

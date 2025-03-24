@@ -10,7 +10,7 @@ export interface User {
   cargo: string | null;
   setor: string | null;
   rota: string | null;
-  tipo_usuario: 'admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum';
+  tipo_usuario: 'admin' | 'selecao' | 'gestor' | 'colaborador' | 'comum';
   admin: boolean;
   created_at?: string;
   updated_at?: string;
@@ -24,7 +24,7 @@ export interface NewUser {
   cargo?: string;
   setor?: string;
   rota?: string;
-  tipo_usuario: 'admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum';
+  tipo_usuario: 'admin' | 'selecao' | 'gestor' | 'colaborador' | 'comum';
   admin: boolean;
 }
 

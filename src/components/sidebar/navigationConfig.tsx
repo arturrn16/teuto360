@@ -1,8 +1,7 @@
-
 import React from "react";
 
 // Types for user roles
-export type UserType = 'admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum';
+export type UserType = 'admin' | 'selecao' | 'gestor' | 'colaborador' | 'comum';
 
 // Navigation structure with support for nested items
 export interface NavItem {
@@ -18,67 +17,67 @@ export const navItems: NavItem[] = [
     name: "Dashboard", 
     href: "/dashboard", 
     icon: <span className="text-red-400 text-xl">🏠</span>,
-    allowedTypes: ["selecao", "refeicao", "colaborador", "comum"] as const
+    allowedTypes: ["selecao", "gestor", "colaborador", "comum"] as const
   },
   { 
     name: "Minhas Solicitações", 
     href: "/minhas-solicitacoes", 
     icon: <span className="text-amber-600 text-xl">📋</span>,
-    allowedTypes: ["selecao", "refeicao", "colaborador", "comum"] as const
+    allowedTypes: ["selecao", "gestor", "colaborador", "comum"] as const
   },
   { 
     name: "Transporte", 
     href: "#", // No direct link
     icon: <span className="text-blue-600 text-xl">🚌</span>,
-    allowedTypes: ["colaborador", "comum"] as const,
+    allowedTypes: ["gestor", "comum"] as const, // Removed "colaborador"
     children: [
       { 
         name: "Mapa de Rotas", 
         href: "/mapa-rotas", 
         icon: <></>,
-        allowedTypes: ["colaborador", "comum"] as const
+        allowedTypes: ["gestor", "comum"] as const // Removed "colaborador"
       },
       { 
         name: "Uso de Rota", 
         href: "/transporte-rota", 
         icon: <></>,
-        allowedTypes: ["colaborador", "comum"] as const
+        allowedTypes: ["gestor", "comum"] as const // Removed "colaborador"
       },
       { 
         name: "Mudança de Turno", 
         href: "/mudanca-turno", 
         icon: <></>,
-        allowedTypes: ["colaborador", "comum"] as const
+        allowedTypes: ["gestor", "comum"] as const // Removed "colaborador", added "gestor"
       },
       { 
         name: "Alteração de Endereço", 
         href: "/alteracao-endereco", 
         icon: <></>,
-        allowedTypes: ["colaborador", "comum"] as const
+        allowedTypes: ["gestor", "comum"] as const // Removed "colaborador"
       },
       { 
         name: "Adesão/Cancelamento", 
         href: "/adesao-cancelamento", 
         icon: <></>,
-        allowedTypes: ["colaborador", "comum"] as const
+        allowedTypes: ["gestor", "comum"] as const // Removed "colaborador"
       },
       { 
         name: "Abono de Ponto", 
         href: "/abono-ponto", 
         icon: <></>,
-        allowedTypes: ["colaborador", "comum"] as const
+        allowedTypes: ["gestor", "comum"] as const // Removed "colaborador"
       },
       { 
         name: "Plantão 24hs", 
         href: "/plantao", 
         icon: <></>,
-        allowedTypes: ["colaborador", "comum"] as const
+        allowedTypes: ["gestor", "comum"] as const // Removed "colaborador"
       },
       { 
         name: "Avaliação", 
         href: "/avaliacao", 
         icon: <></>,
-        allowedTypes: ["colaborador", "comum"] as const
+        allowedTypes: ["gestor", "comum"] as const // Removed "colaborador"
       },
     ]
   },
@@ -86,13 +85,13 @@ export const navItems: NavItem[] = [
     name: "Refeitório", 
     href: "#", // No direct link
     icon: <span className="text-gray-600 text-xl">🍽️</span>,
-    allowedTypes: ["colaborador", "comum"] as const, // Removed "refeicao" from here
+    allowedTypes: ["comum"] as const, // Removed "colaborador" and "refeicao"
     children: [
       { 
         name: "Cardápio da Semana", 
         href: "/cardapio-semana", 
         icon: <span className="text-green-500 text-xl">📅</span>,
-        allowedTypes: ["colaborador", "comum"] as const // Removed "refeicao" from here
+        allowedTypes: ["comum"] as const // Removed "colaborador" and "refeicao"
       }
     ]
   },
@@ -100,19 +99,19 @@ export const navItems: NavItem[] = [
     name: "Avisos", 
     href: "/comunicados", 
     icon: <span className="text-red-500 text-xl">📢</span>,
-    allowedTypes: ["colaborador", "comum", "refeicao"] as const
+    allowedTypes: ["gestor", "comum", "colaborador"] as const // Changed "refeicao" to "gestor"
   },
   { 
     name: "Ofertas de Carona", 
     href: "/oferta-caronas", 
     icon: <span className="text-red-600 text-xl">🚗</span>,
-    allowedTypes: ["colaborador", "comum"] as const
+    allowedTypes: ["gestor", "comum"] as const // Removed "colaborador"
   },
   { 
     name: "Consulta de Cartão", 
     href: "/consulta-cartao", 
     icon: <span className="text-blue-600 text-xl">💳</span>,
-    allowedTypes: ["colaborador", "comum"] as const
+    allowedTypes: ["gestor", "comum"] as const // Removed "colaborador"
   },
   // Admin sections - keep these for admin users
   { 
@@ -125,19 +124,19 @@ export const navItems: NavItem[] = [
     name: "Transporte 12x36", 
     href: "/transporte-12x36", 
     icon: <span className="text-fuchsia-500 text-xl">🗺️</span>,
-    allowedTypes: ["selecao", "refeicao"] as const
+    allowedTypes: ["selecao", "gestor"] as const // Changed "refeicao" to "gestor"
   },
   { 
     name: "Refeição", 
     href: "/refeicao", 
     icon: <span className="text-amber-500 text-xl">🍽️</span>,
-    allowedTypes: ["refeicao"] as const
+    allowedTypes: ["gestor"] as const // Changed "refeicao" to "gestor"
   },
   { 
     name: "Comunicados", 
     href: "/comunicados", 
     icon: <span className="text-red-400 text-xl">📢</span>,
-    allowedTypes: ["selecao", "refeicao"] as const
+    allowedTypes: ["selecao", "gestor"] as const // Changed "refeicao" to "gestor"
   },
   { 
     name: "Administração", 
@@ -181,8 +180,8 @@ export const getUserRoleLabel = (roleType: string): string => {
   switch (roleType) {
     case 'admin':
       return 'Administrador';
-    case 'refeicao':
-      return 'Refeição';
+    case 'gestor':
+      return 'Gestor';
     case 'selecao':
       return 'Seleção';
     case 'comum':

@@ -11,7 +11,7 @@ export interface User {
   setor: string;
   username: string;
   admin: boolean;
-  tipo_usuario: 'admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum';
+  tipo_usuario: 'admin' | 'selecao' | 'gestor' | 'colaborador' | 'comum';
   created_at?: string;
   updated_at?: string;
 }
@@ -74,7 +74,7 @@ export const storeUser = (user: User): void => {
 
 export const checkUserPermission = (
   user: User | null,
-  requiredTypes: ReadonlyArray<'admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum'>
+  requiredTypes: ReadonlyArray<'admin' | 'selecao' | 'gestor' | 'colaborador' | 'comum'>
 ): boolean => {
   if (!user) return false;
   
@@ -88,7 +88,7 @@ export const checkUserPermission = (
 // Update function to accept readonly arrays
 export const shouldShowRoute = (
   user: User | null,
-  allowedTypes: ReadonlyArray<'admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum'>
+  allowedTypes: ReadonlyArray<'admin' | 'selecao' | 'gestor' | 'colaborador' | 'comum'>
 ): boolean => {
   if (!user) return false;
   

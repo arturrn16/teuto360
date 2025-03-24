@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { User, getStoredUser, loginUser, logoutUser, storeUser, shouldShowRoute } from "@/utils/auth";
 import { useNavigate } from "react-router-dom";
@@ -10,7 +9,7 @@ interface AuthContextType {
   login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
   isAuthenticated: boolean;
-  shouldShowRoute: (allowedTypes: ReadonlyArray<'admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum'>) => boolean;
+  shouldShowRoute: (allowedTypes: ReadonlyArray<'admin' | 'selecao' | 'gestor' | 'colaborador' | 'comum'>) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -21,7 +20,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Verifica se o usuário já está logado
     try {
       const storedUser = getStoredUser();
       if (storedUser) {
@@ -31,7 +29,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error) {
       console.error("Erro ao recuperar usuário do storage:", error);
     } finally {
-      // Sempre marca o carregamento como completo, mesmo em caso de erro
       setIsLoading(false);
     }
   }, []);
@@ -63,8 +60,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     navigate("/login");
   };
 
-  // Update method to accept readonly arrays
-  const checkShouldShowRoute = (allowedTypes: ReadonlyArray<'admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum'>) => {
+  const checkShouldShowRoute = (allowedTypes: ReadonlyArray<'admin' | 'selecao' | 'gestor' | 'colaborador' | 'comum'>) => {
     return shouldShowRoute(user, allowedTypes);
   };
 
@@ -92,11 +88,10 @@ export const useAuth = (): AuthContextType => {
   return context;
 };
 
-// Protected route component - update to accept readonly arrays and fix error handling
 export const ProtectedRoute: React.FC<{
   children: React.ReactNode;
-  allowedTypes?: ReadonlyArray<'admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum'>;
-}> = ({ children, allowedTypes = ["admin", "selecao", "refeicao", "colaborador", "comum"] as const }) => {
+  allowedTypes?: ReadonlyArray<'admin' | 'selecao' | 'gestor' | 'colaborador' | 'comum'>;
+}> = ({ children, allowedTypes = ["admin", "selecao", "gestor", "colaborador", "comum"] as const }) => {
   const { user, isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
 
@@ -105,7 +100,6 @@ export const ProtectedRoute: React.FC<{
       if (!isAuthenticated) {
         navigate("/login");
       } else if (user) {
-        // Corrigindo a verificação de permissões
         const isAllowed = user.admin || allowedTypes.includes(user.tipo_usuario);
         console.log("Route access check:", {
           userType: user.tipo_usuario,
@@ -128,6 +122,5 @@ export const ProtectedRoute: React.FC<{
     </div>;
   }
 
-  // Se autenticado e tem permissão, renderiza os children
   return isAuthenticated ? <>{children}</> : null;
 };
