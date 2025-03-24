@@ -286,7 +286,6 @@ const Relatorios = () => {
                         data={getRequestsByType()}
                         cx="50%"
                         cy="50%"
-                        labelLine={true}
                         outerRadius={90}
                         fill="#8884d8"
                         dataKey="value"
