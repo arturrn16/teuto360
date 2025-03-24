@@ -802,5 +802,4 @@ const Admin = () => {
                                         Aprovar
                                       </Button>
                                       <Button 
-                                        variant="outline" 
-                                        size="sm
+                                        variant="outline"
