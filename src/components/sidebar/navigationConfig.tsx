@@ -18,7 +18,7 @@ export const navItems: NavItem[] = [
     name: "Dashboard", 
     href: "/dashboard", 
     icon: <span className="text-red-400 text-xl">🏠</span>,
-    allowedTypes: ["admin", "selecao", "refeicao", "colaborador", "comum"] as const
+    allowedTypes: ["selecao", "refeicao", "colaborador", "comum"] as const
   },
   { 
     name: "Minhas Solicitações", 
@@ -86,13 +86,13 @@ export const navItems: NavItem[] = [
     name: "Refeitório", 
     href: "#", // No direct link
     icon: <span className="text-gray-600 text-xl">🍽️</span>,
-    allowedTypes: ["colaborador", "comum"] as const,
+    allowedTypes: ["colaborador", "comum"] as const, // Removed "refeicao" from here
     children: [
       { 
         name: "Cardápio da Semana", 
         href: "/cardapio-semana", 
         icon: <span className="text-green-500 text-xl">📅</span>,
-        allowedTypes: ["colaborador", "comum"] as const
+        allowedTypes: ["colaborador", "comum"] as const // Removed "refeicao" from here
       }
     ]
   },
@@ -114,7 +114,31 @@ export const navItems: NavItem[] = [
     icon: <span className="text-blue-600 text-xl">💳</span>,
     allowedTypes: ["colaborador", "comum"] as const
   },
-  // Admin-specific menu items
+  // Admin sections - keep these for admin users
+  { 
+    name: "Transporte Rota", 
+    href: "/transporte-rota", 
+    icon: <span className="text-violet-500 text-xl">🚏</span>,
+    allowedTypes: ["selecao"] as const
+  },
+  { 
+    name: "Transporte 12x36", 
+    href: "/transporte-12x36", 
+    icon: <span className="text-fuchsia-500 text-xl">🗺️</span>,
+    allowedTypes: ["selecao", "refeicao"] as const
+  },
+  { 
+    name: "Refeição", 
+    href: "/refeicao", 
+    icon: <span className="text-amber-500 text-xl">🍽️</span>,
+    allowedTypes: ["refeicao"] as const
+  },
+  { 
+    name: "Comunicados", 
+    href: "/comunicados", 
+    icon: <span className="text-red-400 text-xl">📢</span>,
+    allowedTypes: ["selecao", "refeicao"] as const
+  },
   { 
     name: "Administração", 
     href: "/admin", 
@@ -143,12 +167,6 @@ export const navItems: NavItem[] = [
     name: "Gerenciar Cartões", 
     href: "/gerenciar-cartoes", 
     icon: <span className="text-green-600 text-xl">💳</span>,
-    allowedTypes: ["admin"] as const
-  },
-  { 
-    name: "Gerenciar Usuários", 
-    href: "/gerenciar-usuarios", 
-    icon: <span className="text-orange-600 text-xl">👥</span>,
     allowedTypes: ["admin"] as const
   },
 ];
