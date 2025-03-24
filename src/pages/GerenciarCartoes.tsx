@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from "react";
-import { useToast } from "sonner";
+import { toast } from "sonner";
 import { getAllCards, addCard, updateCardStatus, deleteCard, Card as CardType } from "@/services/cardService";
 import { 
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
@@ -23,18 +22,14 @@ const GerenciarCartoes = () => {
   const [searchMatricula, setSearchMatricula] = useState("");
   const [filteredCards, setFilteredCards] = useState<CardType[]>([]);
   
-  // For new card
   const [newCard, setNewCard] = useState({
     matricula: "",
     nome_colaborador: "",
     tipo_cartao: ""
   });
   
-  // For receipt generation
   const [selectedCard, setSelectedCard] = useState<CardType | null>(null);
   
-  const toast = useToast();
-
   const loadCards = async () => {
     setIsLoading(true);
     try {
@@ -132,7 +127,6 @@ const GerenciarCartoes = () => {
   };
 
   const generateReceipt = (card: CardType) => {
-    // Set the selected card
     setSelectedCard(card);
   };
 
@@ -166,7 +160,6 @@ const GerenciarCartoes = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Add new card */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -211,7 +204,6 @@ const GerenciarCartoes = () => {
           </CardContent>
         </Card>
 
-        {/* Card list and search */}
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
