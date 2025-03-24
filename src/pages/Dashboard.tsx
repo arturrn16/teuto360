@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { Clock, FileText, Route, Map, Utensils, Shield, Home, UserCheck, Phone, Star, MapPin, ClipboardCheck, Replace, Car, CalendarDays } from "lucide-react";
 import { useEffect, useState } from "react";
+import { UserType } from "@/components/sidebar/navigationConfig";
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -20,13 +21,21 @@ const Dashboard = () => {
   // Log user type for debugging
   console.log("Dashboard - User type:", user?.tipo_usuario);
 
-  const cards = [
+  const cards: {
+    title: string;
+    description: string;
+    icon: JSX.Element;
+    to: string;
+    allowedTypes: ReadonlyArray<UserType>;
+    color: string;
+    textColor: string;
+  }[] = [
     {
       title: "Administração",
       description: "Gerencie todas as solicitações",
       icon: <Shield className="h-8 w-8 text-rose-500" />,
       to: "/admin",
-      allowedTypes: ["admin"] as const,
+      allowedTypes: ["admin"],
       color: "from-rose-50 to-rose-100 dark:from-rose-900/20 dark:to-rose-800/20",
       textColor: "text-rose-600 dark:text-rose-400"
     },
@@ -35,7 +44,7 @@ const Dashboard = () => {
       description: "Visualize relatórios e estatísticas",
       icon: <FileText className="h-8 w-8 text-indigo-600" />,
       to: "/relatorios",
-      allowedTypes: ["admin"] as const,
+      allowedTypes: ["admin"],
       color: "from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20",
       textColor: "text-indigo-600 dark:text-indigo-400"
     },
@@ -44,7 +53,7 @@ const Dashboard = () => {
       description: "Publique e gerencie comunicados para colaboradores",
       icon: <FileText className="h-8 w-8 text-orange-500" />,
       to: "/gerenciar-comunicados",
-      allowedTypes: ["admin"] as const,
+      allowedTypes: ["admin"],
       color: "from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20",
       textColor: "text-orange-600 dark:text-orange-400"
     },
@@ -53,7 +62,7 @@ const Dashboard = () => {
       description: "Publique e gerencie cardápios do refeitório",
       icon: <Utensils className="h-8 w-8 text-purple-600" />,
       to: "/gerenciar-cardapio",
-      allowedTypes: ["admin"] as const,
+      allowedTypes: ["admin"],
       color: "from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20",
       textColor: "text-purple-600 dark:text-purple-400"
     },
@@ -203,7 +212,7 @@ const Dashboard = () => {
       return card.allowedTypes.includes('admin');
     }
     
-    return card.allowedTypes.includes(user.tipo_usuario);
+    return card.allowedTypes.includes(user.tipo_usuario as UserType);
   });
 
   return (
