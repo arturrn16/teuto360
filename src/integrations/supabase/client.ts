@@ -176,18 +176,18 @@ export async function updateCustomTable(
     console.log(`Updating table ${tableName} with data:`, data, "and condition:", condition);
     
     // Bypass TypeScript's type checking for tables not in the schema
-    const { error } = await (supabase as any)
+    const result = await (supabase as any)
       .from(tableName)
       .update(data)
       .eq(condition.column, condition.value);
       
-    if (error) {
-      console.error(`Error updating ${tableName}:`, error);
+    if (result.error) {
+      console.error(`Error updating ${tableName}:`, result.error);
     } else {
       console.log(`Successfully updated ${tableName}`);
     }
     
-    return { error };
+    return { error: result.error };
   } catch (error) {
     console.error(`Exception updating ${tableName}:`, error);
     return { error };

@@ -25,6 +25,8 @@ export function SolicitacaoAdesaoCancelamentoView({
   const handleUpdateStatus = async (newStatus: string) => {
     setIsLoading(true);
     try {
+      console.log(`Starting ${newStatus} process for solicitação ID: ${solicitacao.id}`);
+      
       // Verificando se há motivo em caso de rejeição
       if (newStatus === 'rejeitada' && !motivo.trim()) {
         toast.error("É necessário informar o motivo da rejeição");
@@ -53,6 +55,8 @@ export function SolicitacaoAdesaoCancelamentoView({
       }
       
       console.log("Updating with data:", updateData);
+      console.log("Table: solicitacoes_adesao_cancelamento");
+      console.log("Condition: id =", solicitacao.id);
       
       const { error } = await updateCustomTable(
         'solicitacoes_adesao_cancelamento',
