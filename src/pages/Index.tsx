@@ -1,27 +1,23 @@
 
 import { useAuth } from "@/context/AuthContext";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { PageLoader } from "@/components/ui/loader-spinner";
 
 const Index = () => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
-    // Only redirect if auth status is known (not loading) and not already redirecting
-    if (!isLoading && !redirecting) {
-      setRedirecting(true);
-      if (isAuthenticated) {
-        navigate("/dashboard");
-      } else {
-        navigate("/login");
-      }
+    // Always redirect to dashboard if authenticated, or login if not
+    if (isAuthenticated) {
+      navigate("/dashboard", { replace: true });
+    } else {
+      navigate("/login", { replace: true });
     }
-  }, [isAuthenticated, isLoading, navigate, redirecting]);
+  }, [isAuthenticated, navigate]);
 
-  // Show a better loading component while checking auth state
+  // Show a better loading component while redirecting
   return <PageLoader />;
 };
 

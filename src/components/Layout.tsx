@@ -1,6 +1,6 @@
 
 import { useAuth } from "@/context/AuthContext";
-import { Outlet, useLocation } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "./ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { AlignLeft } from "lucide-react";
@@ -10,11 +10,10 @@ import { cn } from "@/lib/utils";
 import { useIdleTimeout } from "@/hooks/use-idle-timeout";
 import { PageLoader } from "./ui/loader-spinner";
 
-export const Layout = () => {
+export const Layout = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isLoading } = useAuth();
   const isMobile = useIsMobile();
   const [isScrolled, setIsScrolled] = useState(false);
-  const location = useLocation();
 
   // Initialize the idle timeout hook
   useIdleTimeout({
@@ -32,19 +31,14 @@ export const Layout = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Scroll to top when route changes
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [location.pathname]);
-
   // Show a loading screen during authentication check
   if (isLoading) {
     return <PageLoader />;
   }
 
-  // If not authenticated, only render the outlet (which should be the login page)
+  // If not authenticated, redirect to login
   if (!isAuthenticated) {
-    return <Outlet />;
+    return <Navigate to="/login" />;
   }
 
   // If authenticated, render the complete layout with the sidebar
@@ -66,7 +60,7 @@ export const Layout = () => {
               </div>
             )}
             <div className="w-full transition-all">
-              <Outlet />
+              {children}
             </div>
           </main>
         </div>

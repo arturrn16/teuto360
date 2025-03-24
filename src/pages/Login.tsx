@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -9,15 +9,13 @@ import { PageLoader } from "@/components/ui/loader-spinner";
 const Login = () => {
   const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
-  const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
-    // Only redirect if authenticated, not loading, and not already redirecting
-    if (isAuthenticated && !isLoading && !redirecting) {
-      setRedirecting(true);
-      navigate("/dashboard");
+    // Only redirect if authenticated and not loading
+    if (isAuthenticated && !isLoading) {
+      navigate("/dashboard", { replace: true });
     }
-  }, [isAuthenticated, isLoading, navigate, redirecting]);
+  }, [isAuthenticated, isLoading, navigate]);
 
   if (isLoading) {
     return <PageLoader />;
