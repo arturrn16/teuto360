@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
@@ -57,6 +56,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { UserType } from "@/components/sidebar/navigationConfig";
 
 const GerenciarUsuarios = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -72,7 +72,6 @@ const GerenciarUsuarios = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   
-  // New user form state
   const [newUser, setNewUser] = useState<NewUser>({
     nome: "",
     matricula: "",
@@ -85,7 +84,6 @@ const GerenciarUsuarios = () => {
     admin: false
   });
   
-  // Edit user form state
   const [editUser, setEditUser] = useState<Partial<User>>({
     nome: "",
     matricula: "",
@@ -235,7 +233,6 @@ const GerenciarUsuarios = () => {
       if (created) {
         setUsers(prev => [...prev, created]);
         setIsNewDialogOpen(false);
-        // Reset form
         setNewUser({
           nome: "",
           matricula: "",
@@ -267,7 +264,6 @@ const GerenciarUsuarios = () => {
     }
   };
   
-  // Format date for display
   const formatDate = (dateString?: string) => {
     if (!dateString) return "N/A";
     return new Date(dateString).toLocaleDateString("pt-BR", {
@@ -279,7 +275,6 @@ const GerenciarUsuarios = () => {
     });
   };
   
-  // Get user role label
   const getUserRoleLabel = (role: string): string => {
     switch (role) {
       case 'admin':
@@ -297,12 +292,10 @@ const GerenciarUsuarios = () => {
     }
   };
   
-  // If auth is still loading, show a loader
   if (isLoading) {
     return <PageLoader />;
   }
   
-  // If not authenticated or not admin, show access denied
   if (!isAuthenticated || !user?.admin) {
     return (
       <div className="container py-10">
@@ -383,7 +376,7 @@ const GerenciarUsuarios = () => {
           
           {loading ? (
             <div className="flex justify-center py-8">
-              <PageLoader size="medium" />
+              <PageLoader />
             </div>
           ) : filteredUsers.length > 0 ? (
             <div className="rounded-md border overflow-hidden">
@@ -476,7 +469,6 @@ const GerenciarUsuarios = () => {
         </CardContent>
       </Card>
       
-      {/* Edit User Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
@@ -607,7 +599,6 @@ const GerenciarUsuarios = () => {
         </DialogContent>
       </Dialog>
       
-      {/* Password Dialog */}
       <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
@@ -655,7 +646,6 @@ const GerenciarUsuarios = () => {
         </DialogContent>
       </Dialog>
       
-      {/* New User Dialog */}
       <Dialog open={isNewDialogOpen} onOpenChange={setIsNewDialogOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
@@ -799,7 +789,6 @@ const GerenciarUsuarios = () => {
         </DialogContent>
       </Dialog>
       
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>

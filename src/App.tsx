@@ -14,7 +14,7 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 // Layout and protected pages will be imported in a separate route file
-import AppRoutes from "./routes/AppRoutes";
+import { AppRoutes } from "./routes/AppRoutes";
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
