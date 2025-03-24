@@ -1,9 +1,8 @@
-
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "sonner";
+import { toast } from "sonner";
 import { checkCardByMatricula, Card as CardType } from "@/services/cardService";
 import { CreditCard, Check, X } from "lucide-react";
 
@@ -12,7 +11,6 @@ const ConsultaCartao = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [cardResult, setCardResult] = useState<CardType | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
-  const toast = useToast();
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
