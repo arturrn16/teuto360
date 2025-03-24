@@ -8,7 +8,7 @@ type SidebarNavItemProps = {
   href: string;
   title?: string;
   name?: string; // Added name as an alternative to title
-  icon: React.FC;
+  icon: React.FC<{ className?: string }>;
   allowedTypes?: ReadonlyArray<'admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum'>;
   requiredUser?: string;
   isActive?: boolean;

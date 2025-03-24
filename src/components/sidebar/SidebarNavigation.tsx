@@ -114,7 +114,7 @@ export const SidebarNavigation = ({ items, userType, admin = false }: SidebarNav
               <SidebarNavItem 
                 key={childIndex}
                 href={child.href}
-                icon={isEmptyIcon(child.icon) ? null : child.icon}
+                icon={child.icon}
                 name={child.name}
                 isActive={location.pathname === child.href}
                 onClick={() => handleNavigation(child.href)}

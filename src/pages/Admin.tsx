@@ -540,7 +540,7 @@ const Admin = () => {
     return (
       <div className="text-sm">
         <div className="font-medium">{info.nome || '--'}</div>
-        <div className="text-muted-foreground">{info.rota || '--'}</div>
+        <div className="text-muted-foreground">{info.setor || '--'}</div>
       </div>
     );
   };

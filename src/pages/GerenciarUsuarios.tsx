@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+
+import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import {
   Card,
@@ -33,7 +34,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
@@ -44,6 +44,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useForm } from "react-hook-form";
@@ -53,8 +54,15 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { PageLoader } from "@/components/ui/loader-spinner";
 import { User } from "@/utils/auth";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Loader2 } from "lucide-react";
 
-const userSchema = z.object({
+const Icons = {
+  spinner: Loader2,
+};
+
+// Define a schema specifically for the form
+const userFormSchema = z.object({
   id: z.number().optional(),
   matricula: z.string().min(3, {
     message: "Matrícula deve ter pelo menos 3 caracteres.",
@@ -76,12 +84,15 @@ const userSchema = z.object({
   tipo_usuario: z.enum(['admin', 'selecao', 'refeicao', 'colaborador', 'comum']).default('comum'),
 });
 
+// Infer the type from the schema for form typing
+type UserFormValues = z.infer<typeof userFormSchema>;
+
 const GerenciarUsuarios = () => {
   const { user: loggedInUser, isAuthenticated, isLoading } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [search, setSearch] = useState("");
   const [openModal, setOpenModal] = useState(false);
-  const [editingUser, setEditingUser] = useState<User>({
+  const [editingUser, setEditingUser] = useState<UserFormValues>({
     id: 0,
     matricula: "",
     nome: "",
@@ -95,8 +106,8 @@ const GerenciarUsuarios = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const form = useForm<z.infer<typeof userSchema>>({
-    resolver: zodResolver(userSchema),
+  const form = useForm<UserFormValues>({
+    resolver: zodResolver(userFormSchema),
     defaultValues: {
       matricula: "",
       nome: "",
@@ -128,7 +139,21 @@ const GerenciarUsuarios = () => {
       }
 
       if (data) {
-        setUsers(data);
+        // Convert database users to User type
+        const typedUsers: User[] = data.map(dbUser => ({
+          id: dbUser.id,
+          matricula: dbUser.matricula,
+          nome: dbUser.nome,
+          cargo: dbUser.cargo || "", // Provide default values if missing
+          setor: dbUser.setor || "", // Provide default values if missing
+          username: dbUser.username,
+          admin: dbUser.admin || false,
+          tipo_usuario: dbUser.tipo_usuario as User["tipo_usuario"],
+          rota: dbUser.rota,
+          created_at: dbUser.created_at,
+          updated_at: dbUser.updated_at
+        }));
+        setUsers(typedUsers);
       }
     } catch (error) {
       console.error("Erro ao buscar usuários:", error);
@@ -164,14 +189,19 @@ const GerenciarUsuarios = () => {
 
   const handleEditUser = (user: User) => {
     setIsCreating(false);
-    setEditingUser(user);
-    form.setValue("matricula", user.matricula);
-    form.setValue("nome", user.nome);
-    form.setValue("cargo", user.cargo);
-    form.setValue("setor", user.setor);
-    form.setValue("username", user.username);
-    form.setValue("admin", user.admin);
-    form.setValue("tipo_usuario", user.tipo_usuario);
+    // Map the User type to the form schema type
+    const formUser: UserFormValues = {
+      id: user.id,
+      matricula: user.matricula,
+      nome: user.nome,
+      cargo: user.cargo,
+      setor: user.setor,
+      username: user.username,
+      admin: user.admin,
+      tipo_usuario: user.tipo_usuario,
+    };
+    setEditingUser(formUser);
+    form.reset(formUser);
     handleOpenModal();
   };
 
@@ -211,22 +241,19 @@ const GerenciarUsuarios = () => {
     );
   });
 
-  const handleEditModalSave = async () => {
+  const handleEditModalSave = async (values: UserFormValues) => {
     try {
       setIsSaving(true);
       
       // For new users, ensure password is set
-      if (isCreating && !editingUser.password) {
+      if (isCreating && !values.password) {
         toast.error("Senha é obrigatória para novos usuários");
         setIsSaving(false);
         return;
       }
       
-      // Create a copy of the user data without password for state update
-      const userForState = { ...editingUser };
-      
-      // Create a copy for the API with password if it exists
-      const userForApi = { ...editingUser };
+      // Create database object
+      const userForApi = { ...values };
       
       // Remove password if it's empty (for existing users)
       if (!isCreating && userForApi.password === '') {
@@ -247,7 +274,21 @@ const GerenciarUsuarios = () => {
         }
         
         if (data && data[0]) {
-          setUsers(prev => [...prev, data[0]]);
+          // Convert database user to User type
+          const newUser: User = {
+            id: data[0].id,
+            matricula: data[0].matricula,
+            nome: data[0].nome,
+            cargo: data[0].cargo || "",
+            setor: data[0].setor || "",
+            username: data[0].username,
+            admin: data[0].admin || false,
+            tipo_usuario: data[0].tipo_usuario as User["tipo_usuario"],
+            rota: data[0].rota,
+            created_at: data[0].created_at,
+            updated_at: data[0].updated_at
+          };
+          setUsers(prev => [...prev, newUser]);
           toast.success("Usuário criado com sucesso!");
         }
       } else {
@@ -255,7 +296,7 @@ const GerenciarUsuarios = () => {
         const { data, error } = await supabase
           .from('usuarios')
           .update(userForApi)
-          .eq('id', editingUser.id)
+          .eq('id', values.id)
           .select();
           
         if (error) {
@@ -265,7 +306,22 @@ const GerenciarUsuarios = () => {
         }
         
         if (data && data[0]) {
-          setUsers(prev => prev.map(u => u.id === data[0].id ? data[0] : u));
+          // Convert updated database user to User type
+          const updatedUser: User = {
+            id: data[0].id,
+            matricula: data[0].matricula,
+            nome: data[0].nome,
+            cargo: data[0].cargo || "",
+            setor: data[0].setor || "",
+            username: data[0].username,
+            admin: data[0].admin || false,
+            tipo_usuario: data[0].tipo_usuario as User["tipo_usuario"],
+            rota: data[0].rota,
+            created_at: data[0].created_at,
+            updated_at: data[0].updated_at
+          };
+          
+          setUsers(prev => prev.map(u => u.id === updatedUser.id ? updatedUser : u));
           toast.success("Usuário atualizado com sucesso!");
         }
       }
@@ -280,12 +336,7 @@ const GerenciarUsuarios = () => {
   };
 
   const isFormInvalid = () => {
-    try {
-      form.trigger();
-      return !form.isValid;
-    } catch (error) {
-      return true;
-    }
+    return Object.keys(form.formState.errors).length > 0;
   };
 
   // If auth is still loading, show a loader
@@ -483,6 +534,7 @@ const GerenciarUsuarios = () => {
                             {...field}
                           />
                           <Button
+                            type="button"
                             variant="ghost"
                             size="icon"
                             onClick={() => setShowPassword(!showPassword)}
@@ -572,16 +624,3 @@ const GerenciarUsuarios = () => {
 };
 
 export default GerenciarUsuarios;
-
-import * as React from "react"
-
-import { cn } from "@/lib/utils"
-import { Checkbox } from "@/components/ui/checkbox"
-import {
-  FormDescription,
-} from "@/components/ui/form"
-import { Loader2 } from "lucide-react"
-
-const Icons = {
-  spinner: Loader2,
-}

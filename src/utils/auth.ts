@@ -10,8 +10,10 @@ export interface User {
   cargo: string;
   setor: string;
   username: string;
+  password?: string; // Make password optional as it might not be returned in all queries
   admin: boolean;
   tipo_usuario: 'admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum';
+  rota?: string; // Add rota property to match database schema
   created_at?: string;
   updated_at?: string;
 }
