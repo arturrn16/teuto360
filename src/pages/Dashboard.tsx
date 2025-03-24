@@ -64,7 +64,6 @@ const Dashboard = () => {
     }
   }, [isAuthenticated, isLoading, navigate]);
 
-  // Quick access cards configuration
   const quickAccessCards = [
     {
       title: "Abono de Ponto",
