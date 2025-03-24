@@ -27,13 +27,7 @@ export function SolicitacaoAdesaoCancelamentoView({
     try {
       console.log(`Starting ${newStatus} process for solicitação ID: ${solicitacao.id}`);
       
-      // Verificando se há motivo em caso de rejeição
-      if (newStatus === 'rejeitada' && !motivo.trim()) {
-        toast.error("É necessário informar o motivo da rejeição");
-        setIsLoading(false);
-        return;
-      }
-      
+      // Preparar dados para atualização
       const updateData: { 
         status: string; 
         motivo_rejeicao?: string;
@@ -42,13 +36,18 @@ export function SolicitacaoAdesaoCancelamentoView({
         status: newStatus 
       };
       
-      // Adicionar motivo apenas se for rejeitada
+      // Para rejeição, precisamos do motivo
       if (newStatus === 'rejeitada') {
+        if (!motivo.trim()) {
+          toast.error("É necessário informar o motivo da rejeição");
+          setIsLoading(false);
+          return;
+        }
         updateData.motivo_rejeicao = motivo;
         console.log("Setting motivo_rejeicao:", motivo);
       }
       
-      // Adicionar comentário se fornecido
+      // Adicionar comentário se fornecido, independente do status
       if (comentario.trim()) {
         updateData.motivo_comentario = comentario;
         console.log("Setting motivo_comentario:", comentario);
