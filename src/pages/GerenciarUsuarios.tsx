@@ -1,285 +1,306 @@
-
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose
-} from "@/components/ui/dialog";
-import { 
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
-} from "@/components/ui/select";
-import {
-  Loader2, Plus, Search, UserPlus, UserCog, UserX, Route, Users
+  Search,
+  Plus,
+  Edit,
+  Trash2,
+  CheckCircle,
+  XCircle,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import {
-  Tabs, TabsContent, TabsList, TabsTrigger
-} from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell } from "recharts";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { PageLoader } from "@/components/ui/loader-spinner";
+import { User } from "@/utils/auth";
 
-// Interface for User type
-interface User {
-  id: number;
-  matricula: string;
-  nome: string;
-  username: string;
-  admin: boolean;
-  tipo_usuario: string;
-  rota: string | null;
-}
+const userSchema = z.object({
+  id: z.number().optional(),
+  matricula: z.string().min(3, {
+    message: "Matrícula deve ter pelo menos 3 caracteres.",
+  }),
+  nome: z.string().min(3, {
+    message: "Nome deve ter pelo menos 3 caracteres.",
+  }),
+  cargo: z.string().min(3, {
+    message: "Cargo deve ter pelo menos 3 caracteres.",
+  }),
+  setor: z.string().min(3, {
+    message: "Setor deve ter pelo menos 3 caracteres.",
+  }),
+  username: z.string().email({
+    message: "Por favor, insira um email válido.",
+  }),
+  password: z.string().optional(),
+  admin: z.boolean().default(false),
+  tipo_usuario: z.enum(['admin', 'selecao', 'refeicao', 'colaborador', 'comum']).default('comum'),
+});
 
 const GerenciarUsuarios = () => {
-  const { user } = useAuth();
-  const [usuarios, setUsuarios] = useState<User[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [filtroMatricula, setFiltroMatricula] = useState("");
-  const [filtroNome, setFiltroNome] = useState("");
-  const [filtroRota, setFiltroRota] = useState("");
-  const [rotas, setRotas] = useState<string[]>([]);
-  const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [newUser, setNewUser] = useState({
+  const { user: loggedInUser, isAuthenticated, isLoading } = useAuth();
+  const [users, setUsers] = useState<User[]>([]);
+  const [search, setSearch] = useState("");
+  const [openModal, setOpenModal] = useState(false);
+  const [editingUser, setEditingUser] = useState<User>({
+    id: 0,
     matricula: "",
     nome: "",
+    cargo: "",
+    setor: "",
     username: "",
-    password: "",
-    tipo_usuario: "colaborador",
     admin: false,
-    rota: ""
+    tipo_usuario: "comum",
   });
-  
-  const [dashboardData, setDashboardData] = useState({
-    totalUsuarios: 0,
-    usuariosLogados: 0,
-    usuariosComTransporte: 0,
-    rotasCount: [] as { name: string; value: number }[],
-    regimes12x36: {
-      diurno: 0,
-      noturno: 0
-    }
-  });
+  const [isCreating, setIsCreating] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
-  // Check if the current user has permission to access this page
-  const hasPermission = user?.username === "artur.neto";
+  const form = useForm<z.infer<typeof userSchema>>({
+    resolver: zodResolver(userSchema),
+    defaultValues: {
+      matricula: "",
+      nome: "",
+      cargo: "",
+      setor: "",
+      username: "",
+      admin: false,
+      tipo_usuario: "comum",
+    },
+  });
 
   useEffect(() => {
-    if (hasPermission) {
-      loadUsuarios();
+    if (!isLoading && isAuthenticated && loggedInUser?.admin) {
+      fetchUsers();
     }
-  }, [hasPermission]);
+  }, [loggedInUser, isAuthenticated, isLoading]);
 
-  const loadUsuarios = async () => {
-    setIsLoading(true);
+  const fetchUsers = async () => {
     try {
       const { data, error } = await supabase
-        .from('usuarios')
-        .select('*')
-        .order('nome');
+        .from("usuarios")
+        .select("*")
+        .order("nome", { ascending: true });
 
       if (error) {
-        console.error("Erro ao carregar usuários:", error);
-        toast.error("Erro ao carregar usuários");
-      } else if (data) {
-        setUsuarios(data);
-        processDashboardData(data);
-        extractRotas(data);
+        console.error("Erro ao buscar usuários:", error);
+        toast.error("Erro ao buscar usuários");
+        return;
+      }
+
+      if (data) {
+        setUsers(data);
       }
     } catch (error) {
-      console.error("Erro ao carregar usuários:", error);
-      toast.error("Erro ao carregar usuários");
-    } finally {
-      setIsLoading(false);
+      console.error("Erro ao buscar usuários:", error);
+      toast.error("Erro ao buscar usuários");
     }
   };
 
-  const processDashboardData = (data: User[]) => {
-    // Count total users
-    const totalUsuarios = data.length;
-    
-    // Count users with transport (with rota)
-    const usuariosComTransporte = data.filter(u => u.rota).length;
-    
-    // For demo purposes, assume 30% of users are currently logged in
-    const usuariosLogados = Math.round(totalUsuarios * 0.3);
-    
-    // Count users by rota
-    const rotasMap = new Map<string, number>();
-    data.forEach(user => {
-      const rota = user.rota || "Sem rota";
-      rotasMap.set(rota, (rotasMap.get(rota) || 0) + 1);
-    });
-    
-    const rotasCount = Array.from(rotasMap.entries())
-      .map(([name, value]) => ({ name, value }))
-      .sort((a, b) => b.value - a.value);
-    
-    // Count 12x36 regime users (for demo, we'll assume any rota with "12x36" in it)
-    const diurno = data.filter(u => u.rota?.includes("12x36") && u.rota?.includes("Diurno")).length;
-    const noturno = data.filter(u => u.rota?.includes("12x36") && u.rota?.includes("Noturno")).length;
-    
-    setDashboardData({
-      totalUsuarios,
-      usuariosLogados,
-      usuariosComTransporte,
-      rotasCount,
-      regimes12x36: {
-        diurno,
-        noturno
-      }
-    });
+  const handleOpenModal = () => {
+    setOpenModal(true);
   };
 
-  const extractRotas = (data: User[]) => {
-    const rotasSet = new Set<string>();
-    data.forEach(user => {
-      if (user.rota) {
-        rotasSet.add(user.rota);
-      }
-    });
-    setRotas(Array.from(rotasSet));
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    form.reset();
+    setShowPassword(false);
   };
 
-  const filtrarUsuarios = () => {
-    return usuarios.filter(u => {
-      const matchMatricula = u.matricula.toLowerCase().includes(filtroMatricula.toLowerCase());
-      const matchNome = u.nome.toLowerCase().includes(filtroNome.toLowerCase());
-      const matchRota = !filtroRota || (u.rota && u.rota.toLowerCase().includes(filtroRota.toLowerCase()));
-      return matchMatricula && matchNome && matchRota;
+  const handleCreateUser = () => {
+    setIsCreating(true);
+    setEditingUser({
+      id: 0,
+      matricula: "",
+      nome: "",
+      cargo: "",
+      setor: "",
+      username: "",
+      admin: false,
+      tipo_usuario: "comum",
     });
+    form.reset();
+    handleOpenModal();
   };
 
-  const handleAddUser = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!newUser.matricula || !newUser.nome || !newUser.username || !newUser.password) {
-      toast.error("Preencha todos os campos obrigatórios");
+  const handleEditUser = (user: User) => {
+    setIsCreating(false);
+    setEditingUser(user);
+    form.setValue("matricula", user.matricula);
+    form.setValue("nome", user.nome);
+    form.setValue("cargo", user.cargo);
+    form.setValue("setor", user.setor);
+    form.setValue("username", user.username);
+    form.setValue("admin", user.admin);
+    form.setValue("tipo_usuario", user.tipo_usuario);
+    handleOpenModal();
+  };
+
+  const handleDeleteUser = async (user: User) => {
+    if (!window.confirm(`Tem certeza que deseja excluir o usuário ${user.nome}?`)) {
       return;
     }
 
-    setIsLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('usuarios')
-        .insert([{
-          matricula: newUser.matricula,
-          nome: newUser.nome,
-          username: newUser.username,
-          password: newUser.password,
-          tipo_usuario: newUser.tipo_usuario,
-          admin: newUser.admin,
-          rota: newUser.rota || null
-        }])
-        .select();
-
-      if (error) {
-        console.error("Erro ao adicionar usuário:", error);
-        toast.error("Erro ao adicionar usuário");
-      } else {
-        toast.success("Usuário adicionado com sucesso");
-        setNewUser({
-          matricula: "",
-          nome: "",
-          username: "",
-          password: "",
-          tipo_usuario: "colaborador",
-          admin: false,
-          rota: ""
-        });
-        loadUsuarios();
-      }
-    } catch (error) {
-      console.error("Erro ao adicionar usuário:", error);
-      toast.error("Erro ao adicionar usuário");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleUpdateUser = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!editingUser) return;
-    
-    setIsLoading(true);
-    try {
-      const updateData: any = {
-        matricula: editingUser.matricula,
-        nome: editingUser.nome,
-        username: editingUser.username,
-        tipo_usuario: editingUser.tipo_usuario,
-        admin: editingUser.admin,
-        rota: editingUser.rota
-      };
-      
-      // Only include password if it has been changed
-      if ((editingUser as any).password && (editingUser as any).password.trim() !== "") {
-        updateData.password = (editingUser as any).password;
-      }
-      
       const { error } = await supabase
-        .from('usuarios')
-        .update(updateData)
-        .eq('id', editingUser.id);
+        .from("usuarios")
+        .delete()
+        .eq("id", user.id);
 
       if (error) {
-        console.error("Erro ao atualizar usuário:", error);
-        toast.error("Erro ao atualizar usuário");
-      } else {
-        toast.success("Usuário atualizado com sucesso");
-        setEditingUser(null);
-        loadUsuarios();
-      }
-    } catch (error) {
-      console.error("Erro ao atualizar usuário:", error);
-      toast.error("Erro ao atualizar usuário");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleDeleteUser = async (id: number) => {
-    if (confirm("Tem certeza que deseja excluir este usuário?")) {
-      setIsLoading(true);
-      try {
-        const { error } = await supabase
-          .from('usuarios')
-          .delete()
-          .eq('id', id);
-
-        if (error) {
-          console.error("Erro ao excluir usuário:", error);
-          toast.error("Erro ao excluir usuário");
-        } else {
-          toast.success("Usuário excluído com sucesso");
-          loadUsuarios();
-        }
-      } catch (error) {
         console.error("Erro ao excluir usuário:", error);
-        toast.error("Erro ao excluir usuário");
-      } finally {
-        setIsLoading(false);
+        toast.error(`Erro ao excluir usuário: ${error.message}`);
+        return;
       }
+
+      setUsers(prev => prev.filter(u => u.id !== user.id));
+      toast.success("Usuário excluído com sucesso!");
+    } catch (error) {
+      console.error("Erro ao excluir usuário:", error);
+      toast.error("Erro ao excluir usuário");
     }
   };
 
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#FF6B6B', '#6A6AE4'];
-
-  // For users without permission
-  if (!hasPermission) {
+  const filteredUsers = users.filter(user => {
+    const searchTerm = search.toLowerCase();
     return (
-      <div className="p-6">
+      user.nome.toLowerCase().includes(searchTerm) ||
+      user.matricula.toLowerCase().includes(searchTerm) ||
+      user.cargo.toLowerCase().includes(searchTerm) ||
+      user.setor.toLowerCase().includes(searchTerm) ||
+      user.username.toLowerCase().includes(searchTerm)
+    );
+  });
+
+  const handleEditModalSave = async () => {
+    try {
+      setIsSaving(true);
+      
+      // For new users, ensure password is set
+      if (isCreating && !editingUser.password) {
+        toast.error("Senha é obrigatória para novos usuários");
+        setIsSaving(false);
+        return;
+      }
+      
+      // Create a copy of the user data without password for state update
+      const userForState = { ...editingUser };
+      
+      // Create a copy for the API with password if it exists
+      const userForApi = { ...editingUser };
+      
+      // Remove password if it's empty (for existing users)
+      if (!isCreating && userForApi.password === '') {
+        delete userForApi.password;
+      }
+      
+      if (isCreating) {
+        // Create new user
+        const { data, error } = await supabase
+          .from('usuarios')
+          .insert([userForApi])
+          .select();
+          
+        if (error) {
+          console.error("Error creating user:", error);
+          toast.error(`Erro ao criar usuário: ${error.message}`);
+          return;
+        }
+        
+        if (data && data[0]) {
+          setUsers(prev => [...prev, data[0]]);
+          toast.success("Usuário criado com sucesso!");
+        }
+      } else {
+        // Update existing user
+        const { data, error } = await supabase
+          .from('usuarios')
+          .update(userForApi)
+          .eq('id', editingUser.id)
+          .select();
+          
+        if (error) {
+          console.error("Error updating user:", error);
+          toast.error(`Erro ao atualizar usuário: ${error.message}`);
+          return;
+        }
+        
+        if (data && data[0]) {
+          setUsers(prev => prev.map(u => u.id === data[0].id ? data[0] : u));
+          toast.success("Usuário atualizado com sucesso!");
+        }
+      }
+      
+      handleCloseModal();
+    } catch (error) {
+      console.error("Error saving user:", error);
+      toast.error("Erro ao salvar usuário");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const isFormInvalid = () => {
+    try {
+      form.trigger();
+      return !form.isValid;
+    } catch (error) {
+      return true;
+    }
+  };
+
+  // If auth is still loading, show a loader
+  if (isLoading) {
+    return <PageLoader />;
+  }
+
+  // If not authenticated or not admin, show access denied
+  if (!isAuthenticated || !loggedInUser?.admin) {
+    return (
+      <div className="container py-10">
         <Card>
           <CardContent className="p-10 text-center">
-            <UserX className="mx-auto h-16 w-16 text-red-500 mb-4" />
-            <h1 className="text-2xl font-bold text-red-500">Acesso Negado</h1>
-            <p className="mt-2">Você não tem permissão para acessar esta página.</p>
+            <div className="text-2xl font-bold text-destructive mb-4">Acesso Negado</div>
+            <p>Você não tem permissão para acessar esta página.</p>
           </CardContent>
         </Card>
       </div>
@@ -287,472 +308,280 @@ const GerenciarUsuarios = () => {
   }
 
   return (
-    <div className="p-6 animate-slide-in">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Gerenciar Usuários</h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">
-          Administre os usuários cadastrados no sistema
-        </p>
-      </div>
-
-      <Tabs defaultValue="dashboard">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="dashboard" className="flex items-center gap-1">
-            <Users className="h-4 w-4" />
-            Dashboard
-          </TabsTrigger>
-          <TabsTrigger value="list" className="flex items-center gap-1">
-            <UserCog className="h-4 w-4" />
-            Lista de Usuários
-          </TabsTrigger>
-          <TabsTrigger value="add" className="flex items-center gap-1">
-            <UserPlus className="h-4 w-4" />
-            Novo Usuário
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="dashboard" className="mt-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base font-medium">Total de Usuários</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">{dashboardData.totalUsuarios}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base font-medium">Usuários Logados</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">{dashboardData.usuariosLogados}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base font-medium">Usuários com Transporte</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">{dashboardData.usuariosComTransporte}</div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <Card>
-              <CardHeader>
-                <CardTitle>Usuários por Rota</CardTitle>
-                <CardDescription>Distribuição de usuários em cada rota</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {dashboardData.rotasCount.length > 0 ? (
-                  <div className="w-full h-[300px] flex justify-center">
-                    <BarChart
-                      width={500}
-                      height={300}
-                      data={dashboardData.rotasCount}
-                      margin={{ top: 20, right: 30, left: 20, bottom: 50 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" angle={-45} textAnchor="end" height={70} />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                      <Bar dataKey="value" name="Usuários" fill="#8884d8" />
-                    </BarChart>
-                  </div>
-                ) : (
-                  <div className="flex justify-center items-center h-[300px] text-muted-foreground">
-                    Nenhum dado disponível
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Usuários 12x36</CardTitle>
-                <CardDescription>Comparativo entre turnos diurno e noturno</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {(dashboardData.regimes12x36.diurno > 0 || dashboardData.regimes12x36.noturno > 0) ? (
-                  <div className="w-full h-[300px] flex justify-center">
-                    <PieChart width={400} height={300}>
-                      <Pie
-                        data={[
-                          { name: "Diurno", value: dashboardData.regimes12x36.diurno },
-                          { name: "Noturno", value: dashboardData.regimes12x36.noturno }
-                        ]}
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={100}
-                        fill="#8884d8"
-                        dataKey="value"
-                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                      >
-                        {[
-                          { name: "Diurno", value: dashboardData.regimes12x36.diurno },
-                          { name: "Noturno", value: dashboardData.regimes12x36.noturno }
-                        ].map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                      <Legend />
-                    </PieChart>
-                  </div>
-                ) : (
-                  <div className="flex justify-center items-center h-[300px] text-muted-foreground">
-                    Nenhum usuário em regime 12x36
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="list" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Lista de Usuários</CardTitle>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    placeholder="Filtrar por matrícula"
-                    className="pl-10"
-                    value={filtroMatricula}
-                    onChange={(e) => setFiltroMatricula(e.target.value)}
-                  />
-                </div>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    placeholder="Filtrar por nome"
-                    className="pl-10"
-                    value={filtroNome}
-                    onChange={(e) => setFiltroNome(e.target.value)}
-                  />
-                </div>
-                <div className="relative">
-                  <Route className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    placeholder="Filtrar por rota"
-                    className="pl-10"
-                    value={filtroRota}
-                    onChange={(e) => setFiltroRota(e.target.value)}
-                  />
-                </div>
+    <div className="container py-10">
+      <Card>
+        <CardHeader>
+          <CardTitle>Gerenciar Usuários</CardTitle>
+          <CardDescription>
+            Adicione, edite e exclua usuários do sistema
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col md:flex-row gap-4 mb-6">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input
+                  placeholder="Buscar usuário"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-8"
+                />
               </div>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <div className="flex justify-center items-center p-8">
-                  <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-                </div>
-              ) : filtrarUsuarios().length === 0 ? (
-                <div className="text-center p-8 text-gray-500">
-                  Nenhum usuário encontrado
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Matrícula</TableHead>
-                        <TableHead>Nome</TableHead>
-                        <TableHead>Usuário</TableHead>
-                        <TableHead>Tipo</TableHead>
-                        <TableHead>Admin</TableHead>
-                        <TableHead>Rota</TableHead>
-                        <TableHead className="w-[100px]">Ações</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filtrarUsuarios().map((usuario) => (
-                        <TableRow key={usuario.id}>
-                          <TableCell className="font-medium">{usuario.matricula}</TableCell>
-                          <TableCell>{usuario.nome}</TableCell>
-                          <TableCell>{usuario.username}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline">{usuario.tipo_usuario}</Badge>
-                          </TableCell>
-                          <TableCell>
-                            {usuario.admin ? (
-                              <Badge variant="success">Sim</Badge>
-                            ) : (
-                              <Badge variant="outline">Não</Badge>
-                            )}
-                          </TableCell>
-                          <TableCell>{usuario.rota || "—"}</TableCell>
-                          <TableCell>
-                            <div className="flex space-x-2">
-                              <Dialog>
-                                <DialogTrigger asChild>
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => setEditingUser(usuario)}
-                                  >
-                                    Editar
-                                  </Button>
-                                </DialogTrigger>
-                                {editingUser && (
-                                  <DialogContent>
-                                    <DialogHeader>
-                                      <DialogTitle>Editar Usuário</DialogTitle>
-                                    </DialogHeader>
-                                    <form onSubmit={handleUpdateUser} className="space-y-4 pt-4">
-                                      <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                          <Label htmlFor="edit-matricula">Matrícula</Label>
-                                          <Input
-                                            id="edit-matricula"
-                                            value={editingUser.matricula}
-                                            onChange={(e) => setEditingUser({...editingUser, matricula: e.target.value})}
-                                          />
-                                        </div>
-                                        <div className="space-y-2">
-                                          <Label htmlFor="edit-nome">Nome</Label>
-                                          <Input
-                                            id="edit-nome"
-                                            value={editingUser.nome}
-                                            onChange={(e) => setEditingUser({...editingUser, nome: e.target.value})}
-                                          />
-                                        </div>
-                                      </div>
-                                      <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                          <Label htmlFor="edit-username">Usuário</Label>
-                                          <Input
-                                            id="edit-username"
-                                            value={editingUser.username}
-                                            onChange={(e) => setEditingUser({...editingUser, username: e.target.value})}
-                                          />
-                                        </div>
-                                        <div className="space-y-2">
-                                          <Label htmlFor="edit-password">Nova Senha (deixe em branco para manter)</Label>
-                                          <Input
-                                            id="edit-password"
-                                            type="password"
-                                            value={(editingUser as any).password || ""}
-                                            onChange={(e) => setEditingUser({...editingUser, password: e.target.value})}
-                                          />
-                                        </div>
-                                      </div>
-                                      <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                          <Label htmlFor="edit-tipo">Tipo de Usuário</Label>
-                                          <Select 
-                                            value={editingUser.tipo_usuario} 
-                                            onValueChange={(value) => setEditingUser({...editingUser, tipo_usuario: value})}
-                                          >
-                                            <SelectTrigger id="edit-tipo">
-                                              <SelectValue placeholder="Selecione um tipo" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                              <SelectItem value="admin">Admin</SelectItem>
-                                              <SelectItem value="selecao">Seleção</SelectItem>
-                                              <SelectItem value="refeicao">Refeição</SelectItem>
-                                              <SelectItem value="colaborador">Colaborador</SelectItem>
-                                            </SelectContent>
-                                          </Select>
-                                        </div>
-                                        <div className="space-y-2">
-                                          <Label htmlFor="edit-admin">Admin</Label>
-                                          <Select 
-                                            value={editingUser.admin ? "true" : "false"} 
-                                            onValueChange={(value) => setEditingUser({...editingUser, admin: value === "true"})}
-                                          >
-                                            <SelectTrigger id="edit-admin">
-                                              <SelectValue placeholder="Admin?" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                              <SelectItem value="true">Sim</SelectItem>
-                                              <SelectItem value="false">Não</SelectItem>
-                                            </SelectContent>
-                                          </Select>
-                                        </div>
-                                      </div>
-                                      <div className="space-y-2">
-                                        <Label htmlFor="edit-rota">Rota</Label>
-                                        <Select 
-                                          value={editingUser.rota || ""} 
-                                          onValueChange={(value) => setEditingUser({...editingUser, rota: value})}
-                                        >
-                                          <SelectTrigger id="edit-rota">
-                                            <SelectValue placeholder="Selecione uma rota (opcional)" />
-                                          </SelectTrigger>
-                                          <SelectContent>
-                                            <SelectItem value="">Sem rota</SelectItem>
-                                            {rotas.map((rota) => (
-                                              <SelectItem key={rota} value={rota}>{rota}</SelectItem>
-                                            ))}
-                                            <SelectItem value="Administração">Administração</SelectItem>
-                                            <SelectItem value="1° Turno">1° Turno</SelectItem>
-                                            <SelectItem value="2° Turno">2° Turno</SelectItem>
-                                            <SelectItem value="3° Turno">3° Turno</SelectItem>
-                                            <SelectItem value="12x36 Diurno">12x36 Diurno</SelectItem>
-                                            <SelectItem value="12x36 Noturno">12x36 Noturno</SelectItem>
-                                          </SelectContent>
-                                        </Select>
-                                      </div>
-                                      <DialogFooter>
-                                        <DialogClose asChild>
-                                          <Button variant="outline">Cancelar</Button>
-                                        </DialogClose>
-                                        <Button type="submit" disabled={isLoading}>
-                                          {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                                          Salvar
-                                        </Button>
-                                      </DialogFooter>
-                                    </form>
-                                  </DialogContent>
-                                )}
-                              </Dialog>
-                              <Button 
-                                variant="destructive" 
-                                size="sm"
-                                onClick={() => handleDeleteUser(usuario.id)}
-                              >
-                                Excluir
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+            </div>
+            <div>
+              <Button onClick={handleCreateUser}>
+                <Plus className="h-4 w-4 mr-2" />
+                Adicionar Usuário
+              </Button>
+            </div>
+          </div>
 
-        <TabsContent value="add" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <UserPlus className="h-5 w-5 text-green-600" /> 
-                Adicionar Novo Usuário
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleAddUser} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="matricula">Matrícula</Label>
-                    <Input
-                      id="matricula"
-                      placeholder="Digite a matrícula"
-                      value={newUser.matricula}
-                      onChange={(e) => setNewUser({...newUser, matricula: e.target.value})}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="nome">Nome</Label>
-                    <Input
-                      id="nome"
-                      placeholder="Digite o nome completo"
-                      value={newUser.nome}
-                      onChange={(e) => setNewUser({...newUser, nome: e.target.value})}
-                    />
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="username">Usuário</Label>
-                    <Input
-                      id="username"
-                      placeholder="Nome de usuário para login"
-                      value={newUser.username}
-                      onChange={(e) => setNewUser({...newUser, username: e.target.value})}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="password">Senha</Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      placeholder="Digite a senha"
-                      value={newUser.password}
-                      onChange={(e) => setNewUser({...newUser, password: e.target.value})}
-                    />
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="tipo_usuario">Tipo de Usuário</Label>
-                    <Select 
-                      value={newUser.tipo_usuario} 
-                      onValueChange={(value) => setNewUser({...newUser, tipo_usuario: value})}
-                    >
-                      <SelectTrigger id="tipo_usuario">
-                        <SelectValue placeholder="Selecione um tipo" />
-                      </SelectTrigger>
+          <div className="rounded-md border overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Matrícula</TableHead>
+                  <TableHead>Nome</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Cargo</TableHead>
+                  <TableHead>Setor</TableHead>
+                  <TableHead>Tipo</TableHead>
+                  <TableHead className="w-[150px]">Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredUsers.map((user) => (
+                  <TableRow key={user.id}>
+                    <TableCell>{user.matricula}</TableCell>
+                    <TableCell className="font-medium">{user.nome}</TableCell>
+                    <TableCell>{user.username}</TableCell>
+                    <TableCell>{user.cargo}</TableCell>
+                    <TableCell>{user.setor}</TableCell>
+                    <TableCell>{user.tipo_usuario}</TableCell>
+                    <TableCell>
+                      <div className="flex space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEditUser(user)}
+                        >
+                          <Edit className="h-4 w-4 mr-2" />
+                          Editar
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDeleteUser(user)}
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Excluir
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Dialog open={openModal} onOpenChange={setOpenModal}>
+        <DialogContent className="sm:max-w-[625px]">
+          <DialogHeader>
+            <DialogTitle>{isCreating ? "Adicionar Usuário" : "Editar Usuário"}</DialogTitle>
+            <DialogDescription>
+              {isCreating
+                ? "Crie um novo usuário para o sistema."
+                : "Edite as informações do usuário."}
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleEditModalSave)} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="matricula"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Matrícula</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Matrícula" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="nome"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nome</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Nome" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="cargo"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Cargo</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Cargo" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="setor"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Setor</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Setor" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="username"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Email" type="email" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Senha {isCreating ? "(Obrigatório)" : "(Deixe em branco para não alterar)"}</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input
+                            placeholder="Senha"
+                            type={showPassword ? "text" : "password"}
+                            {...field}
+                          />
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-2 top-1/2 -translate-y-1/2"
+                          >
+                            {showPassword ? (
+                              <EyeOff className="h-4 w-4" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
+                            <span className="sr-only">Mostrar senha</span>
+                          </Button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <FormField
+                control={form.control}
+                name="tipo_usuario"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tipo de Usuário</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o tipo de usuário" />
+                        </SelectTrigger>
+                      </FormControl>
                       <SelectContent>
-                        <SelectItem value="admin">Admin</SelectItem>
+                        <SelectItem value="admin">Administrador</SelectItem>
                         <SelectItem value="selecao">Seleção</SelectItem>
                         <SelectItem value="refeicao">Refeição</SelectItem>
                         <SelectItem value="colaborador">Colaborador</SelectItem>
+                        <SelectItem value="comum">Comum</SelectItem>
                       </SelectContent>
                     </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="admin">Admin</Label>
-                    <Select 
-                      value={newUser.admin ? "true" : "false"} 
-                      onValueChange={(value) => setNewUser({...newUser, admin: value === "true"})}
-                    >
-                      <SelectTrigger id="admin">
-                        <SelectValue placeholder="Possui permissões de admin?" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="true">Sim</SelectItem>
-                        <SelectItem value="false">Não</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="rota">Rota (opcional)</Label>
-                  <Select 
-                    value={newUser.rota} 
-                    onValueChange={(value) => setNewUser({...newUser, rota: value})}
-                  >
-                    <SelectTrigger id="rota">
-                      <SelectValue placeholder="Selecione uma rota (opcional)" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">Sem rota</SelectItem>
-                      {rotas.map((rota) => (
-                        <SelectItem key={rota} value={rota}>{rota}</SelectItem>
-                      ))}
-                      <SelectItem value="Administração">Administração</SelectItem>
-                      <SelectItem value="1° Turno">1° Turno</SelectItem>
-                      <SelectItem value="2° Turno">2° Turno</SelectItem>
-                      <SelectItem value="3° Turno">3° Turno</SelectItem>
-                      <SelectItem value="12x36 Diurno">12x36 Diurno</SelectItem>
-                      <SelectItem value="12x36 Noturno">12x36 Noturno</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
-                  Adicionar Usuário
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="admin"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-md border p-4">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-base">Administrador</FormLabel>
+                      <FormDescription>
+                        Concede acesso total ao sistema.
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button type="button" variant="secondary" disabled={isSaving}>
+                    Cancelar
+                  </Button>
+                </DialogClose>
+                <Button type="submit" disabled={isSaving || isFormInvalid()}>
+                  {isSaving ? (
+                    <>
+                      Salvando...
+                      <Icons.spinner className="ml-2 h-4 w-4 animate-spin" />
+                    </>
+                  ) : (
+                    "Salvar"
+                  )}
                 </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
 
 export default GerenciarUsuarios;
+
+import * as React from "react"
+
+import { cn } from "@/lib/utils"
+import { Checkbox } from "@/components/ui/checkbox"
+import {
+  FormDescription,
+} from "@/components/ui/form"
+import { Loader2 } from "lucide-react"
+
+const Icons = {
+  spinner: Loader2,
+}

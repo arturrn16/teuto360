@@ -14,6 +14,17 @@ import {
   CreditCard,
 } from "lucide-react";
 
+export type UserType = 'admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum';
+
+export interface NavItem {
+  name: string;
+  href: string;
+  icon: React.FC;
+  allowedTypes: ReadonlyArray<UserType>;
+  requiredUser?: string;
+  children?: NavItem[];
+}
+
 // Define the navigation items with routes
 export const navigationItems = [
   {
@@ -138,3 +149,30 @@ export const navigationItems = [
     requiredUser: "artur.neto", // This is the special restriction for artur.neto only
   },
 ];
+
+// Helper function to convert navigationItems to NavItem format
+export const navItems: NavItem[] = navigationItems.map(item => ({
+  name: item.title,
+  href: item.href,
+  icon: item.icon,
+  allowedTypes: item.allowedTypes,
+  requiredUser: item.requiredUser,
+}));
+
+// Function to get user role label
+export const getUserRoleLabel = (type: string): string => {
+  switch (type) {
+    case 'admin':
+      return 'Administrador';
+    case 'selecao':
+      return 'Seleção';
+    case 'refeicao':
+      return 'Refeição';
+    case 'colaborador':
+      return 'Colaborador';
+    case 'comum':
+      return 'Usuário';
+    default:
+      return 'Usuário';
+  }
+};

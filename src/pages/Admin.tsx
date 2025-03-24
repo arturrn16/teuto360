@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { 
@@ -539,8 +538,8 @@ const Admin = () => {
     
     return (
       <div className="text-sm">
-        <div className="font-medium">{info.nome}</div>
-        <div className="text-muted-foreground">{info.setor}</div>
+        <div className="font-medium">{info.nome || '--'}</div>
+        <div className="text-muted-foreground">{info.rota || '--'}</div>
       </div>
     );
   };
@@ -804,35 +803,4 @@ const Admin = () => {
                                       </Button>
                                       <Button 
                                         variant="outline" 
-                                        size="sm"
-                                        className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 border-red-200"
-                                        onClick={() => atualizarStatus12x36(solicitacao.id, "rejeitada")}
-                                      >
-                                        <XCircle className="h-4 w-4 mr-1" />
-                                        Rejeitar
-                                      </Button>
-                                    </>
-                                  )}
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  ) : (
-                    <p className="text-center py-10 text-muted-foreground">
-                      Nenhuma solicitação de transporte 12x36 encontrada.
-                    </p>
-                  )}
-                </TabsContent>
-              </Tabs>
-            </>
-          )}
-        </CardContent>
-      </Card>
-    </div>
-  );
-};
-
-export default Admin;
+                                        size="sm
