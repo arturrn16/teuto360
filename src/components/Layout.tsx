@@ -48,17 +48,15 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
         <div className="flex flex-1 relative overflow-hidden">
           <AppSidebar />
           <main className="flex-1 px-0 sm:px-4 py-0 sm:py-8 animate-fade-in w-full max-w-full overflow-x-hidden">
-            {isMobile && (
-              <div className={cn(
-                "sticky top-0 z-10 mb-0 transition-all duration-200 py-2 px-4",
-                isScrolled ? "bg-white/90 backdrop-blur-sm shadow-sm" : ""
-              )}>
-                <SidebarTrigger className="flex items-center gap-2 py-2 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200">
-                  <AlignLeft className="h-5 w-5 text-blue-500" />
-                  <span className="text-blue-500 font-medium">Menu</span>
-                </SidebarTrigger>
-              </div>
-            )}
+            <div className={cn(
+              "sticky top-0 z-10 mb-2 transition-all duration-200 py-2 px-4",
+              isScrolled ? "bg-white/90 backdrop-blur-sm shadow-sm" : ""
+            )}>
+              <SidebarTrigger className="flex items-center gap-2 py-2 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200">
+                <AlignLeft className="h-5 w-5 text-blue-500" />
+                <span className="text-blue-500 font-medium">Menu</span>
+              </SidebarTrigger>
+            </div>
             <div className="w-full transition-all">
               {children}
             </div>
