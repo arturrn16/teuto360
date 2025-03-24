@@ -40,9 +40,9 @@ export function LoaderSpinner({
 
 export function PageLoader() {
   return (
-    <div className="flex flex-col items-center justify-center h-screen">
+    <div className="flex flex-col items-center justify-center h-screen bg-background">
       <LoaderSpinner size="lg" />
-      <p className="mt-4 text-gray-600 animate-pulse">Carregando...</p>
+      <p className="mt-4 text-gray-600 dark:text-gray-400 animate-pulse">Carregando...</p>
     </div>
   );
 }

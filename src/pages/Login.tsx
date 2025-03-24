@@ -1,9 +1,10 @@
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Building2 } from "lucide-react";
+import { PageLoader } from "@/components/ui/loader-spinner";
 
 const Login = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -11,7 +12,7 @@ const Login = () => {
   const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
-    // Evitar loop infinito e redirecionamentos múltiplos
+    // Only redirect if authenticated, not loading, and not already redirecting
     if (isAuthenticated && !isLoading && !redirecting) {
       setRedirecting(true);
       navigate("/dashboard");
@@ -19,13 +20,7 @@ const Login = () => {
   }, [isAuthenticated, isLoading, navigate, redirecting]);
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <div className="animate-pulse text-primary">Carregando...</div>
-        </div>
-      </div>
-    );
+    return <PageLoader />;
   }
 
   return (

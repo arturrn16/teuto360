@@ -8,6 +8,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useIdleTimeout } from "@/hooks/use-idle-timeout";
+import { PageLoader } from "./ui/loader-spinner";
 
 export const Layout = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -15,13 +16,13 @@ export const Layout = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
 
-  // Inicializa o hook de timeout por inatividade
+  // Initialize the idle timeout hook
   useIdleTimeout({
-    idleTime: 15, // 15 minutos de inatividade para logout
-    warningTime: 1, // Aviso 1 minuto antes do logout
+    idleTime: 15, // 15 minutes of inactivity for logout
+    warningTime: 1, // Warning 1 minute before logout
   });
 
-  // Detectar scroll para ajustar estilos
+  // Detect scroll to adjust styles
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
@@ -36,21 +37,17 @@ export const Layout = () => {
     window.scrollTo(0, 0);
   }, [location.pathname]);
 
-  // Exibe uma tela de carregamento durante a verificação de autenticação
+  // Show a loading screen during authentication check
   if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-screen w-full bg-white">
-        <div className="animate-pulse text-blue-500">Carregando...</div>
-      </div>
-    );
+    return <PageLoader />;
   }
 
-  // Se não estiver autenticado, apenas renderiza o conteúdo (que deve ser a página de login)
+  // If not authenticated, only render the outlet (which should be the login page)
   if (!isAuthenticated) {
     return <Outlet />;
   }
 
-  // Se estiver autenticado, renderiza o layout completo com o sidebar
+  // If authenticated, render the complete layout with the sidebar
   return (
     <SidebarProvider>
       <div className="min-h-screen flex flex-col w-full bg-gray-50 text-gray-800">

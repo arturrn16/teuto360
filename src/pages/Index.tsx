@@ -2,6 +2,7 @@
 import { useAuth } from "@/context/AuthContext";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { PageLoader } from "@/components/ui/loader-spinner";
 
 const Index = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -9,7 +10,7 @@ const Index = () => {
   const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
-    // Evitar loop infinito e redirecionamentos múltiplos
+    // Only redirect if auth status is known (not loading) and not already redirecting
     if (!isLoading && !redirecting) {
       setRedirecting(true);
       if (isAuthenticated) {
@@ -20,14 +21,8 @@ const Index = () => {
     }
   }, [isAuthenticated, isLoading, navigate, redirecting]);
 
-  // Renderiza uma tela de carregamento enquanto verifica o status de autenticação
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <div className="animate-pulse text-primary">Carregando...</div>
-      </div>
-    </div>
-  );
+  // Show a better loading component while checking auth state
+  return <PageLoader />;
 };
 
 export default Index;

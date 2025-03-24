@@ -53,6 +53,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { PageLoader } from "@/components/ui/loader-spinner";
 
 interface Solicitacao {
   id: number;
@@ -116,7 +117,7 @@ interface SolicitacaoMudancaTurno extends Solicitacao {
 }
 
 const Admin = () => {
-  const { user } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
   const [solicitacoesRota, setSolicitacoesRota] = useState<SolicitacaoTransporteRota[]>([]);
   const [solicitacoes12x36, setSolicitacoes12x36] = useState<SolicitacaoTransporte12x36[]>([]);
   const [solicitacoesRefeicao, setSolicitacoesRefeicao] = useState<SolicitacaoRefeicao[]>([]);
@@ -130,213 +131,214 @@ const Admin = () => {
   const [solicitantesInfo, setSolicitantesInfo] = useState<{[id: number]: {nome: string, setor: string}}>({});
   
   useEffect(() => {
-    if (!user || !user.admin) return;
-    
-    const fetchSolicitacoes = async () => {
-      try {
-        setLoading(true);
-        
-        const { data: dataRota, error: errorRota } = await supabase
-          .from("solicitacoes_transporte_rota")
-          .select("*")
-          .order("created_at", { ascending: false });
+    // Only fetch data if user is authenticated and has admin role
+    if (!isLoading && isAuthenticated && user?.admin) {
+      fetchSolicitacoes();
+    }
+  }, [user, isAuthenticated, isLoading]);
+  
+  const fetchSolicitacoes = async () => {
+    try {
+      setLoading(true);
+      
+      const { data: dataRota, error: errorRota } = await supabase
+        .from("solicitacoes_transporte_rota")
+        .select("*")
+        .order("created_at", { ascending: false });
           
-        if (errorRota) {
-          console.error("Erro ao buscar solicitações de rota:", errorRota);
-        } else {
-          setSolicitacoesRota(dataRota || []);
-        }
-        
-        const { data: data12x36, error: error12x36 } = await supabase
-          .from("solicitacoes_transporte_12x36")
-          .select("*")
-          .order("created_at", { ascending: false });
-          
-        if (error12x36) {
-          console.error("Erro ao buscar solicitações 12x36:", error12x36);
-        } else {
-          setSolicitacoes12x36(data12x36 || []);
-        }
-        
-        const { data: dataRefeicao, error: errorRefeicao } = await supabase
-          .from("solicitacoes_refeicao")
-          .select("*")
-          .order("created_at", { ascending: false });
-          
-        if (errorRefeicao) {
-          console.error("Erro ao buscar solicitações de refeição:", errorRefeicao);
-        } else {
-          setSolicitacoesRefeicao(dataRefeicao || []);
-        }
-
-        try {
-          console.log("Fetching abono_ponto solicitations...");
-          const { data: dataAbonoPonto, error: errorAbonoPonto } = await queryCustomTable<any>(
-            "solicitacoes_abono_ponto",
-            {
-              order: { column: "created_at", ascending: false }
-            }
-          );
-            
-          if (errorAbonoPonto) {
-            console.error("Erro ao buscar solicitações de abono de ponto:", errorAbonoPonto);
-          } else if (dataAbonoPonto) {
-            console.log("Received abono_ponto data:", dataAbonoPonto.length, "records");
-            const formattedData: SolicitacaoAbonosPonto[] = dataAbonoPonto.map((item: any) => ({
-              id: item.id,
-              solicitante_id: item.solicitante_id,
-              status: item.status,
-              created_at: item.created_at,
-              updated_at: item.updated_at,
-              data_ocorrencia: item.data_ocorrencia || '',
-              turno: item.turno || '',
-              motivo: item.motivo || ''
-            }));
-            setSolicitacoesAbonoPonto(formattedData);
-          }
-        } catch (err) {
-          console.error("Erro ao processar solicitações de abono de ponto:", err);
-        }
-
-        try {
-          console.log("Fetching adesao_cancelamento solicitations...");
-          const { data: dataAdesaoCancelamento, error: errorAdesaoCancelamento } = await queryCustomTable<any>(
-            "solicitacoes_adesao_cancelamento",
-            {
-              order: { column: "created_at", ascending: false }
-            }
-          );
-            
-          if (errorAdesaoCancelamento) {
-            console.error("Erro ao buscar solicitações de adesão/cancelamento:", errorAdesaoCancelamento);
-          } else if (dataAdesaoCancelamento) {
-            console.log("Received adesao_cancelamento data:", dataAdesaoCancelamento.length, "records");
-            const formattedData: SolicitacaoAdesaoCancelamento[] = dataAdesaoCancelamento.map((item: any) => ({
-              id: item.id,
-              solicitante_id: item.solicitante_id,
-              status: item.status,
-              created_at: item.created_at,
-              updated_at: item.updated_at,
-              tipo_solicitacao: item.tipo_solicitacao || '',
-              motivo: item.motivo || ''
-            }));
-            setSolicitacoesAdesaoCancelamento(formattedData);
-          }
-        } catch (err) {
-          console.error("Erro ao processar solicitações de adesão/cancelamento:", err);
-        }
-
-        try {
-          console.log("Fetching alteracao_endereco solicitations...");
-          const { data: dataAlteracaoEndereco, error: errorAlteracaoEndereco } = await queryCustomTable<any>(
-            "solicitacoes_alteracao_endereco",
-            {
-              order: { column: "created_at", ascending: false }
-            }
-          );
-            
-          if (errorAlteracaoEndereco) {
-            console.error("Erro ao buscar solicitações de alteração de endereço:", errorAlteracaoEndereco);
-          } else if (dataAlteracaoEndereco) {
-            console.log("Received alteracao_endereco data:", dataAlteracaoEndereco.length, "records");
-            const formattedData: SolicitacaoAlteracaoEndereco[] = dataAlteracaoEndereco.map((item: any) => ({
-              id: item.id,
-              solicitante_id: item.solicitante_id,
-              status: item.status,
-              created_at: item.created_at,
-              updated_at: item.updated_at,
-              endereco_atual: item.endereco || '',
-              endereco_novo: item.nova_rota ? `${item.endereco} (nova rota: ${item.nova_rota})` : (item.endereco || ''),
-              data_alteracao: item.data_alteracao || item.created_at,
-              comprovante_url: item.comprovante_url
-            }));
-            setSolicitacoesAlteracaoEndereco(formattedData);
-          }
-        } catch (err) {
-          console.error("Erro ao processar solicitações de alteração de endereço:", err);
-        }
-
-        try {
-          console.log("Fetching mudanca_turno solicitations...");
-          const { data: dataMudancaTurno, error: errorMudancaTurno } = await queryCustomTable<any>(
-            "solicitacoes_mudanca_turno",
-            {
-              order: { column: "created_at", ascending: false }
-            }
-          );
-            
-          if (errorMudancaTurno) {
-            console.error("Erro ao buscar solicitações de mudança de turno:", errorMudancaTurno);
-          } else if (dataMudancaTurno) {
-            console.log("Received mudanca_turno data:", dataMudancaTurno.length, "records");
-            const formattedData: SolicitacaoMudancaTurno[] = dataMudancaTurno.map((item: any) => ({
-              id: item.id,
-              solicitante_id: item.solicitante_id,
-              status: item.status,
-              created_at: item.created_at,
-              updated_at: item.updated_at,
-              turno_atual: item.turno_atual || '',
-              turno_novo: item.novo_turno || '',
-              data_alteracao: item.data_alteracao || item.created_at,
-              motivo: item.motivo || ''
-            }));
-            setSolicitacoesMudancaTurno(formattedData);
-          }
-        } catch (err) {
-          console.error("Erro ao processar solicitações de mudança de turno:", err);
-        }
-        
-        const solicitanteIds = new Set<number>();
-        
-        [
-          ...(dataRota || []), 
-          ...(data12x36 || []), 
-          ...(dataRefeicao || [])
-        ].forEach(s => {
-          if (s.solicitante_id) solicitanteIds.add(s.solicitante_id);
-        });
-        
-        solicitacoesAbonoPonto.forEach(s => { 
-          if (s && s.solicitante_id) solicitanteIds.add(s.solicitante_id); 
-        });
-        
-        solicitacoesAdesaoCancelamento.forEach(s => { 
-          if (s && s.solicitante_id) solicitanteIds.add(s.solicitante_id); 
-        });
-        
-        solicitacoesAlteracaoEndereco.forEach(s => { 
-          if (s && s.solicitante_id) solicitanteIds.add(s.solicitante_id); 
-        });
-        
-        solicitacoesMudancaTurno.forEach(s => { 
-          if (s && s.solicitante_id) solicitanteIds.add(s.solicitante_id); 
-        });
-          
-        if (solicitanteIds.size > 0) {
-          const { data: solicitantesData, error: solicitantesError } = await supabase
-            .from("usuarios")
-            .select("id, nome, setor")
-            .in("id", Array.from(solicitanteIds));
-            
-          if (solicitantesError) {
-            console.error("Erro ao buscar solicitantes:", solicitantesError);
-          } else if (solicitantesData) {
-            const infoMap: {[id: number]: {nome: string, setor: string}} = {};
-            solicitantesData.forEach(s => {
-              infoMap[s.id] = { nome: s.nome, setor: s.setor };
-            });
-            setSolicitantesInfo(infoMap);
-          }
-        }
-      } catch (error) {
-        console.error("Erro ao buscar solicitações:", error);
-      } finally {
-        setLoading(false);
+      if (errorRota) {
+        console.error("Erro ao buscar solicitações de rota:", errorRota);
+      } else {
+        setSolicitacoesRota(dataRota || []);
       }
-    };
-    
-    fetchSolicitacoes();
-  }, [user]);
+        
+      const { data: data12x36, error: error12x36 } = await supabase
+        .from("solicitacoes_transporte_12x36")
+        .select("*")
+        .order("created_at", { ascending: false });
+          
+      if (error12x36) {
+        console.error("Erro ao buscar solicitações 12x36:", error12x36);
+      } else {
+        setSolicitacoes12x36(data12x36 || []);
+      }
+        
+      const { data: dataRefeicao, error: errorRefeicao } = await supabase
+        .from("solicitacoes_refeicao")
+        .select("*")
+        .order("created_at", { ascending: false });
+          
+      if (errorRefeicao) {
+        console.error("Erro ao buscar solicitações de refeição:", errorRefeicao);
+      } else {
+        setSolicitacoesRefeicao(dataRefeicao || []);
+      }
+
+      try {
+        console.log("Fetching abono_ponto solicitations...");
+        const { data: dataAbonoPonto, error: errorAbonoPonto } = await queryCustomTable<any>(
+          "solicitacoes_abono_ponto",
+          {
+            order: { column: "created_at", ascending: false }
+          }
+        );
+            
+        if (errorAbonoPonto) {
+          console.error("Erro ao buscar solicitações de abono de ponto:", errorAbonoPonto);
+        } else if (dataAbonoPonto) {
+          console.log("Received abono_ponto data:", dataAbonoPonto.length, "records");
+          const formattedData: SolicitacaoAbonosPonto[] = dataAbonoPonto.map((item: any) => ({
+            id: item.id,
+            solicitante_id: item.solicitante_id,
+            status: item.status,
+            created_at: item.created_at,
+            updated_at: item.updated_at,
+            data_ocorrencia: item.data_ocorrencia || '',
+            turno: item.turno || '',
+            motivo: item.motivo || ''
+          }));
+          setSolicitacoesAbonoPonto(formattedData);
+        }
+      } catch (err) {
+        console.error("Erro ao processar solicitações de abono de ponto:", err);
+      }
+
+      try {
+        console.log("Fetching adesao_cancelamento solicitations...");
+        const { data: dataAdesaoCancelamento, error: errorAdesaoCancelamento } = await queryCustomTable<any>(
+          "solicitacoes_adesao_cancelamento",
+          {
+            order: { column: "created_at", ascending: false }
+          }
+        );
+            
+        if (errorAdesaoCancelamento) {
+          console.error("Erro ao buscar solicitações de adesão/cancelamento:", errorAdesaoCancelamento);
+        } else if (dataAdesaoCancelamento) {
+          console.log("Received adesao_cancelamento data:", dataAdesaoCancelamento.length, "records");
+          const formattedData: SolicitacaoAdesaoCancelamento[] = dataAdesaoCancelamento.map((item: any) => ({
+            id: item.id,
+            solicitante_id: item.solicitante_id,
+            status: item.status,
+            created_at: item.created_at,
+            updated_at: item.updated_at,
+            tipo_solicitacao: item.tipo_solicitacao || '',
+            motivo: item.motivo || ''
+          }));
+          setSolicitacoesAdesaoCancelamento(formattedData);
+        }
+      } catch (err) {
+        console.error("Erro ao processar solicitações de adesão/cancelamento:", err);
+      }
+
+      try {
+        console.log("Fetching alteracao_endereco solicitations...");
+        const { data: dataAlteracaoEndereco, error: errorAlteracaoEndereco } = await queryCustomTable<any>(
+          "solicitacoes_alteracao_endereco",
+          {
+            order: { column: "created_at", ascending: false }
+          }
+        );
+            
+        if (errorAlteracaoEndereco) {
+          console.error("Erro ao buscar solicitações de alteração de endereço:", errorAlteracaoEndereco);
+        } else if (dataAlteracaoEndereco) {
+          console.log("Received alteracao_endereco data:", dataAlteracaoEndereco.length, "records");
+          const formattedData: SolicitacaoAlteracaoEndereco[] = dataAlteracaoEndereco.map((item: any) => ({
+            id: item.id,
+            solicitante_id: item.solicitante_id,
+            status: item.status,
+            created_at: item.created_at,
+            updated_at: item.updated_at,
+            endereco_atual: item.endereco || '',
+            endereco_novo: item.nova_rota ? `${item.endereco} (nova rota: ${item.nova_rota})` : (item.endereco || ''),
+            data_alteracao: item.data_alteracao || item.created_at,
+            comprovante_url: item.comprovante_url
+          }));
+          setSolicitacoesAlteracaoEndereco(formattedData);
+        }
+      } catch (err) {
+        console.error("Erro ao processar solicitações de alteração de endereço:", err);
+      }
+
+      try {
+        console.log("Fetching mudanca_turno solicitations...");
+        const { data: dataMudancaTurno, error: errorMudancaTurno } = await queryCustomTable<any>(
+          "solicitacoes_mudanca_turno",
+          {
+            order: { column: "created_at", ascending: false }
+          }
+        );
+            
+        if (errorMudancaTurno) {
+          console.error("Erro ao buscar solicitações de mudança de turno:", errorMudancaTurno);
+        } else if (dataMudancaTurno) {
+          console.log("Received mudanca_turno data:", dataMudancaTurno.length, "records");
+          const formattedData: SolicitacaoMudancaTurno[] = dataMudancaTurno.map((item: any) => ({
+            id: item.id,
+            solicitante_id: item.solicitante_id,
+            status: item.status,
+            created_at: item.created_at,
+            updated_at: item.updated_at,
+            turno_atual: item.turno_atual || '',
+            turno_novo: item.novo_turno || '',
+            data_alteracao: item.data_alteracao || item.created_at,
+            motivo: item.motivo || ''
+          }));
+          setSolicitacoesMudancaTurno(formattedData);
+        }
+      } catch (err) {
+        console.error("Erro ao processar solicitações de mudança de turno:", err);
+      }
+        
+      const solicitanteIds = new Set<number>();
+        
+      [
+        ...(dataRota || []), 
+        ...(data12x36 || []), 
+        ...(dataRefeicao || [])
+      ].forEach(s => {
+        if (s.solicitante_id) solicitanteIds.add(s.solicitante_id);
+      });
+        
+      solicitacoesAbonoPonto.forEach(s => { 
+        if (s && s.solicitante_id) solicitanteIds.add(s.solicitante_id); 
+      });
+        
+      solicitacoesAdesaoCancelamento.forEach(s => { 
+        if (s && s.solicitante_id) solicitanteIds.add(s.solicitante_id); 
+      });
+        
+      solicitacoesAlteracaoEndereco.forEach(s => { 
+        if (s && s.solicitante_id) solicitanteIds.add(s.solicitante_id); 
+      });
+        
+      solicitacoesMudancaTurno.forEach(s => { 
+        if (s && s.solicitante_id) solicitanteIds.add(s.solicitante_id); 
+      });
+          
+      if (solicitanteIds.size > 0) {
+        const { data: solicitantesData, error: solicitantesError } = await supabase
+          .from("usuarios")
+          .select("id, nome, setor")
+          .in("id", Array.from(solicitanteIds));
+            
+        if (solicitantesError) {
+          console.error("Erro ao buscar solicitantes:", solicitantesError);
+        } else if (solicitantesData) {
+          const infoMap: {[id: number]: {nome: string, setor: string}} = {};
+          solicitantesData.forEach(s => {
+            infoMap[s.id] = { nome: s.nome, setor: s.setor };
+          });
+          setSolicitantesInfo(infoMap);
+        }
+      }
+    } catch (error) {
+      console.error("Erro ao buscar solicitações:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
   
   const formatarData = (dataString: string) => {
     try {
@@ -574,7 +576,13 @@ const Admin = () => {
     }
   };
   
-  if (!user?.admin) {
+  // If auth is still loading, show a loader
+  if (isLoading) {
+    return <PageLoader />;
+  }
+  
+  // If not authenticated or not admin, show access denied
+  if (!isAuthenticated || !user?.admin) {
     return (
       <div className="container py-10">
         <Card>
@@ -796,465 +804,3 @@ const Admin = () => {
                                       <Button 
                                         variant="outline" 
                                         size="sm"
-                                        className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 border-red-200"
-                                        onClick={() => atualizarStatus12x36(solicitacao.id, "rejeitada")}
-                                      >
-                                        <XCircle className="h-4 w-4 mr-1" />
-                                        Rejeitar
-                                      </Button>
-                                    </>
-                                  )}
-                                  {solicitacao.status === "aprovada" && (
-                                    <Button variant="outline" size="sm" className="w-full">
-                                      <Download className="h-4 w-4 mr-1" />
-                                      Gerar Ticket
-                                    </Button>
-                                  )}
-                                  {solicitacao.status === "rejeitada" && (
-                                    <Button 
-                                      variant="outline" 
-                                      size="sm" 
-                                      className="w-full"
-                                      onClick={() => atualizarStatus12x36(solicitacao.id, "aprovada")}
-                                    >
-                                      <CheckCircle className="h-4 w-4 mr-1" />
-                                      Aprovar
-                                    </Button>
-                                  )}
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  ) : (
-                    <p className="text-center py-10 text-muted-foreground">
-                      Nenhuma solicitação de transporte 12x36 encontrada.
-                    </p>
-                  )}
-                </TabsContent>
-                
-                <TabsContent value="refeicao" className="mt-4">
-                  {filtrarSolicitacoesRefeicao().length > 0 ? (
-                    <div className="rounded-md border overflow-hidden">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Solicitante</TableHead>
-                            <TableHead>Colaboradores</TableHead>
-                            <TableHead>Tipo de Refeição</TableHead>
-                            <TableHead>Data da Refeição</TableHead>
-                            <TableHead>Data de Solicitação</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead className="w-[180px]">Ações</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {filtrarSolicitacoesRefeicao().map((solicitacao) => (
-                            <TableRow key={solicitacao.id}>
-                              <TableCell>
-                                <SolicitanteInfo id={solicitacao.solicitante_id} />
-                              </TableCell>
-                              <TableCell className="font-medium">
-                                <div className="max-h-20 overflow-y-auto">
-                                  {solicitacao.colaboradores.map((nome, idx) => (
-                                    <div key={idx} className="mb-1 last:mb-0">
-                                      {nome}
-                                    </div>
-                                  ))}
-                                </div>
-                              </TableCell>
-                              <TableCell>{solicitacao.tipo_refeicao}</TableCell>
-                              <TableCell>{formatarData(solicitacao.data_refeicao)}</TableCell>
-                              <TableCell>{formatarTimestamp(solicitacao.created_at)}</TableCell>
-                              <TableCell>
-                                <StatusBadge status={solicitacao.status} />
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex space-x-2">
-                                  {solicitacao.status === "pendente" && (
-                                    <>
-                                      <Button 
-                                        variant="outline" 
-                                        size="sm"
-                                        className="flex-1 bg-green-50 hover:bg-green-100 text-green-600 border-green-200"
-                                        onClick={() => atualizarStatusRefeicao(solicitacao.id, "aprovada")}
-                                      >
-                                        <CheckCircle className="h-4 w-4 mr-1" />
-                                        Aprovar
-                                      </Button>
-                                      <Button 
-                                        variant="outline" 
-                                        size="sm"
-                                        className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 border-red-200"
-                                        onClick={() => atualizarStatusRefeicao(solicitacao.id, "rejeitada")}
-                                      >
-                                        <XCircle className="h-4 w-4 mr-1" />
-                                        Rejeitar
-                                      </Button>
-                                    </>
-                                  )}
-                                  {solicitacao.status === "aprovada" && (
-                                    <Button variant="outline" size="sm" className="w-full">
-                                      <Download className="h-4 w-4 mr-1" />
-                                      Gerar Tickets
-                                    </Button>
-                                  )}
-                                  {solicitacao.status === "rejeitada" && (
-                                    <Button 
-                                      variant="outline" 
-                                      size="sm" 
-                                      className="w-full"
-                                      onClick={() => atualizarStatusRefeicao(solicitacao.id, "aprovada")}
-                                    >
-                                      <CheckCircle className="h-4 w-4 mr-1" />
-                                      Aprovar
-                                    </Button>
-                                  )}
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  ) : (
-                    <p className="text-center py-10 text-muted-foreground">
-                      Nenhuma solicitação de refeição encontrada.
-                    </p>
-                  )}
-                </TabsContent>
-
-                <TabsContent value="abono" className="mt-4">
-                  {filtrarSolicitacoesAbonoPonto().length > 0 ? (
-                    <div className="rounded-md border overflow-hidden">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Solicitante</TableHead>
-                            <TableHead>Data da Ocorrência</TableHead>
-                            <TableHead>Turno</TableHead>
-                            <TableHead>Motivo</TableHead>
-                            <TableHead>Data de Solicitação</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead className="w-[180px]">Ações</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {filtrarSolicitacoesAbonoPonto().map((solicitacao) => (
-                            <TableRow key={solicitacao.id}>
-                              <TableCell>
-                                <SolicitanteInfo id={solicitacao.solicitante_id} />
-                              </TableCell>
-                              <TableCell>{formatarData(solicitacao.data_ocorrencia)}</TableCell>
-                              <TableCell>{solicitacao.turno}</TableCell>
-                              <TableCell>{solicitacao.motivo}</TableCell>
-                              <TableCell>{formatarTimestamp(solicitacao.created_at)}</TableCell>
-                              <TableCell>
-                                <StatusBadge status={solicitacao.status} />
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex space-x-2">
-                                  {solicitacao.status === "pendente" && (
-                                    <>
-                                      <Button 
-                                        variant="outline" 
-                                        size="sm"
-                                        className="flex-1 bg-green-50 hover:bg-green-100 text-green-600 border-green-200"
-                                        onClick={() => atualizarStatusGenerico('solicitacoes_abono_ponto', solicitacao.id, "aprovada", setSolicitacoesAbonoPonto)}
-                                      >
-                                        <CheckCircle className="h-4 w-4 mr-1" />
-                                        Aprovar
-                                      </Button>
-                                      <Button 
-                                        variant="outline" 
-                                        size="sm"
-                                        className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 border-red-200"
-                                        onClick={() => atualizarStatusGenerico('solicitacoes_abono_ponto', solicitacao.id, "rejeitada", setSolicitacoesAbonoPonto)}
-                                      >
-                                        <XCircle className="h-4 w-4 mr-1" />
-                                        Rejeitar
-                                      </Button>
-                                    </>
-                                  )}
-                                  {solicitacao.status === "rejeitada" && (
-                                    <Button 
-                                      variant="outline" 
-                                      size="sm" 
-                                      className="w-full"
-                                      onClick={() => atualizarStatusGenerico('solicitacoes_abono_ponto', solicitacao.id, "aprovada", setSolicitacoesAbonoPonto)}
-                                    >
-                                      <CheckCircle className="h-4 w-4 mr-1" />
-                                      Aprovar
-                                    </Button>
-                                  )}
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  ) : (
-                    <p className="text-center py-10 text-muted-foreground">
-                      Nenhuma solicitação de abono de ponto encontrada.
-                    </p>
-                  )}
-                </TabsContent>
-
-                <TabsContent value="adesao" className="mt-4">
-                  {filtrarSolicitacoesAdesaoCancelamento().length > 0 ? (
-                    <div className="rounded-md border overflow-hidden">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Solicitante</TableHead>
-                            <TableHead>Tipo</TableHead>
-                            <TableHead>Motivo</TableHead>
-                            <TableHead>Data de Solicitação</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead className="w-[180px]">Ações</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {filtrarSolicitacoesAdesaoCancelamento().map((solicitacao) => (
-                            <TableRow key={solicitacao.id}>
-                              <TableCell>
-                                <SolicitanteInfo id={solicitacao.solicitante_id} />
-                              </TableCell>
-                              <TableCell>{solicitacao.tipo_solicitacao}</TableCell>
-                              <TableCell>{solicitacao.motivo}</TableCell>
-                              <TableCell>{formatarTimestamp(solicitacao.created_at)}</TableCell>
-                              <TableCell>
-                                <StatusBadge status={solicitacao.status} />
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex space-x-2">
-                                  {solicitacao.status === "pendente" && (
-                                    <>
-                                      <Button 
-                                        variant="outline" 
-                                        size="sm"
-                                        className="flex-1 bg-green-50 hover:bg-green-100 text-green-600 border-green-200"
-                                        onClick={() => atualizarStatusGenerico('solicitacoes_adesao_cancelamento', solicitacao.id, "aprovada", setSolicitacoesAdesaoCancelamento)}
-                                      >
-                                        <CheckCircle className="h-4 w-4 mr-1" />
-                                        Aprovar
-                                      </Button>
-                                      <Button 
-                                        variant="outline" 
-                                        size="sm"
-                                        className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 border-red-200"
-                                        onClick={() => atualizarStatusGenerico('solicitacoes_adesao_cancelamento', solicitacao.id, "rejeitada", setSolicitacoesAdesaoCancelamento)}
-                                      >
-                                        <XCircle className="h-4 w-4 mr-1" />
-                                        Rejeitar
-                                      </Button>
-                                    </>
-                                  )}
-                                  {solicitacao.status === "rejeitada" && (
-                                    <Button 
-                                      variant="outline" 
-                                      size="sm" 
-                                      className="w-full"
-                                      onClick={() => atualizarStatusGenerico('solicitacoes_adesao_cancelamento', solicitacao.id, "aprovada", setSolicitacoesAdesaoCancelamento)}
-                                    >
-                                      <CheckCircle className="h-4 w-4 mr-1" />
-                                      Aprovar
-                                    </Button>
-                                  )}
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  ) : (
-                    <p className="text-center py-10 text-muted-foreground">
-                      Nenhuma solicitação de adesão/cancelamento encontrada.
-                    </p>
-                  )}
-                </TabsContent>
-
-                <TabsContent value="endereco" className="mt-4">
-                  {filtrarSolicitacoesAlteracaoEndereco().length > 0 ? (
-                    <div className="rounded-md border overflow-hidden">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Solicitante</TableHead>
-                            <TableHead>Endereço Atual</TableHead>
-                            <TableHead>Novo Endereço</TableHead>
-                            <TableHead>Data de Alteração</TableHead>
-                            <TableHead>Data de Solicitação</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead className="w-[240px]">Ações</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {filtrarSolicitacoesAlteracaoEndereco().map((solicitacao) => (
-                            <TableRow key={solicitacao.id}>
-                              <TableCell>
-                                <SolicitanteInfo id={solicitacao.solicitante_id} />
-                              </TableCell>
-                              <TableCell>{solicitacao.endereco_atual}</TableCell>
-                              <TableCell>{solicitacao.endereco_novo}</TableCell>
-                              <TableCell>{formatarData(solicitacao.data_alteracao)}</TableCell>
-                              <TableCell>{formatarTimestamp(solicitacao.created_at)}</TableCell>
-                              <TableCell>
-                                <StatusBadge status={solicitacao.status} />
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex flex-col sm:flex-row gap-2">
-                                  {(solicitacao as any).comprovante_url && (
-                                    <Button 
-                                      variant="outline" 
-                                      size="sm"
-                                      className="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-600 border-blue-200"
-                                      onClick={() => handleDownloadComprovante(
-                                        (solicitacao as any).comprovante_url,
-                                        solicitantesInfo[solicitacao.solicitante_id]?.nome || 'solicitante'
-                                      )}
-                                    >
-                                      <File className="h-4 w-4 mr-1" />
-                                      Comprovante
-                                    </Button>
-                                  )}
-                                  
-                                  {solicitacao.status === "pendente" && (
-                                    <>
-                                      <Button 
-                                        variant="outline" 
-                                        size="sm"
-                                        className="flex-1 bg-green-50 hover:bg-green-100 text-green-600 border-green-200"
-                                        onClick={() => atualizarStatusGenerico('solicitacoes_alteracao_endereco', solicitacao.id, "aprovada", setSolicitacoesAlteracaoEndereco)}
-                                      >
-                                        <CheckCircle className="h-4 w-4 mr-1" />
-                                        Aprovar
-                                      </Button>
-                                      <Button 
-                                        variant="outline" 
-                                        size="sm"
-                                        className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 border-red-200"
-                                        onClick={() => atualizarStatusGenerico('solicitacoes_alteracao_endereco', solicitacao.id, "rejeitada", setSolicitacoesAlteracaoEndereco)}
-                                      >
-                                        <XCircle className="h-4 w-4 mr-1" />
-                                        Rejeitar
-                                      </Button>
-                                    </>
-                                  )}
-                                  {solicitacao.status === "rejeitada" && (
-                                    <Button 
-                                      variant="outline" 
-                                      size="sm" 
-                                      className="w-full"
-                                      onClick={() => atualizarStatusGenerico('solicitacoes_alteracao_endereco', solicitacao.id, "aprovada", setSolicitacoesAlteracaoEndereco)}
-                                    >
-                                      <CheckCircle className="h-4 w-4 mr-1" />
-                                      Aprovar
-                                    </Button>
-                                  )}
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  ) : (
-                    <p className="text-center py-10 text-muted-foreground">
-                      Nenhuma solicitação de alteração de endereço encontrada.
-                    </p>
-                  )}
-                </TabsContent>
-
-                <TabsContent value="turno" className="mt-4">
-                  {filtrarSolicitacoesMudancaTurno().length > 0 ? (
-                    <div className="rounded-md border overflow-hidden">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Solicitante</TableHead>
-                            <TableHead>Turno Atual</TableHead>
-                            <TableHead>Novo Turno</TableHead>
-                            <TableHead>Data de Alteração</TableHead>
-                            <TableHead>Motivo</TableHead>
-                            <TableHead>Data de Solicitação</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead className="w-[180px]">Ações</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {filtrarSolicitacoesMudancaTurno().map((solicitacao) => (
-                            <TableRow key={solicitacao.id}>
-                              <TableCell>
-                                <SolicitanteInfo id={solicitacao.solicitante_id} />
-                              </TableCell>
-                              <TableCell>{solicitacao.turno_atual}</TableCell>
-                              <TableCell>{solicitacao.turno_novo}</TableCell>
-                              <TableCell>{formatarData(solicitacao.data_alteracao)}</TableCell>
-                              <TableCell>{solicitacao.motivo}</TableCell>
-                              <TableCell>{formatarTimestamp(solicitacao.created_at)}</TableCell>
-                              <TableCell>
-                                <StatusBadge status={solicitacao.status} />
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex space-x-2">
-                                  {solicitacao.status === "pendente" && (
-                                    <>
-                                      <Button 
-                                        variant="outline" 
-                                        size="sm"
-                                        className="flex-1 bg-green-50 hover:bg-green-100 text-green-600 border-green-200"
-                                        onClick={() => atualizarStatusGenerico('solicitacoes_mudanca_turno', solicitacao.id, "aprovada", setSolicitacoesMudancaTurno)}
-                                      >
-                                        <CheckCircle className="h-4 w-4 mr-1" />
-                                        Aprovar
-                                      </Button>
-                                      <Button 
-                                        variant="outline" 
-                                        size="sm"
-                                        className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 border-red-200"
-                                        onClick={() => atualizarStatusGenerico('solicitacoes_mudanca_turno', solicitacao.id, "rejeitada", setSolicitacoesMudancaTurno)}
-                                      >
-                                        <XCircle className="h-4 w-4 mr-1" />
-                                        Rejeitar
-                                      </Button>
-                                    </>
-                                  )}
-                                  {solicitacao.status === "rejeitada" && (
-                                    <Button 
-                                      variant="outline" 
-                                      size="sm" 
-                                      className="w-full"
-                                      onClick={() => atualizarStatusGenerico('solicitacoes_mudanca_turno', solicitacao.id, "aprovada", setSolicitacoesMudancaTurno)}
-                                    >
-                                      <CheckCircle className="h-4 w-4 mr-1" />
-                                      Aprovar
-                                    </Button>
-                                  )}
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  ) : (
-                    <p className="text-center py-10 text-muted-foreground">
-                      Nenhuma solicitação de mudança de turno encontrada.
-                    </p>
-                  )}
-                </TabsContent>
-              </Tabs>
-            </>
-          )}
-        </CardContent>
-      </Card>
-    </div>
-  );
-};
-
-export default Admin;
