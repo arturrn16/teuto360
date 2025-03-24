@@ -1,48 +1,106 @@
-import { Routes, Route, Navigate } from "react-router-dom";
-import { Layout } from "@/components/Layout";
-import { ProtectedRoute } from "@/context/AuthContext";
+import { lazy, Suspense } from 'react';
+import { Navigate, Routes, Route, useLocation } from 'react-router-dom';
+import { Layout } from '@/components/Layout';
+import { PageLoader } from '@/components/ui/loader-spinner';
+import { ProtectedRoute } from '@/context/AuthContext';
 
-// Import pages
-import Index from "@/pages/Index";
-import Dashboard from "@/pages/Dashboard";
-import TransporteRota from "@/pages/TransporteRota";
-import Transporte12x36 from "@/pages/Transporte12x36";
-import Refeicao from "@/pages/Refeicao";
-import MinhasSolicitacoes from "@/pages/MinhasSolicitacoes";
-import Admin from "@/pages/Admin";
-import Comunicados from "@/pages/Comunicados";
-import GerenciarComunicados from "@/pages/GerenciarComunicados";
-import Relatorios from "@/pages/Relatorios";
-import CardapioSemana from "@/pages/CardapioSemana";
-import GerenciarCardapio from "@/pages/GerenciarCardapio";
-import AdesaoCancelamento from "@/pages/AdesaoCancelamento";
-import MudancaTurno from "@/pages/MudancaTurno";
-import AlteracaoEndereco from "@/pages/AlteracaoEndereco";
-import AbonoPonto from "@/pages/AbonoPonto";
-import Avaliacao from "@/pages/Avaliacao";
-import Plantao from "@/pages/Plantao";
-import MapaRotas from "@/pages/MapaRotas";
-import OfertaCaronas from "@/pages/OfertaCaronas";
-import ConsultaCartao from "@/pages/ConsultaCartao";
-import GerenciarCartoes from "@/pages/GerenciarCartoes";
+// Lazy load all the pages
+const Index = lazy(() => import('@/pages/Index'));
+const Login = lazy(() => import('@/pages/Login'));
+const Dashboard = lazy(() => import('@/pages/Dashboard'));
+const NotFound = lazy(() => import('@/pages/NotFound'));
 
-const AppRoutes = () => {
+// Admin pages
+const Admin = lazy(() => import('@/pages/Admin'));
+const Relatorios = lazy(() => import('@/pages/Relatorios'));
+const GerenciarComunicados = lazy(() => import('@/pages/GerenciarComunicados'));
+const GerenciarCardapio = lazy(() => import('@/pages/GerenciarCardapio'));
+const GerenciarCartoes = lazy(() => import('@/pages/GerenciarCartoes'));
+const GerenciarUsuarios = lazy(() => import('@/pages/GerenciarUsuarios'));
+
+// Regular pages
+const TransporteRota = lazy(() => import('@/pages/TransporteRota'));
+const Transporte12x36 = lazy(() => import('@/pages/Transporte12x36'));
+const Refeicao = lazy(() => import('@/pages/Refeicao'));
+const Comunicados = lazy(() => import('@/pages/Comunicados'));
+const MinhasSolicitacoes = lazy(() => import('@/pages/MinhasSolicitacoes'));
+const MapaRotas = lazy(() => import('@/pages/MapaRotas'));
+const AdesaoCancelamento = lazy(() => import('@/pages/AdesaoCancelamento'));
+const MudancaTurno = lazy(() => import('@/pages/MudancaTurno'));
+const AlteracaoEndereco = lazy(() => import('@/pages/AlteracaoEndereco'));
+const AbonoPonto = lazy(() => import('@/pages/AbonoPonto'));
+const Avaliacao = lazy(() => import('@/pages/Avaliacao'));
+const Plantao = lazy(() => import('@/pages/Plantao'));
+const OfertaCaronas = lazy(() => import('@/pages/OfertaCaronas'));
+const ConsultaCartao = lazy(() => import('@/pages/ConsultaCartao'));
+const CardapioSemana = lazy(() => import('@/pages/CardapioSemana'));
+
+export const AppRoutes = () => {
+  const location = useLocation();
+
+  // If the route is /, redirect to /login
+  if (location.pathname === '/') {
+    return <Navigate to="/login" replace />;
+  }
+
   return (
-    <Layout>
+    <Suspense fallback={<PageLoader />}>
       <Routes>
-        {/* Root route */}
-        <Route index element={<Index />} />
-        
-        {/* Protected routes */}
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
+        <Route path="/" element={<Index />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/dashboard" element={
+          <ProtectedRoute>
+            <Layout>
               <Dashboard />
-            </ProtectedRoute>
-          }
-        />
-
+            </Layout>
+          </ProtectedRoute>
+        } />
+        
+        {/* Admin Routes */}
+        <Route path="/admin" element={
+          <ProtectedRoute allowedTypes={["admin"] as const}>
+            <Layout>
+              <Admin />
+            </Layout>
+          </ProtectedRoute>
+        } />
+        <Route path="/relatorios" element={
+          <ProtectedRoute allowedTypes={["admin"] as const}>
+            <Layout>
+              <Relatorios />
+            </Layout>
+          </ProtectedRoute>
+        } />
+        <Route path="/gerenciar-comunicados" element={
+          <ProtectedRoute allowedTypes={["admin"] as const}>
+            <Layout>
+              <GerenciarComunicados />
+            </Layout>
+          </ProtectedRoute>
+        } />
+        <Route path="/gerenciar-cardapio" element={
+          <ProtectedRoute allowedTypes={["admin"] as const}>
+            <Layout>
+              <GerenciarCardapio />
+            </Layout>
+          </ProtectedRoute>
+        } />
+        <Route path="/gerenciar-cartoes" element={
+          <ProtectedRoute allowedTypes={["admin"] as const}>
+            <Layout>
+              <GerenciarCartoes />
+            </Layout>
+          </ProtectedRoute>
+        } />
+        <Route path="/gerenciar-usuarios" element={
+          <ProtectedRoute allowedTypes={["admin"] as const}>
+            <Layout>
+              <GerenciarUsuarios />
+            </Layout>
+          </ProtectedRoute>
+        } />
+        
+        {/* Other routes */}
         <Route
           path="/transporte-rota"
           element={
@@ -80,16 +138,6 @@ const AppRoutes = () => {
         />
 
         <Route
-          path="/admin"
-          element={
-            <ProtectedRoute allowedTypes={["admin"]}>
-              <Admin />
-            </ProtectedRoute>
-          }
-        />
-        
-        {/* Announcements routes */}
-        <Route
           path="/comunicados"
           element={
             <ProtectedRoute allowedTypes={["selecao", "refeicao", "colaborador", "comum"]}>
@@ -107,7 +155,6 @@ const AppRoutes = () => {
           }
         />
         
-        {/* Cafeteria menu routes - updated to exclude 'refeicao' user type */}
         <Route
           path="/cardapio-semana"
           element={
@@ -126,7 +173,6 @@ const AppRoutes = () => {
           }
         />
         
-        {/* Collaborator routes */}
         <Route
           path="/adesao-cancelamento"
           element={
@@ -199,7 +245,6 @@ const AppRoutes = () => {
           }
         />
 
-        {/* Reports route */}
         <Route
           path="/relatorios"
           element={
@@ -209,7 +254,6 @@ const AppRoutes = () => {
           }
         />
 
-        {/* Card routes */}
         <Route
           path="/consulta-cartao"
           element={
@@ -228,11 +272,8 @@ const AppRoutes = () => {
           }
         />
 
-        {/* Fallback for routes inside Layout */}
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
-    </Layout>
+    </Suspense>
   );
 };
-
-export default AppRoutes;

@@ -169,6 +169,12 @@ export const navItems: NavItem[] = [
     icon: <span className="text-green-600 text-xl">💳</span>,
     allowedTypes: ["admin"] as const
   },
+  { 
+    name: "Gerenciar Usuários", 
+    href: "/gerenciar-usuarios", 
+    icon: <span className="text-blue-600 text-xl">👥</span>,
+    allowedTypes: ["admin"] as const
+  },
 ];
 
 export const getUserRoleLabel = (roleType: string): string => {

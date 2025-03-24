@@ -2,7 +2,7 @@ import { useAuth } from "@/context/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui-components/Card";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
-import { Clock, FileText, Route, Map, Utensils, Shield, Home, UserCheck, Phone, Star, MapPin, ClipboardCheck, Replace, Car, CalendarDays, CreditCard } from "lucide-react";
+import { Clock, FileText, Route, Map, Utensils, Shield, Home, UserCheck, Phone, Star, MapPin, ClipboardCheck, Replace, Car, CalendarDays, CreditCard, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { UserType } from "@/components/sidebar/navigationConfig";
 
@@ -17,7 +17,6 @@ const Dashboard = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // Log user type for debugging
   console.log("Dashboard - User type:", user?.tipo_usuario);
 
   const cards: {
@@ -74,7 +73,15 @@ const Dashboard = () => {
       color: "from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20",
       textColor: "text-blue-600 dark:text-blue-400"
     },
-    
+    {
+      title: "Gerenciar Usuários",
+      description: "Cadastre e gerencie usuários do sistema",
+      icon: <Users className="h-8 w-8 text-teal-600" />,
+      to: "/gerenciar-usuarios",
+      allowedTypes: ["admin"],
+      color: "from-teal-50 to-teal-100 dark:from-teal-900/20 dark:to-teal-800/20",
+      textColor: "text-teal-600 dark:text-teal-400"
+    },
     {
       title: "Transporte Rota",
       description: "Solicite transporte para rotas regulares",
@@ -225,7 +232,6 @@ const Dashboard = () => {
     if (!user) return false;
     
     if (user.admin) {
-      // For admin users, only show the first 4 cards (admin-specific)
       return card.allowedTypes.includes('admin');
     }
     
