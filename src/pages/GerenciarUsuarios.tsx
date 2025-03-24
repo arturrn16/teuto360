@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
@@ -9,7 +8,8 @@ import {
   addUser, 
   updateUser, 
   deleteUser, 
-  UserDetailed 
+  UserDetailed,
+  UserFormData
 } from "@/services/userService";
 import { 
   Table, 
@@ -66,7 +66,7 @@ const GerenciarUsuarios = () => {
   const [selectedUser, setSelectedUser] = useState<UserDetailed | null>(null);
   
   // Form state for adding/editing user
-  const [formData, setFormData] = useState<Omit<UserDetailed, 'id'>>({
+  const [formData, setFormData] = useState<UserFormData>({
     nome: '',
     matricula: '',
     username: '',
@@ -178,13 +178,7 @@ const GerenciarUsuarios = () => {
     }
 
     try {
-      // Only include password if it was changed
-      const updateData = { ...formData };
-      if (!updateData.password) {
-        delete updateData.password;
-      }
-
-      await updateUser(selectedUser.id, updateData);
+      await updateUser(selectedUser.id, formData);
       setIsEditDialogOpen(false);
       loadUsers();
       resetForm();

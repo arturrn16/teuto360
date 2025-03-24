@@ -7,6 +7,12 @@ import { User } from "@/utils/auth";
 export interface UserDetailed extends User {
   created_at?: string;
   updated_at?: string;
+  password?: string; // Add password as optional property
+}
+
+// Define a type for user creation/update
+export interface UserFormData extends Omit<UserDetailed, 'id'> {
+  password?: string;
 }
 
 // Fetch all users from the database
@@ -23,7 +29,11 @@ export const getAllUsers = async (): Promise<UserDetailed[]> => {
       return [];
     }
 
-    return data || [];
+    // Cast and ensure data conforms to UserDetailed type
+    return (data || []).map(user => ({
+      ...user,
+      tipo_usuario: user.tipo_usuario as 'admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum'
+    })) as UserDetailed[];
   } catch (error) {
     console.error('Error in getAllUsers:', error);
     toast.error('Erro ao buscar usuários');
@@ -50,7 +60,11 @@ export const searchUsers = async (query: string): Promise<UserDetailed[]> => {
       return [];
     }
 
-    return data || [];
+    // Cast and ensure data conforms to UserDetailed type
+    return (data || []).map(user => ({
+      ...user,
+      tipo_usuario: user.tipo_usuario as 'admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum'
+    })) as UserDetailed[];
   } catch (error) {
     console.error('Error in searchUsers:', error);
     toast.error('Erro ao buscar usuários');
@@ -72,8 +86,14 @@ export const getUserById = async (id: number): Promise<UserDetailed | null> => {
       toast.error('Erro ao buscar usuário');
       return null;
     }
-
-    return data || null;
+    
+    if (!data) return null;
+    
+    // Cast tipo_usuario to ensure it matches the UserDetailed type
+    return {
+      ...data,
+      tipo_usuario: data.tipo_usuario as 'admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum'
+    };
   } catch (error) {
     console.error('Error in getUserById:', error);
     toast.error('Erro ao buscar usuário');
@@ -82,11 +102,14 @@ export const getUserById = async (id: number): Promise<UserDetailed | null> => {
 };
 
 // Add a new user
-export const addUser = async (user: Omit<UserDetailed, 'id'>): Promise<UserDetailed | null> => {
+export const addUser = async (user: UserFormData): Promise<UserDetailed | null> => {
   try {
     const { data, error } = await supabase
       .from('usuarios')
-      .insert(user)
+      .insert({
+        ...user,
+        tipo_usuario: user.tipo_usuario as 'admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum'
+      })
       .select()
       .single();
 
@@ -97,7 +120,11 @@ export const addUser = async (user: Omit<UserDetailed, 'id'>): Promise<UserDetai
     }
 
     toast.success('Usuário adicionado com sucesso');
-    return data;
+    // Convert the returned data to match UserDetailed
+    return {
+      ...data,
+      tipo_usuario: data.tipo_usuario as 'admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum'
+    };
   } catch (error) {
     console.error('Error in addUser:', error);
     toast.error('Erro ao adicionar usuário');
@@ -106,11 +133,20 @@ export const addUser = async (user: Omit<UserDetailed, 'id'>): Promise<UserDetai
 };
 
 // Update an existing user
-export const updateUser = async (id: number, userData: Partial<UserDetailed>): Promise<UserDetailed | null> => {
+export const updateUser = async (id: number, userData: Partial<UserFormData>): Promise<UserDetailed | null> => {
   try {
+    // Filter out password if it's empty
+    const updateData = { ...userData };
+    if (updateData.password === '') {
+      delete updateData.password;
+    }
+
     const { data, error } = await supabase
       .from('usuarios')
-      .update(userData)
+      .update({
+        ...updateData,
+        tipo_usuario: userData.tipo_usuario as 'admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum'
+      })
       .eq('id', id)
       .select()
       .single();
@@ -122,7 +158,10 @@ export const updateUser = async (id: number, userData: Partial<UserDetailed>): P
     }
 
     toast.success('Usuário atualizado com sucesso');
-    return data;
+    return {
+      ...data,
+      tipo_usuario: data.tipo_usuario as 'admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum'
+    };
   } catch (error) {
     console.error('Error in updateUser:', error);
     toast.error('Erro ao atualizar usuário');
