@@ -1,3 +1,4 @@
+
 import { useAuth } from "@/context/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui-components/Card";
 import { cn } from "@/lib/utils";
@@ -15,6 +16,9 @@ const Dashboard = () => {
     }, 1000);
     return () => clearInterval(timer);
   }, []);
+
+  // Log user type for debugging
+  console.log("Dashboard - User type:", user?.tipo_usuario);
 
   const cards = [
     {
@@ -175,7 +179,10 @@ const Dashboard = () => {
   const filteredCards = cards.filter(card => {
     if (!user) return false;
     
-    if (user.admin) return card.title === "Administração" || card.title === "Gerenciar Comunicados";
+    // Debug cada card para verificar permissões
+    console.log(`Card: ${card.title}, User can access: ${user.admin || card.allowedTypes.includes(user.tipo_usuario)}`);
+    
+    if (user.admin) return true;
     
     return card.allowedTypes.includes(user.tipo_usuario);
   });

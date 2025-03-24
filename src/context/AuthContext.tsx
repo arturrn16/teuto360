@@ -92,7 +92,7 @@ export const useAuth = (): AuthContextType => {
   return context;
 };
 
-// Protected route component - update to accept readonly arrays
+// Protected route component - update to accept readonly arrays and fix error handling
 export const ProtectedRoute: React.FC<{
   children: React.ReactNode;
   allowedTypes?: ReadonlyArray<'admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum'>;
@@ -105,8 +105,15 @@ export const ProtectedRoute: React.FC<{
       if (!isAuthenticated) {
         navigate("/login");
       } else if (user) {
-        // Verifica permissões do tipo de usuário
+        // Corrigindo a verificação de permissões
         const isAllowed = user.admin || allowedTypes.includes(user.tipo_usuario);
+        console.log("Route access check:", {
+          userType: user.tipo_usuario,
+          admin: user.admin,
+          allowedTypes,
+          isAllowed
+        });
+        
         if (!isAllowed) {
           toast.error("Você não tem permissão para acessar esta página");
           navigate("/dashboard");

@@ -35,6 +35,7 @@ export const loginUser = async (username: string, password: string): Promise<Use
     }
 
     // Se tudo deu certo, retorna o usuário
+    console.log("Login bem-sucedido:", data.user);
     storeUser(data.user);
     return data.user;
   } catch (error) {
@@ -53,7 +54,14 @@ export const logoutUser = (): void => {
 export const getStoredUser = (): User | null => {
   const userData = localStorage.getItem("hrUser");
   if (userData) {
-    return JSON.parse(userData);
+    try {
+      const user = JSON.parse(userData);
+      console.log("Recovered user from storage:", user);
+      return user;
+    } catch (error) {
+      console.error("Error parsing stored user:", error);
+      return null;
+    }
   }
   return null;
 };
@@ -83,6 +91,13 @@ export const shouldShowRoute = (
   allowedTypes: ReadonlyArray<'admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum'>
 ): boolean => {
   if (!user) return false;
+  
+  console.log("shouldShowRoute check:", { 
+    userType: user.tipo_usuario, 
+    admin: user.admin, 
+    allowedTypes
+  });
+  
   if (user.admin) return true;
   return allowedTypes.includes(user.tipo_usuario);
 };
