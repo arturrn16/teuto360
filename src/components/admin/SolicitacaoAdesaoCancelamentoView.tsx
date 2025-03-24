@@ -21,7 +21,6 @@ export function SolicitacaoAdesaoCancelamentoView({
 }: SolicitacaoAdesaoCancelamentoViewProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [motivo, setMotivo] = useState("");
-  const [comentario, setComentario] = useState("");
 
   const handleUpdateStatus = async (newStatus: string) => {
     setIsLoading(true);
@@ -33,22 +32,13 @@ export function SolicitacaoAdesaoCancelamentoView({
         return;
       }
       
-      const updateData: { 
-        status: string; 
-        motivo_rejeicao?: string;
-        motivo_comentario?: string 
-      } = { 
+      const updateData: { status: string; motivo_rejeicao?: string } = { 
         status: newStatus 
       };
       
       // Adicionar motivo apenas se for rejeitada
       if (newStatus === 'rejeitada') {
         updateData.motivo_rejeicao = motivo;
-      }
-      
-      // Adicionar comentário se fornecido (tanto para aprovação quanto rejeição)
-      if (comentario.trim()) {
-        updateData.motivo_comentario = comentario;
       }
       
       const { error } = await supabase
@@ -166,13 +156,6 @@ export function SolicitacaoAdesaoCancelamentoView({
           </div>
         )}
 
-        {solicitacao.motivo_comentario && (
-          <div className="mt-4 p-3 border border-blue-200 bg-blue-50 rounded-md">
-            <h3 className="text-sm font-medium text-blue-600">Comentário do Administrador</h3>
-            <p className="text-blue-700">{solicitacao.motivo_comentario}</p>
-          </div>
-        )}
-
         {solicitacao.declaracao_url && (
           <div className="pt-2">
             <Button 
@@ -203,18 +186,6 @@ export function SolicitacaoAdesaoCancelamentoView({
       
       {solicitacao.status === "pendente" && (
         <CardFooter className="flex flex-col gap-4">
-          {/* Campo de comentário opcional para ambas as ações */}
-          <div className="w-full">
-            <Label htmlFor="comentario_admin">Comentário (opcional)</Label>
-            <Textarea 
-              id="comentario_admin"
-              placeholder="Adicione um comentário sobre esta solicitação (visível para o solicitante)"
-              value={comentario}
-              onChange={(e) => setComentario(e.target.value)}
-              className="mt-1"
-            />
-          </div>
-          
           {/* Campo de motivo para rejeição */}
           <div className="w-full">
             <Label htmlFor="motivo_rejeicao">Motivo para rejeição (obrigatório caso rejeite)</Label>

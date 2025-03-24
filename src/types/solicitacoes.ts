@@ -1,5 +1,4 @@
 
-
 export interface BaseSolicitacao {
   id: number;
   solicitante_id: number;
@@ -13,7 +12,6 @@ export interface SolicitacaoAdesaoCancelamento extends BaseSolicitacao {
   tipo_transporte: "Fretado" | "ValeTransporte";
   motivo: string;
   motivo_rejeicao?: string;
-  motivo_comentario?: string;
   cep?: string;
   rua?: string;
   bairro?: string;
@@ -87,4 +85,3 @@ export interface SolicitacaoRefeicao extends BaseSolicitacao {
   tipo_refeicao: string;
   data_refeicao: string;
 }
-
