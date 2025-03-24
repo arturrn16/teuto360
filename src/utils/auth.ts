@@ -7,13 +7,11 @@ export interface User {
   id: number;
   matricula: string;
   nome: string;
-  cargo: string; // Campo obrigatório já que é usado em componentes
-  setor: string; // Campo obrigatório já que é usado em componentes
+  cargo: string;
+  setor: string;
   username: string;
-  password?: string; // Password é opcional pois pode não ser retornado em todas as consultas
   admin: boolean;
   tipo_usuario: 'admin' | 'selecao' | 'refeicao' | 'colaborador' | 'comum';
-  rota?: string; // Adiciona propriedade rota para corresponder ao esquema do banco de dados
   created_at?: string;
   updated_at?: string;
 }

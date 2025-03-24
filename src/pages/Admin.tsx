@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { 
@@ -131,6 +132,7 @@ const Admin = () => {
   const [solicitantesInfo, setSolicitantesInfo] = useState<{[id: number]: {nome: string, setor: string}}>({});
   
   useEffect(() => {
+    // Only fetch data if user is authenticated and has admin role
     if (!isLoading && isAuthenticated && user?.admin) {
       fetchSolicitacoes();
     }
@@ -319,7 +321,7 @@ const Admin = () => {
       if (solicitanteIds.size > 0) {
         const { data: solicitantesData, error: solicitantesError } = await supabase
           .from("usuarios")
-          .select("id, nome, setor, cargo")
+          .select("id, nome, setor")
           .in("id", Array.from(solicitanteIds));
             
         if (solicitantesError) {
@@ -327,7 +329,7 @@ const Admin = () => {
         } else if (solicitantesData) {
           const infoMap: {[id: number]: {nome: string, setor: string}} = {};
           solicitantesData.forEach(s => {
-            infoMap[s.id] = { nome: s.nome, setor: s.setor || "" };
+            infoMap[s.id] = { nome: s.nome, setor: s.setor };
           });
           setSolicitantesInfo(infoMap);
         }
@@ -537,8 +539,8 @@ const Admin = () => {
     
     return (
       <div className="text-sm">
-        <div className="font-medium">{info.nome || '--'}</div>
-        <div className="text-muted-foreground">{info.setor || '--'}</div>
+        <div className="font-medium">{info.nome}</div>
+        <div className="text-muted-foreground">{info.setor}</div>
       </div>
     );
   };
@@ -575,10 +577,12 @@ const Admin = () => {
     }
   };
   
+  // If auth is still loading, show a loader
   if (isLoading) {
     return <PageLoader />;
   }
   
+  // If not authenticated or not admin, show access denied
   if (!isAuthenticated || !user?.admin) {
     return (
       <div className="container py-10">
@@ -714,7 +718,7 @@ const Admin = () => {
                                         Aprovar
                                       </Button>
                                       <Button 
-                                        variant="outline"
+                                        variant="outline" 
                                         size="sm"
                                         className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 border-red-200"
                                         onClick={() => atualizarStatusRota(solicitacao.id, "rejeitada")}
@@ -755,7 +759,73 @@ const Admin = () => {
                   )}
                 </TabsContent>
                 
-                {/* Add other TabsContent components here with similar structure */}
+                <TabsContent value="12x36" className="mt-4">
+                  {filtrarSolicitacoes12x36().length > 0 ? (
+                    <div className="rounded-md border overflow-hidden">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Solicitante</TableHead>
+                            <TableHead>Colaborador</TableHead>
+                            <TableHead>Telefone</TableHead>
+                            <TableHead>Rota</TableHead>
+                            <TableHead>Data de Início</TableHead>
+                            <TableHead>Data de Solicitação</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead className="w-[180px]">Ações</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filtrarSolicitacoes12x36().map((solicitacao) => (
+                            <TableRow key={solicitacao.id}>
+                              <TableCell>
+                                <SolicitanteInfo id={solicitacao.solicitante_id} />
+                              </TableCell>
+                              <TableCell className="font-medium">{solicitacao.colaborador_nome}</TableCell>
+                              <TableCell>{solicitacao.telefone}</TableCell>
+                              <TableCell>{solicitacao.rota}</TableCell>
+                              <TableCell>{formatarData(solicitacao.data_inicio)}</TableCell>
+                              <TableCell>{formatarTimestamp(solicitacao.created_at)}</TableCell>
+                              <TableCell>
+                                <StatusBadge status={solicitacao.status} />
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex space-x-2">
+                                  {solicitacao.status === "pendente" && (
+                                    <>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="flex-1 bg-green-50 hover:bg-green-100 text-green-600 border-green-200"
+                                        onClick={() => atualizarStatus12x36(solicitacao.id, "aprovada")}
+                                      >
+                                        <CheckCircle className="h-4 w-4 mr-1" />
+                                        Aprovar
+                                      </Button>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 border-red-200"
+                                        onClick={() => atualizarStatus12x36(solicitacao.id, "rejeitada")}
+                                      >
+                                        <XCircle className="h-4 w-4 mr-1" />
+                                        Rejeitar
+                                      </Button>
+                                    </>
+                                  )}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  ) : (
+                    <p className="text-center py-10 text-muted-foreground">
+                      Nenhuma solicitação de transporte 12x36 encontrada.
+                    </p>
+                  )}
+                </TabsContent>
               </Tabs>
             </>
           )}
