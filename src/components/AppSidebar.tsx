@@ -11,34 +11,12 @@ import { navItems, getUserRoleLabel } from "./sidebar/navigationConfig";
 import { UserProfileSection } from "./sidebar/UserProfileSection";
 import { SidebarNavigation } from "./sidebar/SidebarNavigation";
 import { LogoutButton } from "./sidebar/LogoutButton";
-import { useState, useEffect } from "react";
-import { useAuthLoaded } from "./Layout";
 
 export const AppSidebar = () => {
-  const [authProviderAvailable, setAuthProviderAvailable] = useState(false);
-  const { authLoaded } = useAuthLoaded();
+  const { user, logout } = useAuth();
   const { setOpenMobile, isMobile } = useSidebar();
   
-  // References to auth data
-  let user: any = null;
-  let logout: any = null;
-  
-  // Only try to use auth if the provider is available
-  useEffect(() => {
-    if (authLoaded) {
-      try {
-        // Just testing if we can access the context
-        const auth = useAuth();
-        setAuthProviderAvailable(true);
-        user = auth.user;
-        logout = auth.logout;
-      } catch (error) {
-        console.error("Auth provider not available for AppSidebar:", error);
-      }
-    }
-  }, [authLoaded]);
-  
-  if (!authProviderAvailable || !user) return null;
+  if (!user) return null;
 
   // Close sidebar on mobile when clicking logout
   const handleLogout = () => {

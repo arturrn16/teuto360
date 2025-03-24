@@ -1,33 +1,11 @@
 
 import { useAuth } from "@/context/AuthContext";
 import { LogOut, User as UserIcon } from "lucide-react";
-import { useState, useEffect } from "react";
-import { useAuthLoaded } from "./Layout";
 
 export const Navbar = () => {
-  const [authProviderAvailable, setAuthProviderAvailable] = useState(false);
-  const { authLoaded } = useAuthLoaded();
-  
-  // References to auth data
-  let user: any = null;
-  let logout: any = null;
-  
-  // Only try to use auth if the provider is available
-  useEffect(() => {
-    if (authLoaded) {
-      try {
-        // Just testing if we can access the context
-        const auth = useAuth();
-        setAuthProviderAvailable(true);
-        user = auth.user;
-        logout = auth.logout;
-      } catch (error) {
-        console.error("Auth provider not available for Navbar:", error);
-      }
-    }
-  }, [authLoaded]);
+  const { user, logout } = useAuth();
 
-  if (!authProviderAvailable || !user) return null;
+  if (!user) return null;
 
   return (
     <div className="flex justify-end items-center h-16 px-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">

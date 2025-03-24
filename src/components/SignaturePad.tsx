@@ -34,13 +34,6 @@ export const SignaturePad = ({ onSignatureChange, disabled = false }: SignatureP
     }
   };
 
-  const handleBegin = () => {
-    // Focus the signature canvas when the user starts signing
-    if (sigCanvas.current) {
-      sigCanvas.current.focus();
-    }
-  };
-
   return (
     <div className="flex flex-col space-y-2">
       <div className="border border-input rounded-md bg-background p-1 relative">
@@ -64,7 +57,6 @@ export const SignaturePad = ({ onSignatureChange, disabled = false }: SignatureP
             style: { backgroundColor: "white" }
           }}
           onEnd={handleEnd}
-          onBegin={handleBegin}
           disabled={disabled}
         />
       </div>

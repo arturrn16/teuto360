@@ -1,6 +1,6 @@
 
 import { useAuth } from "@/context/AuthContext";
-import { Outlet, useLocation, useOutletContext } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "./ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { AlignLeft } from "lucide-react";
@@ -9,35 +9,7 @@ import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useIdleTimeout } from "@/hooks/use-idle-timeout";
 
-type ContextType = { authLoaded: boolean };
-
 export const Layout = () => {
-  // Only initialize auth hooks after checking if we're inside the provider
-  const [authProviderAvailable, setAuthProviderAvailable] = useState(false);
-  
-  // Check if AuthProvider is available
-  useEffect(() => {
-    try {
-      // Just testing if we can access the context without error
-      useAuth();
-      setAuthProviderAvailable(true);
-    } catch (error) {
-      console.error("AuthProvider not available yet:", error);
-      // We'll handle this case in the JSX below
-    }
-  }, []);
-
-  if (!authProviderAvailable) {
-    // Return a minimal layout while waiting for auth context to be available
-    return <Outlet context={{ authLoaded: false } as ContextType} />;
-  }
-
-  // Now we can safely use the auth hooks
-  return <AuthenticatedLayout />;
-};
-
-// Separate component that only renders when auth is available
-const AuthenticatedLayout = () => {
   const { isAuthenticated, isLoading } = useAuth();
   const isMobile = useIsMobile();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -73,7 +45,7 @@ const AuthenticatedLayout = () => {
   }
 
   if (!isAuthenticated) {
-    return <Outlet context={{ authLoaded: true } as ContextType} />;
+    return <Outlet />;
   }
 
   return (
@@ -94,7 +66,7 @@ const AuthenticatedLayout = () => {
               </div>
             )}
             <div className="w-full transition-all">
-              <Outlet context={{ authLoaded: true } as ContextType} />
+              <Outlet />
             </div>
           </main>
         </div>
@@ -107,8 +79,3 @@ const AuthenticatedLayout = () => {
     </SidebarProvider>
   );
 };
-
-// Custom hook to get auth loaded status
-export function useAuthLoaded() {
-  return useOutletContext<ContextType>();
-}
