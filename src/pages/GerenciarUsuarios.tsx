@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -61,7 +60,6 @@ const Icons = {
   spinner: Loader2,
 };
 
-// Define a schema specifically for the form
 const userFormSchema = z.object({
   id: z.number().optional(),
   matricula: z.string().min(3, {
@@ -84,7 +82,6 @@ const userFormSchema = z.object({
   tipo_usuario: z.enum(['admin', 'selecao', 'refeicao', 'colaborador', 'comum']).default('comum'),
 });
 
-// Infer the type from the schema for form typing
 type UserFormValues = z.infer<typeof userFormSchema>;
 
 const GerenciarUsuarios = () => {
@@ -139,13 +136,12 @@ const GerenciarUsuarios = () => {
       }
 
       if (data) {
-        // Convert database users to User type
         const typedUsers: User[] = data.map(dbUser => ({
           id: dbUser.id,
           matricula: dbUser.matricula,
           nome: dbUser.nome,
-          cargo: dbUser.cargo || "", // Provide default values if missing
-          setor: dbUser.setor || "", // Provide default values if missing
+          cargo: dbUser.cargo || "",
+          setor: dbUser.setor || "",
           username: dbUser.username,
           admin: dbUser.admin || false,
           tipo_usuario: dbUser.tipo_usuario as User["tipo_usuario"],
@@ -189,13 +185,12 @@ const GerenciarUsuarios = () => {
 
   const handleEditUser = (user: User) => {
     setIsCreating(false);
-    // Map the User type to the form schema type
     const formUser: UserFormValues = {
       id: user.id,
       matricula: user.matricula,
       nome: user.nome,
-      cargo: user.cargo,
-      setor: user.setor,
+      cargo: user.cargo || "",
+      setor: user.setor || "",
       username: user.username,
       admin: user.admin,
       tipo_usuario: user.tipo_usuario,
@@ -245,23 +240,31 @@ const GerenciarUsuarios = () => {
     try {
       setIsSaving(true);
       
-      // For new users, ensure password is set
       if (isCreating && !values.password) {
         toast.error("Senha é obrigatória para novos usuários");
         setIsSaving(false);
         return;
       }
       
-      // Create database object
-      const userForApi = { ...values };
+      const userForApi: any = { 
+        matricula: values.matricula,
+        nome: values.nome,
+        username: values.username,
+        tipo_usuario: values.tipo_usuario,
+        admin: values.admin,
+        cargo: values.cargo,
+        setor: values.setor
+      };
       
-      // Remove password if it's empty (for existing users)
-      if (!isCreating && userForApi.password === '') {
-        delete userForApi.password;
+      if (values.password) {
+        userForApi.password = values.password;
+      }
+      
+      if (!isCreating) {
+        userForApi.id = values.id;
       }
       
       if (isCreating) {
-        // Create new user
         const { data, error } = await supabase
           .from('usuarios')
           .insert([userForApi])
@@ -274,7 +277,6 @@ const GerenciarUsuarios = () => {
         }
         
         if (data && data[0]) {
-          // Convert database user to User type
           const newUser: User = {
             id: data[0].id,
             matricula: data[0].matricula,
@@ -292,7 +294,6 @@ const GerenciarUsuarios = () => {
           toast.success("Usuário criado com sucesso!");
         }
       } else {
-        // Update existing user
         const { data, error } = await supabase
           .from('usuarios')
           .update(userForApi)
@@ -306,7 +307,6 @@ const GerenciarUsuarios = () => {
         }
         
         if (data && data[0]) {
-          // Convert updated database user to User type
           const updatedUser: User = {
             id: data[0].id,
             matricula: data[0].matricula,
@@ -339,12 +339,10 @@ const GerenciarUsuarios = () => {
     return Object.keys(form.formState.errors).length > 0;
   };
 
-  // If auth is still loading, show a loader
   if (isLoading) {
     return <PageLoader />;
   }
 
-  // If not authenticated or not admin, show access denied
   if (!isAuthenticated || !loggedInUser?.admin) {
     return (
       <div className="container py-10">

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { 
@@ -132,7 +131,6 @@ const Admin = () => {
   const [solicitantesInfo, setSolicitantesInfo] = useState<{[id: number]: {nome: string, setor: string}}>({});
   
   useEffect(() => {
-    // Only fetch data if user is authenticated and has admin role
     if (!isLoading && isAuthenticated && user?.admin) {
       fetchSolicitacoes();
     }
@@ -321,7 +319,7 @@ const Admin = () => {
       if (solicitanteIds.size > 0) {
         const { data: solicitantesData, error: solicitantesError } = await supabase
           .from("usuarios")
-          .select("id, nome, setor")
+          .select("id, nome")
           .in("id", Array.from(solicitanteIds));
             
         if (solicitantesError) {
@@ -329,7 +327,7 @@ const Admin = () => {
         } else if (solicitantesData) {
           const infoMap: {[id: number]: {nome: string, setor: string}} = {};
           solicitantesData.forEach(s => {
-            infoMap[s.id] = { nome: s.nome, setor: s.setor };
+            infoMap[s.id] = { nome: s.nome, setor: s.setor || "" };
           });
           setSolicitantesInfo(infoMap);
         }
@@ -577,12 +575,10 @@ const Admin = () => {
     }
   };
   
-  // If auth is still loading, show a loader
   if (isLoading) {
     return <PageLoader />;
   }
   
-  // If not authenticated or not admin, show access denied
   if (!isAuthenticated || !user?.admin) {
     return (
       <div className="container py-10">
