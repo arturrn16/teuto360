@@ -136,6 +136,7 @@ const Admin = () => {
   const [isViewingDetails, setIsViewingDetails] = useState(false);
   
   useEffect(() => {
+    console.log("Admin useEffect - isLoading:", isLoading, "isAuthenticated:", isAuthenticated, "user admin:", user?.admin);
     if (!isLoading && isAuthenticated && user?.admin) {
       fetchSolicitacoes();
     }
@@ -144,6 +145,7 @@ const Admin = () => {
   const fetchSolicitacoes = async () => {
     try {
       setLoading(true);
+      console.log("Fetching solicitations...");
       
       const { data: dataRota, error: errorRota } = await supabase
         .from("solicitacoes_transporte_rota")
@@ -153,6 +155,7 @@ const Admin = () => {
       if (errorRota) {
         console.error("Erro ao buscar solicitações de rota:", errorRota);
       } else {
+        console.log("Received rota data:", dataRota?.length, "records");
         setSolicitacoesRota(dataRota || []);
       }
         
@@ -164,6 +167,7 @@ const Admin = () => {
       if (error12x36) {
         console.error("Erro ao buscar solicitações 12x36:", error12x36);
       } else {
+        console.log("Received 12x36 data:", data12x36?.length, "records");
         setSolicitacoes12x36(data12x36 || []);
       }
         
@@ -175,6 +179,7 @@ const Admin = () => {
       if (errorRefeicao) {
         console.error("Erro ao buscar solicitações de refeição:", errorRefeicao);
       } else {
+        console.log("Received refeicao data:", dataRefeicao?.length, "records");
         setSolicitacoesRefeicao(dataRefeicao || []);
       }
 
@@ -227,6 +232,7 @@ const Admin = () => {
             created_at: item.created_at,
             updated_at: item.updated_at,
             tipo_solicitacao: item.tipo_solicitacao || '',
+            tipo_transporte: item.tipo_transporte || '',
             motivo: item.motivo || ''
           }));
           setSolicitacoesAdesaoCancelamento(formattedData);
@@ -320,6 +326,8 @@ const Admin = () => {
       solicitacoesMudancaTurno.forEach(s => { 
         if (s && s.solicitante_id) solicitanteIds.add(s.solicitante_id); 
       });
+
+      console.log("Unique solicitante IDs to fetch:", Array.from(solicitanteIds));
           
       if (solicitanteIds.size > 0) {
         const { data: solicitantesData, error: solicitantesError } = await supabase
@@ -330,6 +338,7 @@ const Admin = () => {
         if (solicitantesError) {
           console.error("Erro ao buscar solicitantes:", solicitantesError);
         } else if (solicitantesData) {
+          console.log("Received solicitantes data:", solicitantesData.length, "records");
           const infoMap: {[id: number]: {nome: string, setor: string}} = {};
           solicitantesData.forEach(s => {
             infoMap[s.id] = { nome: s.nome, setor: s.setor };
