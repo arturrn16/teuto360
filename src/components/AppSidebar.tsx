@@ -26,6 +26,14 @@ export const AppSidebar = () => {
     logout();
   };
 
+  // Debug user information
+  console.log("Sidebar - User info:", { 
+    name: user.nome, 
+    type: user.tipo_usuario, 
+    admin: user.admin,
+    isLoggedIn: !!user
+  });
+
   return (
     <Sidebar>
       <SidebarHeader className="h-16 flex flex-col justify-center px-4 border-b border-gray-200 bg-white">
