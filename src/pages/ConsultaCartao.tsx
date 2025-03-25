@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -83,14 +84,14 @@ const ConsultaCartao = () => {
                   <div>
                     <h3 className="font-semibold text-base">
                       {cardResult.status === "Disponivel" ? (
-                        "Cartão pronto para retirada!"
+                        "Obaa! 🥳🎉"
                       ) : (
                         "Cartão já foi retirado"
                       )}
                     </h3>
                     <p className="text-sm text-gray-600 mt-1">
                       {cardResult.status === "Disponivel" ? (
-                        "Seu cartão está disponível para retirada no RH-Benefícios."
+                        "Seu cartão já está disponível para retirada. Passe no RH-Benefícios para retirar e aproveitar tudo o que ele oferece. Nos vemos por lá!"
                       ) : (
                         "Seu cartão já foi retirado, conforme nossos registros."
                       )}
@@ -104,9 +105,9 @@ const ConsultaCartao = () => {
                     <X className="h-5 w-5 text-red-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-base">Cartão ainda não chegou</h3>
+                    <h3 className="font-semibold text-base">Oops! 😬</h3>
                     <p className="text-sm text-gray-600 mt-1">
-                      Não encontramos um cartão disponível para a matrícula informada.
+                      Parece que o seu cartão ainda não chegou. Fique de olho, pois o cartão estará disponível para retirada em breve.
                     </p>
                   </div>
                 </div>
