@@ -1,3 +1,4 @@
+
 import { useAuth } from "@/context/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui-components/Card";
 import { cn } from "@/lib/utils";
@@ -150,7 +151,7 @@ const Dashboard = () => {
       description: "Solicite alteração do seu turno de trabalho",
       icon: <Replace className="h-8 w-8 text-cyan-500" />,
       to: "/mudanca-turno",
-      allowedTypes: ["gestor", "comum"] as const,
+      allowedTypes: ["gestor"] as const, // Removed "comum" from allowed types
       color: "from-cyan-50 to-cyan-100 dark:from-cyan-900/20 dark:to-cyan-800/20",
       textColor: "text-cyan-600 dark:text-cyan-400"
     },
