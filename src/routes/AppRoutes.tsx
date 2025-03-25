@@ -258,7 +258,9 @@ export const AppRoutes = () => {
           path="/consulta-cartao"
           element={
             <ProtectedRoute allowedTypes={["gestor", "comum"]}>
-              <ConsultaCartao />
+              <Layout>
+                <ConsultaCartao />
+              </Layout>
             </ProtectedRoute>
           }
         />
