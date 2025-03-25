@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
@@ -495,7 +494,7 @@ const GerenciarUsuarios = () => {
               Editar Usuário
             </DialogTitle>
             <DialogDescription>
-              Atualize as informações do usuário abaixo.
+              Atualize as informa��ões do usuário abaixo.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleEditSubmit}>
@@ -591,7 +590,6 @@ const GerenciarUsuarios = () => {
                             </FormControl>
                             <SelectContent>
                               <SelectItem value="comum">Comum</SelectItem>
-                              <SelectItem value="colaborador">Colaborador</SelectItem>
                               <SelectItem value="selecao">Seleção</SelectItem>
                               <SelectItem value="gestor">Gestor</SelectItem>
                               <SelectItem value="admin">Administrador</SelectItem>
@@ -795,7 +793,6 @@ const GerenciarUsuarios = () => {
                             </FormControl>
                             <SelectContent>
                               <SelectItem value="comum">Comum</SelectItem>
-                              <SelectItem value="colaborador">Colaborador</SelectItem>
                               <SelectItem value="selecao">Seleção</SelectItem>
                               <SelectItem value="gestor">Gestor</SelectItem>
                               <SelectItem value="admin">Administrador</SelectItem>
