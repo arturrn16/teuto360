@@ -240,7 +240,9 @@ export const AppRoutes = () => {
           path="/oferta-caronas"
           element={
             <ProtectedRoute allowedTypes={["gestor", "comum"]}>
-              <OfertaCaronas />
+              <Layout>
+                <OfertaCaronas />
+              </Layout>
             </ProtectedRoute>
           }
         />
