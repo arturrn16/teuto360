@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ChevronDown, ChevronRight } from "lucide-react";
@@ -92,6 +93,17 @@ export const SidebarNavigation = ({ items, userType, admin = false }: SidebarNav
       location.pathname === child.href
     );
 
+    // Filter children based on user type before rendering
+    const filteredChildren = hasChildren 
+      ? item.children?.filter(child => {
+          if (admin) return true;
+          return child.allowedTypes.includes(userType);
+        })
+      : [];
+
+    // Only render if there are children after filtering
+    const shouldRenderChildren = filteredChildren && filteredChildren.length > 0;
+
     return (
       <div key={index} className="group">
         <SidebarNavItem 
@@ -107,10 +119,10 @@ export const SidebarNavigation = ({ items, userType, admin = false }: SidebarNav
           className={`transition-all duration-200 ${isMobile ? 'py-3' : ''}`}
         />
         
-        {/* Render children if expanded */}
-        {hasChildren && isExpanded && (
+        {/* Render filtered children if expanded */}
+        {hasChildren && isExpanded && shouldRenderChildren && (
           <SidebarMenuSub>
-            {item.children?.map((child, childIndex) => (
+            {filteredChildren.map((child, childIndex) => (
               <SidebarNavItem 
                 key={childIndex}
                 href={child.href}
