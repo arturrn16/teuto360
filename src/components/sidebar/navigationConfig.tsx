@@ -1,3 +1,4 @@
+
 import React from "react";
 
 // Types for user roles
@@ -47,7 +48,7 @@ export const navItems: NavItem[] = [
         name: "Mudança de Turno", 
         href: "/mudanca-turno", 
         icon: <></>,
-        allowedTypes: ["gestor", "comum"] as const // Removed "colaborador", added "gestor"
+        allowedTypes: ["gestor"] as const // Removed "comum"
       },
       { 
         name: "Alteração de Endereço", 

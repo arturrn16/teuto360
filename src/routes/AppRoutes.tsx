@@ -185,7 +185,7 @@ export const AppRoutes = () => {
         <Route
           path="/mudanca-turno"
           element={
-            <ProtectedRoute allowedTypes={["gestor", "comum"]}>
+            <ProtectedRoute allowedTypes={["gestor"]}>
               <MudancaTurno />
             </ProtectedRoute>
           }
