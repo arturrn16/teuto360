@@ -5,16 +5,27 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthContext";
+import { Suspense, lazy } from "react";
+import { PageLoader } from "./components/ui/loader-spinner";
 
 // Import pages (not layout)
-import Login from "./pages/Login";
-import NotFound from "./pages/NotFound";
+const Login = lazy(() => import("./pages/Login"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
-// Create a client
-const queryClient = new QueryClient();
+// Import routes
+const AppRoutes = lazy(() => import("./routes/AppRoutes").then(module => ({ default: module.AppRoutes })));
 
-// Layout and protected pages will be imported in a separate route file
-import { AppRoutes } from "./routes/AppRoutes";
+// Create a client with performance optimizations
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false, // Don't refetch on window focus by default
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      retry: 1, // Only retry once by default
+      networkMode: 'always', // Changed from online to always to reduce latency
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -23,16 +34,18 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <Routes>
-            {/* Public routes outside Layout */}
-            <Route path="/login" element={<Login />} />
-            
-            {/* App routes with Layout */}
-            <Route path="/*" element={<AppRoutes />} />
-            
-            {/* Fallback */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              {/* Public routes outside Layout */}
+              <Route path="/login" element={<Login />} />
+              
+              {/* App routes with Layout */}
+              <Route path="/*" element={<AppRoutes />} />
+              
+              {/* Fallback */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

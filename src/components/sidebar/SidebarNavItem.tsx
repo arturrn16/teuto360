@@ -1,6 +1,7 @@
 
 import { cn } from "@/lib/utils";
 import { SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
+import { memo } from "react";
 
 interface SidebarNavItemProps {
   href: string;
@@ -12,7 +13,8 @@ interface SidebarNavItemProps {
   className?: string;
 }
 
-export const SidebarNavItem = ({ 
+// Memoize the SidebarNavItem to prevent unnecessary re-renders
+export const SidebarNavItem = memo(({ 
   href, 
   icon, 
   name, 
@@ -42,4 +44,6 @@ export const SidebarNavItem = ({
       </SidebarMenuButton>
     </SidebarMenuItem>
   );
-};
+});
+
+SidebarNavItem.displayName = "SidebarNavItem";

@@ -1,10 +1,11 @@
-import { lazy, Suspense } from 'react';
+
+import { lazy, Suspense, memo } from 'react';
 import { Navigate, Routes, Route, useLocation } from 'react-router-dom';
 import { Layout } from '@/components/Layout';
 import { PageLoader } from '@/components/ui/loader-spinner';
 import { ProtectedRoute } from '@/context/AuthContext';
 
-// Lazy load all the pages
+// Lazy load all the pages with prefetching hint
 const Index = lazy(() => import('@/pages/Index'));
 const Login = lazy(() => import('@/pages/Login'));
 const Dashboard = lazy(() => import('@/pages/Dashboard'));
@@ -35,7 +36,75 @@ const OfertaCaronas = lazy(() => import('@/pages/OfertaCaronas'));
 const ConsultaCartao = lazy(() => import('@/pages/ConsultaCartao'));
 const CardapioSemana = lazy(() => import('@/pages/CardapioSemana'));
 
-export const AppRoutes = () => {
+// Create a protected route wrapper to simplify route definitions
+const ProtectedPage = memo(({ 
+  component: Component, 
+  allowedTypes 
+}: { 
+  component: React.ComponentType,
+  allowedTypes?: readonly ("admin" | "selecao" | "gestor" | "colaborador" | "comum")[]
+}) => {
+  return (
+    <ProtectedRoute allowedTypes={allowedTypes}>
+      <Layout>
+        <Component />
+      </Layout>
+    </ProtectedRoute>
+  );
+});
+
+ProtectedPage.displayName = 'ProtectedPage';
+
+// Define route groups to improve organization and reduce duplication
+const routeGroups = {
+  admin: [
+    { path: '/admin', component: Admin },
+    { path: '/relatorios', component: Relatorios },
+    { path: '/gerenciar-comunicados', component: GerenciarComunicados },
+    { path: '/gerenciar-cardapio', component: GerenciarCardapio },
+    { path: '/gerenciar-cartoes', component: GerenciarCartoes },
+    { path: '/gerenciar-usuarios', component: GerenciarUsuarios },
+  ],
+  
+  adminSelecaoComum: [
+    { path: '/transporte-rota', component: TransporteRota },
+  ],
+  
+  adminSelecaoGestor: [
+    { path: '/transporte-12x36', component: Transporte12x36 },
+  ],
+  
+  adminGestor: [
+    { path: '/refeicao', component: Refeicao },
+  ],
+  
+  selecaoGestorColaboradorComum: [
+    { path: '/minhas-solicitacoes', component: MinhasSolicitacoes },
+    { path: '/comunicados', component: Comunicados },
+  ],
+  
+  selecaoComum: [
+    { path: '/cardapio-semana', component: CardapioSemana },
+  ],
+  
+  gestorComum: [
+    { path: '/adesao-cancelamento', component: AdesaoCancelamento },
+    { path: '/alteracao-endereco', component: AlteracaoEndereco },
+    { path: '/abono-ponto', component: AbonoPonto },
+    { path: '/avaliacao', component: Avaliacao },
+    { path: '/plantao', component: Plantao },
+    { path: '/mapa-rotas', component: MapaRotas },
+    { path: '/oferta-caronas', component: OfertaCaronas },
+    { path: '/consulta-cartao', component: ConsultaCartao },
+  ],
+  
+  gestorOnly: [
+    { path: '/mudanca-turno', component: MudancaTurno },
+  ],
+};
+
+// Create a memoized AppRoutes component
+export const AppRoutes = memo(() => {
   const location = useLocation();
 
   // If the route is /, redirect to /login
@@ -48,270 +117,90 @@ export const AppRoutes = () => {
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/dashboard" element={
-          <ProtectedRoute>
-            <Layout>
-              <Dashboard />
-            </Layout>
-          </ProtectedRoute>
-        } />
+        
+        {/* Dashboard - accessible by all authenticated users */}
+        <Route
+          path="/dashboard"
+          element={<ProtectedPage component={Dashboard} />}
+        />
         
         {/* Admin Routes */}
-        <Route path="/admin" element={
-          <ProtectedRoute allowedTypes={["admin"] as const}>
-            <Layout>
-              <Admin />
-            </Layout>
-          </ProtectedRoute>
-        } />
-        <Route path="/relatorios" element={
-          <ProtectedRoute allowedTypes={["admin"] as const}>
-            <Layout>
-              <Relatorios />
-            </Layout>
-          </ProtectedRoute>
-        } />
-        <Route path="/gerenciar-comunicados" element={
-          <ProtectedRoute allowedTypes={["admin"] as const}>
-            <Layout>
-              <GerenciarComunicados />
-            </Layout>
-          </ProtectedRoute>
-        } />
-        <Route path="/gerenciar-cardapio" element={
-          <ProtectedRoute allowedTypes={["admin"] as const}>
-            <Layout>
-              <GerenciarCardapio />
-            </Layout>
-          </ProtectedRoute>
-        } />
-        <Route path="/gerenciar-cartoes" element={
-          <ProtectedRoute allowedTypes={["admin"] as const}>
-            <Layout>
-              <GerenciarCartoes />
-            </Layout>
-          </ProtectedRoute>
-        } />
-        <Route path="/gerenciar-usuarios" element={
-          <ProtectedRoute allowedTypes={["admin"] as const}>
-            <Layout>
-              <GerenciarUsuarios />
-            </Layout>
-          </ProtectedRoute>
-        } />
+        {routeGroups.admin.map(({ path, component }) => (
+          <Route
+            key={path}
+            path={path}
+            element={<ProtectedPage component={component} allowedTypes={["admin"] as const} />}
+          />
+        ))}
         
-        {/* Other routes */}
-        <Route
-          path="/transporte-rota"
-          element={
-            <ProtectedRoute allowedTypes={["admin", "selecao", "comum"]}>
-              <Layout>
-                <TransporteRota />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/transporte-12x36"
-          element={
-            <ProtectedRoute allowedTypes={["admin", "selecao", "gestor"]}>
-              <Layout>
-                <Transporte12x36 />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/refeicao"
-          element={
-            <ProtectedRoute allowedTypes={["admin", "gestor"]}>
-              <Layout>
-                <Refeicao />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/minhas-solicitacoes"
-          element={
-            <ProtectedRoute allowedTypes={["selecao", "gestor", "colaborador", "comum"]}>
-              <Layout>
-                <MinhasSolicitacoes />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/comunicados"
-          element={
-            <ProtectedRoute allowedTypes={["selecao", "gestor", "colaborador", "comum"]}>
-              <Layout>
-                <Comunicados />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/gerenciar-comunicados"
-          element={
-            <ProtectedRoute allowedTypes={["admin"]}>
-              <Layout>
-                <GerenciarComunicados />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
+        {/* Admin, Selecao, Comum Routes */}
+        {routeGroups.adminSelecaoComum.map(({ path, component }) => (
+          <Route
+            key={path}
+            path={path}
+            element={<ProtectedPage component={component} allowedTypes={["admin", "selecao", "comum"] as const} />}
+          />
+        ))}
         
-        <Route
-          path="/cardapio-semana"
-          element={
-            <ProtectedRoute allowedTypes={["selecao", "comum"]}>
-              <Layout>
-                <CardapioSemana />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
+        {/* Admin, Selecao, Gestor Routes */}
+        {routeGroups.adminSelecaoGestor.map(({ path, component }) => (
+          <Route
+            key={path}
+            path={path}
+            element={<ProtectedPage component={component} allowedTypes={["admin", "selecao", "gestor"] as const} />}
+          />
+        ))}
+        
+        {/* Admin, Gestor Routes */}
+        {routeGroups.adminGestor.map(({ path, component }) => (
+          <Route
+            key={path}
+            path={path}
+            element={<ProtectedPage component={component} allowedTypes={["admin", "gestor"] as const} />}
+          />
+        ))}
+        
+        {/* Selecao, Gestor, Colaborador, Comum Routes */}
+        {routeGroups.selecaoGestorColaboradorComum.map(({ path, component }) => (
+          <Route
+            key={path}
+            path={path}
+            element={<ProtectedPage component={component} allowedTypes={["selecao", "gestor", "colaborador", "comum"] as const} />}
+          />
+        ))}
+        
+        {/* Selecao, Comum Routes */}
+        {routeGroups.selecaoComum.map(({ path, component }) => (
+          <Route
+            key={path}
+            path={path}
+            element={<ProtectedPage component={component} allowedTypes={["selecao", "comum"] as const} />}
+          />
+        ))}
+        
+        {/* Gestor, Comum Routes */}
+        {routeGroups.gestorComum.map(({ path, component }) => (
+          <Route
+            key={path}
+            path={path}
+            element={<ProtectedPage component={component} allowedTypes={["gestor", "comum"] as const} />}
+          />
+        ))}
+        
+        {/* Gestor Only Routes */}
+        {routeGroups.gestorOnly.map(({ path, component }) => (
+          <Route
+            key={path}
+            path={path}
+            element={<ProtectedPage component={component} allowedTypes={["gestor"] as const} />}
+          />
+        ))}
 
-        <Route
-          path="/gerenciar-cardapio"
-          element={
-            <ProtectedRoute allowedTypes={["admin"]}>
-              <Layout>
-                <GerenciarCardapio />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        
-        <Route
-          path="/adesao-cancelamento"
-          element={
-            <ProtectedRoute allowedTypes={["gestor", "comum"]}>
-              <Layout>
-                <AdesaoCancelamento />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        
-        <Route
-          path="/mudanca-turno"
-          element={
-            <ProtectedRoute allowedTypes={["gestor"]}>
-              <Layout>
-                <MudancaTurno />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        
-        <Route
-          path="/alteracao-endereco"
-          element={
-            <ProtectedRoute allowedTypes={["gestor", "comum"]}>
-              <Layout>
-                <AlteracaoEndereco />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        
-        <Route
-          path="/abono-ponto"
-          element={
-            <ProtectedRoute allowedTypes={["gestor", "comum"]}>
-              <Layout>
-                <AbonoPonto />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        
-        <Route
-          path="/avaliacao"
-          element={
-            <ProtectedRoute allowedTypes={["gestor", "comum"]}>
-              <Layout>
-                <Avaliacao />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        
-        <Route
-          path="/plantao"
-          element={
-            <ProtectedRoute allowedTypes={["gestor", "comum"]}>
-              <Layout>
-                <Plantao />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        
-        <Route
-          path="/mapa-rotas"
-          element={
-            <ProtectedRoute allowedTypes={["gestor", "comum"]}>
-              <Layout>
-                <MapaRotas />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        
-        <Route
-          path="/oferta-caronas"
-          element={
-            <ProtectedRoute allowedTypes={["gestor", "comum"]}>
-              <Layout>
-                <OfertaCaronas />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/relatorios"
-          element={
-            <ProtectedRoute allowedTypes={["admin"]}>
-              <Layout>
-                <Relatorios />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/consulta-cartao"
-          element={
-            <ProtectedRoute allowedTypes={["gestor", "comum"]}>
-              <Layout>
-                <ConsultaCartao />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/gerenciar-cartoes"
-          element={
-            <ProtectedRoute allowedTypes={["admin"]}>
-              <Layout>
-                <GerenciarCartoes />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-
+        {/* Fallback route */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Suspense>
   );
-};
+});
+
+AppRoutes.displayName = 'AppRoutes';

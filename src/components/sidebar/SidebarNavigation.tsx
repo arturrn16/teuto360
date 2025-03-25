@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, memo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { SidebarMenu, SidebarMenuSub, useSidebar } from "@/components/ui/sidebar";
@@ -13,12 +13,24 @@ interface SidebarNavigationProps {
   admin?: boolean;
 }
 
-export const SidebarNavigation = ({ items, userType, admin = false }: SidebarNavigationProps) => {
+// Memoize SidebarNavigation to prevent unnecessary re-renders
+export const SidebarNavigation = memo(({ items, userType, admin = false }: SidebarNavigationProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({});
   const isMobile = useIsMobile();
   const { setOpenMobile } = useSidebar();
+
+  // Filter links based on user type - memoized to prevent recalculation on every render
+  const filteredLinks = useMemo(() => items.filter(link => {
+    // Admin should see admin-specific pages
+    if (admin) {
+      return link.allowedTypes.includes('admin') || link.name === "Dashboard";
+    }
+    
+    // Otherwise, check if user type is in the allowed types
+    return link.allowedTypes.includes(userType);
+  }), [items, userType, admin]);
 
   // Verifica a rota atual e expande automaticamente o menu pai
   useEffect(() => {
@@ -60,17 +72,6 @@ export const SidebarNavigation = ({ items, userType, admin = false }: SidebarNav
     }
     navigate(href);
   };
-
-  // Filter links based on user type
-  const filteredLinks = items.filter(link => {
-    // Admin should see admin-specific pages
-    if (admin) {
-      return link.allowedTypes.includes('admin') || link.name === "Dashboard";
-    }
-    
-    // Otherwise, check if user type is in the allowed types
-    return link.allowedTypes.includes(userType);
-  });
 
   // For debugging - log what's being filtered
   console.log("User type:", userType);
@@ -144,4 +145,6 @@ export const SidebarNavigation = ({ items, userType, admin = false }: SidebarNav
       {filteredLinks.map((item, index) => renderMenuItem(item, index))}
     </SidebarMenu>
   );
-};
+});
+
+SidebarNavigation.displayName = "SidebarNavigation";

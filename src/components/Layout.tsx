@@ -5,12 +5,13 @@ import { SidebarProvider, SidebarTrigger } from "./ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { AlignLeft } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo } from "react";
 import { cn } from "@/lib/utils";
 import { useIdleTimeout } from "@/hooks/use-idle-timeout";
 import { PageLoader } from "./ui/loader-spinner";
 
-export const Layout = ({ children }: { children: React.ReactNode }) => {
+// Memoize the Layout component to prevent unnecessary re-renders
+const Layout = memo(({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isLoading } = useAuth();
   const isMobile = useIsMobile();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -72,4 +73,9 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
       </div>
     </SidebarProvider>
   );
-};
+});
+
+// Add display name for debugging
+Layout.displayName = "Layout";
+
+export { Layout };
