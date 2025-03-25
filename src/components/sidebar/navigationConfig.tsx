@@ -48,7 +48,7 @@ export const navItems: NavItem[] = [
         name: "Mudança de Turno", 
         href: "/mudanca-turno", 
         icon: <></>,
-        allowedTypes: ["gestor"] as const // Removed "comum"
+        allowedTypes: ["gestor"] as const // Removido "comum" para esse item
       },
       { 
         name: "Alteração de Endereço", 
