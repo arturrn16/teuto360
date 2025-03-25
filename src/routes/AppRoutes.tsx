@@ -105,7 +105,9 @@ export const AppRoutes = () => {
           path="/transporte-rota"
           element={
             <ProtectedRoute allowedTypes={["admin", "selecao", "comum"]}>
-              <TransporteRota />
+              <Layout>
+                <TransporteRota />
+              </Layout>
             </ProtectedRoute>
           }
         />
@@ -114,7 +116,9 @@ export const AppRoutes = () => {
           path="/transporte-12x36"
           element={
             <ProtectedRoute allowedTypes={["admin", "selecao", "gestor"]}>
-              <Transporte12x36 />
+              <Layout>
+                <Transporte12x36 />
+              </Layout>
             </ProtectedRoute>
           }
         />
@@ -123,7 +127,9 @@ export const AppRoutes = () => {
           path="/refeicao"
           element={
             <ProtectedRoute allowedTypes={["admin", "gestor"]}>
-              <Refeicao />
+              <Layout>
+                <Refeicao />
+              </Layout>
             </ProtectedRoute>
           }
         />
@@ -132,7 +138,9 @@ export const AppRoutes = () => {
           path="/minhas-solicitacoes"
           element={
             <ProtectedRoute allowedTypes={["selecao", "gestor", "colaborador", "comum"]}>
-              <MinhasSolicitacoes />
+              <Layout>
+                <MinhasSolicitacoes />
+              </Layout>
             </ProtectedRoute>
           }
         />
@@ -141,7 +149,9 @@ export const AppRoutes = () => {
           path="/comunicados"
           element={
             <ProtectedRoute allowedTypes={["selecao", "gestor", "colaborador", "comum"]}>
-              <Comunicados />
+              <Layout>
+                <Comunicados />
+              </Layout>
             </ProtectedRoute>
           }
         />
@@ -150,7 +160,9 @@ export const AppRoutes = () => {
           path="/gerenciar-comunicados"
           element={
             <ProtectedRoute allowedTypes={["admin"]}>
-              <GerenciarComunicados />
+              <Layout>
+                <GerenciarComunicados />
+              </Layout>
             </ProtectedRoute>
           }
         />
@@ -159,7 +171,9 @@ export const AppRoutes = () => {
           path="/cardapio-semana"
           element={
             <ProtectedRoute allowedTypes={["selecao", "comum"]}>
-              <CardapioSemana />
+              <Layout>
+                <CardapioSemana />
+              </Layout>
             </ProtectedRoute>
           }
         />
@@ -168,7 +182,9 @@ export const AppRoutes = () => {
           path="/gerenciar-cardapio"
           element={
             <ProtectedRoute allowedTypes={["admin"]}>
-              <GerenciarCardapio />
+              <Layout>
+                <GerenciarCardapio />
+              </Layout>
             </ProtectedRoute>
           }
         />
@@ -177,7 +193,9 @@ export const AppRoutes = () => {
           path="/adesao-cancelamento"
           element={
             <ProtectedRoute allowedTypes={["gestor", "comum"]}>
-              <AdesaoCancelamento />
+              <Layout>
+                <AdesaoCancelamento />
+              </Layout>
             </ProtectedRoute>
           }
         />
@@ -186,7 +204,9 @@ export const AppRoutes = () => {
           path="/mudanca-turno"
           element={
             <ProtectedRoute allowedTypes={["gestor"]}>
-              <MudancaTurno />
+              <Layout>
+                <MudancaTurno />
+              </Layout>
             </ProtectedRoute>
           }
         />
@@ -195,7 +215,9 @@ export const AppRoutes = () => {
           path="/alteracao-endereco"
           element={
             <ProtectedRoute allowedTypes={["gestor", "comum"]}>
-              <AlteracaoEndereco />
+              <Layout>
+                <AlteracaoEndereco />
+              </Layout>
             </ProtectedRoute>
           }
         />
@@ -204,7 +226,9 @@ export const AppRoutes = () => {
           path="/abono-ponto"
           element={
             <ProtectedRoute allowedTypes={["gestor", "comum"]}>
-              <AbonoPonto />
+              <Layout>
+                <AbonoPonto />
+              </Layout>
             </ProtectedRoute>
           }
         />
@@ -213,7 +237,9 @@ export const AppRoutes = () => {
           path="/avaliacao"
           element={
             <ProtectedRoute allowedTypes={["gestor", "comum"]}>
-              <Avaliacao />
+              <Layout>
+                <Avaliacao />
+              </Layout>
             </ProtectedRoute>
           }
         />
@@ -222,7 +248,9 @@ export const AppRoutes = () => {
           path="/plantao"
           element={
             <ProtectedRoute allowedTypes={["gestor", "comum"]}>
-              <Plantao />
+              <Layout>
+                <Plantao />
+              </Layout>
             </ProtectedRoute>
           }
         />
@@ -231,7 +259,9 @@ export const AppRoutes = () => {
           path="/mapa-rotas"
           element={
             <ProtectedRoute allowedTypes={["gestor", "comum"]}>
-              <MapaRotas />
+              <Layout>
+                <MapaRotas />
+              </Layout>
             </ProtectedRoute>
           }
         />
@@ -251,7 +281,9 @@ export const AppRoutes = () => {
           path="/relatorios"
           element={
             <ProtectedRoute allowedTypes={["admin"]}>
-              <Relatorios />
+              <Layout>
+                <Relatorios />
+              </Layout>
             </ProtectedRoute>
           }
         />
@@ -271,7 +303,9 @@ export const AppRoutes = () => {
           path="/gerenciar-cartoes"
           element={
             <ProtectedRoute allowedTypes={["admin"]}>
-              <GerenciarCartoes />
+              <Layout>
+                <GerenciarCartoes />
+              </Layout>
             </ProtectedRoute>
           }
         />
