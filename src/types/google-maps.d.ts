@@ -79,6 +79,80 @@ declare namespace google {
       constructor(container: Element, opts?: StreetViewPanoramaOptions);
     }
 
+    class Polyline {
+      constructor(opts?: PolylineOptions);
+      setMap(map: Map | null): void;
+      getPath(): MVCArray<LatLng>;
+      setPath(path: LatLng[] | LatLngLiteral[]): void;
+    }
+
+    class Geocoder {
+      constructor();
+      geocode(
+        request: GeocoderRequest,
+        callback: (results: GeocoderResult[], status: string) => void
+      ): void;
+    }
+
+    interface GeocoderRequest {
+      address?: string;
+      location?: LatLng | LatLngLiteral;
+      bounds?: LatLngBounds | LatLngBoundsLiteral;
+      componentRestrictions?: GeocoderComponentRestrictions;
+      region?: string;
+    }
+
+    interface GeocoderComponentRestrictions {
+      country?: string | string[];
+      administrativeArea?: string;
+      locality?: string;
+      postalCode?: string;
+      route?: string;
+    }
+
+    interface GeocoderResult {
+      address_components: GeocoderAddressComponent[];
+      formatted_address: string;
+      geometry: {
+        location: LatLng;
+        location_type: string;
+        viewport: LatLngBounds;
+        bounds?: LatLngBounds;
+      };
+      place_id: string;
+      plus_code?: {
+        compound_code: string;
+        global_code: string;
+      };
+      types: string[];
+    }
+
+    interface GeocoderAddressComponent {
+      long_name: string;
+      short_name: string;
+      types: string[];
+    }
+
+    namespace geometry {
+      namespace spherical {
+        function computeDistanceBetween(
+          from: LatLng | LatLngLiteral,
+          to: LatLng | LatLngLiteral,
+          radius?: number
+        ): number;
+      }
+    }
+
+    interface PolylineOptions {
+      path?: LatLng[] | LatLngLiteral[];
+      geodesic?: boolean;
+      strokeColor?: string;
+      strokeOpacity?: number;
+      strokeWeight?: number;
+      visible?: boolean;
+      zIndex?: number;
+    }
+
     interface StreetViewPanoramaOptions {
       position?: LatLng | LatLngLiteral;
       pov?: StreetViewPov;
@@ -149,6 +223,18 @@ declare namespace google {
     }
 
     interface MVCObject {}
+
+    class MVCArray<T> {
+      constructor(array?: T[]);
+      getArray(): T[];
+      getAt(i: number): T;
+      insertAt(i: number, elem: T): void;
+      removeAt(i: number): T;
+      setAt(i: number, elem: T): void;
+      push(elem: T): number;
+      pop(): T;
+      forEach(callback: (elem: T, i: number) => void): void;
+    }
 
     interface LatLngLiteral {
       lat: number;

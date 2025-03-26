@@ -11,7 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, MapPin } from "lucide-react";
+import { Search, MapPin, Home } from "lucide-react";
+import { toast } from "sonner";
 
 const GOOGLE_MAPS_API_KEY = "AIzaSyDKsBrWnONeKqDwT4I6ooc42ogm57cqJbI";
 
@@ -21,10 +22,13 @@ const MapaRotas = () => {
   const markersRef = useRef<google.maps.Marker[]>([]);
   const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
   const searchBoxRef = useRef<typeof google.maps.places.SearchBox | null>(null);
+  const userMarkerRef = useRef<google.maps.Marker | null>(null);
   const [selectedTurno, setSelectedTurno] = useState("1");
   const [selectedRota, setSelectedRota] = useState("P-01");
   const [mapLoaded, setMapLoaded] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [cep, setCep] = useState("");
+  const [isLoadingCep, setIsLoadingCep] = useState(false);
 
   // Bus stop data organized by routes
   const busStopsByRoute = {
@@ -338,6 +342,152 @@ const MapaRotas = () => {
     }
   };
 
+  // Nova função para buscar coordenadas a partir do CEP
+  const findNearestBusStop = async () => {
+    if (!cep.trim() || !mapInstanceRef.current) {
+      toast.error("Por favor, insira um CEP válido");
+      return;
+    }
+
+    setIsLoadingCep(true);
+
+    try {
+      // Limpar marker de usuário anterior
+      if (userMarkerRef.current) {
+        userMarkerRef.current.setMap(null);
+        userMarkerRef.current = null;
+      }
+
+      // Buscar coordenadas do CEP
+      const response = await fetch(`https://viacep.com.br/ws/${cep.replace(/\D/g, '')}/json/`);
+      const cepData = await response.json();
+      
+      if (cepData.erro) {
+        toast.error("CEP não encontrado");
+        setIsLoadingCep(false);
+        return;
+      }
+
+      // Formatar endereço para geocoding
+      const address = `${cepData.logradouro}, ${cepData.bairro}, ${cepData.localidade}, ${cepData.uf}`;
+      
+      // Usar Geocoding API para obter coordenadas
+      const geocoder = new google.maps.Geocoder();
+      geocoder.geocode({ address }, (results, status) => {
+        if (status !== 'OK' || !results || results.length === 0) {
+          toast.error("Não foi possível localizar o endereço");
+          setIsLoadingCep(false);
+          return;
+        }
+
+        const userLocation = results[0].geometry.location;
+        
+        // Adicionar marcador da casa do usuário
+        const homeMarker = new google.maps.Marker({
+          position: userLocation,
+          map: mapInstanceRef.current,
+          title: "Sua localização",
+          icon: {
+            url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(`
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#FF5722" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+              </svg>
+            `),
+            scaledSize: new google.maps.Size(32, 32),
+            origin: new google.maps.Point(0, 0),
+            anchor: new google.maps.Point(16, 16),
+          },
+          animation: google.maps.Animation.DROP,
+        });
+        
+        userMarkerRef.current = homeMarker;
+        
+        // Encontrar ponto de ônibus mais próximo
+        let nearestStop = null;
+        let shortestDistance = Infinity;
+        let nearestRoute = "";
+        
+        // Verificar todas as rotas
+        Object.entries(busStopsByRoute).forEach(([routeName, stops]) => {
+          stops.forEach(stop => {
+            const stopLocation = new google.maps.LatLng(stop.lat, stop.lng);
+            const distance = google.maps.geometry.spherical.computeDistanceBetween(
+              userLocation,
+              stopLocation
+            );
+            
+            if (distance < shortestDistance) {
+              shortestDistance = distance;
+              nearestStop = stop;
+              nearestRoute = routeName;
+            }
+          });
+        });
+        
+        if (nearestStop) {
+          // Atualizar rota selecionada
+          setSelectedRota(nearestRoute);
+          
+          // Centralizar mapa entre casa do usuário e ponto mais próximo
+          const bounds = new google.maps.LatLngBounds();
+          bounds.extend(userLocation);
+          bounds.extend(new google.maps.LatLng(nearestStop.lat, nearestStop.lng));
+          mapInstanceRef.current?.fitBounds(bounds);
+          
+          // Desenhar linha entre casa e ponto de ônibus
+          const path = new google.maps.Polyline({
+            path: [
+              { lat: userLocation.lat(), lng: userLocation.lng() },
+              { lat: nearestStop.lat, lng: nearestStop.lng }
+            ],
+            geodesic: true,
+            strokeColor: '#FF5722',
+            strokeOpacity: 0.8,
+            strokeWeight: 3
+          });
+          
+          path.setMap(mapInstanceRef.current);
+          
+          // Abrir infowindow do ponto mais próximo
+          const timeLabel = selectedTurno === "1" ? nearestStop.semana : nearestStop.sabado;
+          const contentString = `
+            <div class="p-3">
+              <h3 class="font-bold text-base mb-1">${nearestStop.nome}</h3>
+              <p class="mb-1">Horário: ${timeLabel}</p>
+              <p class="mb-1">Distância: ${(shortestDistance / 1000).toFixed(2)} km</p>
+              <div class="flex mt-2">
+                <a href="https://www.google.com/maps?q=${nearestStop.lat},${nearestStop.lng}" target="_blank" class="text-blue-500 underline">Abrir no Google Maps</a>
+              </div>
+            </div>
+          `;
+          
+          const nearestMarker = markersRef.current.find(marker => 
+            marker.getTitle() === nearestStop.nome
+          );
+          
+          if (nearestMarker && infoWindowRef.current) {
+            infoWindowRef.current.setContent(contentString);
+            infoWindowRef.current.open({
+              anchor: nearestMarker,
+              map: mapInstanceRef.current,
+            });
+          }
+          
+          toast.success(`Ponto mais próximo encontrado na rota ${nearestRoute}`);
+        } else {
+          toast.error("Não foi possível encontrar um ponto de ônibus próximo");
+        }
+        
+        setIsLoadingCep(false);
+      });
+    } catch (error) {
+      console.error("Erro ao buscar CEP:", error);
+      toast.error("Erro ao processar o CEP");
+      setIsLoadingCep(false);
+    }
+  };
+
   return (
     <div className="container mx-auto p-4">
       <Card className="mb-4">
@@ -345,7 +495,7 @@ const MapaRotas = () => {
           <CardTitle>Mapa de Rotas de Transporte</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
             <div>
               <label className="text-sm font-medium mb-1 block">Turno</label>
               <Select value={selectedTurno} onValueChange={handleTurnoChange}>
@@ -385,6 +535,25 @@ const MapaRotas = () => {
                 />
                 <Button onClick={handleSearch}>
                   <Search className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-1 block">Encontrar rota pelo CEP</label>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Digite seu CEP"
+                  value={cep}
+                  onChange={(e) => setCep(e.target.value)}
+                  className="flex-1"
+                  maxLength={9}
+                />
+                <Button onClick={findNearestBusStop} disabled={isLoadingCep}>
+                  {isLoadingCep ? (
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  ) : (
+                    <Home className="h-4 w-4" />
+                  )}
                 </Button>
               </div>
             </div>
