@@ -40,6 +40,27 @@ const MapControls = ({
     setSelectedRota(null);
   };
 
+  // Function to filter route colors by the selected shift
+  const getRouteColorsForTurno = () => {
+    const prefixMap = {
+      "1° Turno": "P-",
+      "2° Turno": "S-",
+      "3° Turno": "T-",
+      "Administrativo": "A-"
+    };
+    
+    const prefix = prefixMap[selectedTurno as keyof typeof prefixMap];
+    
+    if (!prefix) return {};
+    
+    return Object.entries(ROUTE_COLORS).reduce((filtered, [route, color]) => {
+      if (route.startsWith(prefix)) {
+        filtered[route] = color;
+      }
+      return filtered;
+    }, {} as Record<string, string>);
+  };
+
   return (
     <Card className="mb-4">
       <CardHeader className="pb-2">
@@ -108,11 +129,11 @@ const MapControls = ({
           </div>
         </div>
 
-        {/* Route color legend */}
+        {/* Route color legend - filtered by selected shift */}
         {!selectedRota && (
           <div className="flex flex-wrap gap-4 mt-2 mb-4">
             <div className="text-sm font-medium">Legenda:</div>
-            {Object.entries(ROUTE_COLORS).map(([route, color]) => (
+            {Object.entries(getRouteColorsForTurno()).map(([route, color]) => (
               <div key={route} className="flex items-center gap-1">
                 <div 
                   className="w-4 h-4 rounded-full" 

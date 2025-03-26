@@ -27,6 +27,10 @@ export const ROUTE_COLORS = {
   "S-06": "#9D174D", // Pink
   "S-07": "#1F2937", // Dark gray
   "S-08": "#2563EB", // Light blue
+  "S-09": "#EA580C", // Orange
+  "S-10": "#10B981", // Green
+  "S-11": "#BE123C", // Red
+  "S-12": "#047857", // Green
   
   // 3° Turno Routes
   "T-01": "#991B1B", // Red
