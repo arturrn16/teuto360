@@ -15,3 +15,8 @@ export interface RouteData {
 export interface TurnoRouteData {
   [turno: string]: RouteData;
 }
+
+export interface RouteStats {
+  totalStops: number;
+  averageTime: string;
+}
