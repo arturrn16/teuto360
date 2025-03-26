@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, MapPin, Home } from "lucide-react";
+import { Search, MapPin, Home, Info } from "lucide-react";
 import { toast } from "sonner";
 
 const GOOGLE_MAPS_API_KEY = "AIzaSyDKsBrWnONeKqDwT4I6ooc42ogm57cqJbI";
@@ -23,12 +23,21 @@ const MapaRotas = () => {
   const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
   const searchBoxRef = useRef<typeof google.maps.places.SearchBox | null>(null);
   const userMarkerRef = useRef<google.maps.Marker | null>(null);
+  const routePathRef = useRef<google.maps.Polyline | null>(null);
   const [selectedTurno, setSelectedTurno] = useState("1");
   const [selectedRota, setSelectedRota] = useState("P-01");
   const [mapLoaded, setMapLoaded] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [cep, setCep] = useState("");
   const [isLoadingCep, setIsLoadingCep] = useState(false);
+  const [nearestStopInfo, setNearestStopInfo] = useState<{
+    nome: string;
+    rota: string;
+    horario: string;
+    distancia: string;
+    lat: number;
+    lng: number;
+  } | null>(null);
 
   // Bus stop data organized by routes
   const busStopsByRoute = {
@@ -342,7 +351,45 @@ const MapaRotas = () => {
     }
   };
 
-  // Nova função para buscar coordenadas a partir do CEP
+  // Helper function to navigate to stop on map
+  const navigateToStop = (stop: { lat: number; lng: number; nome: string }) => {
+    if (!mapInstanceRef.current) return;
+    
+    mapInstanceRef.current.setCenter({ lat: stop.lat, lng: stop.lng });
+    mapInstanceRef.current.setZoom(17);
+    
+    // Find and activate the marker
+    const stopMarker = markersRef.current.find(marker => 
+      marker.getTitle() === stop.nome
+    );
+    
+    if (stopMarker && infoWindowRef.current && nearestStopInfo) {
+      const timeLabel = selectedTurno === "1" ? 
+        busStopsByRoute[nearestStopInfo.rota as keyof typeof busStopsByRoute]
+          .find(s => s.lat === stop.lat && s.lng === stop.lng)?.semana || "" : 
+        busStopsByRoute[nearestStopInfo.rota as keyof typeof busStopsByRoute]
+          .find(s => s.lat === stop.lat && s.lng === stop.lng)?.sabado || "";
+      
+      const contentString = `
+        <div class="p-3">
+          <h3 class="font-bold text-base mb-1">${stop.nome}</h3>
+          <p class="mb-1">Horário: ${timeLabel}</p>
+          <p class="mb-1">Distância: ${nearestStopInfo.distancia}</p>
+          <div class="flex mt-2">
+            <a href="https://www.google.com/maps?q=${stop.lat},${stop.lng}" target="_blank" class="text-blue-500 underline">Abrir no Google Maps</a>
+          </div>
+        </div>
+      `;
+      
+      infoWindowRef.current.setContent(contentString);
+      infoWindowRef.current.open({
+        anchor: stopMarker,
+        map: mapInstanceRef.current,
+      });
+    }
+  };
+
+  // Function to find nearest bus stop from CEP
   const findNearestBusStop = async () => {
     if (!cep.trim() || !mapInstanceRef.current) {
       toast.error("Por favor, insira um CEP válido");
@@ -350,15 +397,21 @@ const MapaRotas = () => {
     }
 
     setIsLoadingCep(true);
+    setNearestStopInfo(null); // Reset previous result
 
     try {
-      // Limpar marker de usuário anterior
+      // Clear existing user marker and path
       if (userMarkerRef.current) {
         userMarkerRef.current.setMap(null);
         userMarkerRef.current = null;
       }
+      
+      if (routePathRef.current) {
+        routePathRef.current.setMap(null);
+        routePathRef.current = null;
+      }
 
-      // Buscar coordenadas do CEP
+      // Fetch address data from CEP
       const response = await fetch(`https://viacep.com.br/ws/${cep.replace(/\D/g, '')}/json/`);
       const cepData = await response.json();
       
@@ -368,10 +421,10 @@ const MapaRotas = () => {
         return;
       }
 
-      // Formatar endereço para geocoding
+      // Format address for geocoding
       const address = `${cepData.logradouro}, ${cepData.bairro}, ${cepData.localidade}, ${cepData.uf}`;
       
-      // Usar Geocoding API para obter coordenadas
+      // Use Geocoding API to get coordinates
       const geocoder = new google.maps.Geocoder();
       geocoder.geocode({ address }, (results, status) => {
         if (status !== 'OK' || !results || results.length === 0) {
@@ -381,8 +434,9 @@ const MapaRotas = () => {
         }
 
         const userLocation = results[0].geometry.location;
+        const formattedAddress = results[0].formatted_address;
         
-        // Adicionar marcador da casa do usuário
+        // Add home marker
         const homeMarker = new google.maps.Marker({
           position: userLocation,
           map: mapInstanceRef.current,
@@ -403,12 +457,12 @@ const MapaRotas = () => {
         
         userMarkerRef.current = homeMarker;
         
-        // Encontrar ponto de ônibus mais próximo
+        // Find nearest bus stop
         let nearestStop = null;
         let shortestDistance = Infinity;
         let nearestRoute = "";
         
-        // Verificar todas as rotas
+        // Check all routes
         Object.entries(busStopsByRoute).forEach(([routeName, stops]) => {
           stops.forEach(stop => {
             const stopLocation = new google.maps.LatLng(stop.lat, stop.lng);
@@ -426,16 +480,16 @@ const MapaRotas = () => {
         });
         
         if (nearestStop) {
-          // Atualizar rota selecionada
+          // Update selected route
           setSelectedRota(nearestRoute);
           
-          // Centralizar mapa entre casa do usuário e ponto mais próximo
+          // Center map to show both locations
           const bounds = new google.maps.LatLngBounds();
           bounds.extend(userLocation);
           bounds.extend(new google.maps.LatLng(nearestStop.lat, nearestStop.lng));
           mapInstanceRef.current?.fitBounds(bounds);
           
-          // Desenhar linha entre casa e ponto de ônibus
+          // Draw route line
           const path = new google.maps.Polyline({
             path: [
               { lat: userLocation.lat(), lng: userLocation.lng() },
@@ -448,25 +502,38 @@ const MapaRotas = () => {
           });
           
           path.setMap(mapInstanceRef.current);
+          routePathRef.current = path;
           
-          // Abrir infowindow do ponto mais próximo
+          // Get time information
           const timeLabel = selectedTurno === "1" ? nearestStop.semana : nearestStop.sabado;
-          const contentString = `
-            <div class="p-3">
-              <h3 class="font-bold text-base mb-1">${nearestStop.nome}</h3>
-              <p class="mb-1">Horário: ${timeLabel}</p>
-              <p class="mb-1">Distância: ${(shortestDistance / 1000).toFixed(2)} km</p>
-              <div class="flex mt-2">
-                <a href="https://www.google.com/maps?q=${nearestStop.lat},${nearestStop.lng}" target="_blank" class="text-blue-500 underline">Abrir no Google Maps</a>
-              </div>
-            </div>
-          `;
           
+          // Store nearest stop info for display
+          setNearestStopInfo({
+            nome: nearestStop.nome,
+            rota: nearestRoute,
+            horario: timeLabel,
+            distancia: (shortestDistance / 1000).toFixed(2) + " km",
+            lat: nearestStop.lat,
+            lng: nearestStop.lng
+          });
+          
+          // Open infowindow on nearest stop
           const nearestMarker = markersRef.current.find(marker => 
             marker.getTitle() === nearestStop.nome
           );
           
           if (nearestMarker && infoWindowRef.current) {
+            const contentString = `
+              <div class="p-3">
+                <h3 class="font-bold text-base mb-1">${nearestStop.nome}</h3>
+                <p class="mb-1">Horário: ${timeLabel}</p>
+                <p class="mb-1">Distância: ${(shortestDistance / 1000).toFixed(2)} km</p>
+                <div class="flex mt-2">
+                  <a href="https://www.google.com/maps?q=${nearestStop.lat},${nearestStop.lng}" target="_blank" class="text-blue-500 underline">Abrir no Google Maps</a>
+                </div>
+              </div>
+            `;
+            
             infoWindowRef.current.setContent(contentString);
             infoWindowRef.current.open({
               anchor: nearestMarker,
@@ -544,7 +611,7 @@ const MapaRotas = () => {
                 <Input
                   placeholder="Digite seu CEP"
                   value={cep}
-                  onChange={(e) => setCep(e.target.value)}
+                  onChange={(e) => setCep(e.target.value.replace(/\D/g, '').replace(/(\d{5})(\d)/, "$1-$2").substring(0, 9))}
                   className="flex-1"
                   maxLength={9}
                 />
@@ -558,6 +625,41 @@ const MapaRotas = () => {
               </div>
             </div>
           </div>
+
+          {nearestStopInfo && (
+            <Card className="mb-4 bg-blue-50 border-blue-200">
+              <CardContent className="pt-4">
+                <div className="flex items-start gap-3">
+                  <div className="bg-blue-100 p-2 rounded-full">
+                    <Info className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-base">Ponto de ônibus mais próximo:</h3>
+                    <div className="mt-2 space-y-1 text-sm">
+                      <p><strong>Rota:</strong> {nearestStopInfo.rota}</p>
+                      <p><strong>Ponto:</strong> {nearestStopInfo.nome}</p>
+                      <p><strong>Horário:</strong> {nearestStopInfo.horario}</p>
+                      <p><strong>Distância:</strong> {nearestStopInfo.distancia}</p>
+                    </div>
+                    <div className="mt-3">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => navigateToStop({
+                          lat: nearestStopInfo.lat,
+                          lng: nearestStopInfo.lng,
+                          nome: nearestStopInfo.nome
+                        })}
+                      >
+                        <MapPin className="h-4 w-4 mr-1" />
+                        Ver no mapa
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </CardContent>
       </Card>
 
