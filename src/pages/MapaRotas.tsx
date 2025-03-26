@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -16,11 +16,11 @@ import { Search, MapPin } from "lucide-react";
 const GOOGLE_MAPS_API_KEY = "AIzaSyDKsBrWnONeKqDwT4I6ooc42ogm57cqJbI";
 
 const MapaRotas = () => {
-  const mapRef = useRef(null);
-  const mapInstanceRef = useRef(null);
-  const markersRef = useRef([]);
-  const infoWindowRef = useRef(null);
-  const searchBoxRef = useRef(null);
+  const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<google.maps.Map | null>(null);
+  const markersRef = useRef<google.maps.Marker[]>([]);
+  const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
+  const searchBoxRef = useRef<google.maps.places.SearchBox | null>(null);
   const [selectedTurno, setSelectedTurno] = useState("1");
   const [selectedRota, setSelectedRota] = useState("P-01");
   const [mapLoaded, setMapLoaded] = useState(false);
@@ -339,10 +339,10 @@ const MapaRotas = () => {
     if (!mapRef.current) return;
 
     // Create the map instance
-    const mapOptions = {
+    const mapOptions: google.maps.MapOptions = {
       center: { lat: -16.328000, lng: -48.953000 },
       zoom: 12,
-      mapTypeId: google.maps.MapTypeId.ROADMAP,
+      mapTypeId: 'roadmap',
       streetViewControl: false,
       mapTypeControl: false,
       fullscreenControl: true,
@@ -356,23 +356,23 @@ const MapaRotas = () => {
     infoWindowRef.current = new google.maps.InfoWindow();
 
     // Initialize search box
-    const input = document.getElementById("map-search-input");
+    const input = document.getElementById("map-search-input") as HTMLInputElement;
     const searchBox = new google.maps.places.SearchBox(input);
     searchBoxRef.current = searchBox;
 
     // Bias search results to current map viewport
     map.addListener("bounds_changed", () => {
-      searchBox.setBounds(map.getBounds());
+      searchBox.setBounds(map.getBounds() as google.maps.LatLngBounds);
     });
 
     // Listen for search box selection
     searchBox.addListener("places_changed", () => {
       const places = searchBox.getPlaces();
-      if (places.length === 0) return;
+      if (places && places.length === 0) return;
 
       // For each place, get location and center map
       const bounds = new google.maps.LatLngBounds();
-      places.forEach((place) => {
+      places?.forEach((place) => {
         if (!place.geometry || !place.geometry.location) return;
 
         // Create a marker for the search result
@@ -405,7 +405,7 @@ const MapaRotas = () => {
   };
 
   // Function to display markers for the selected route
-  const displayRouteMarkers = () => {
+  const displayRouteMarkers = useCallback(() => {
     if (!mapInstanceRef.current) return;
 
     // Clear existing markers
@@ -419,7 +419,7 @@ const MapaRotas = () => {
     if (stops.length === 0) return;
 
     const bounds = new google.maps.LatLngBounds();
-    const markers = [];
+    const markers: google.maps.Marker[] = [];
 
     // Custom SVG bus stop icon
     const busStopIcon = {
@@ -462,12 +462,15 @@ const MapaRotas = () => {
       marker.addListener("click", () => {
         if (infoWindowRef.current) {
           infoWindowRef.current.setContent(contentString);
-          infoWindowRef.current.open(mapInstanceRef.current, marker);
+          infoWindowRef.current.open({
+            map: mapInstanceRef.current,
+            anchor: marker,
+          });
         }
       });
 
       markers.push(marker);
-      bounds.extend(marker.getPosition());
+      bounds.extend(marker.getPosition() as google.maps.LatLng);
     });
 
     // Store markers reference for later cleanup
@@ -480,15 +483,15 @@ const MapaRotas = () => {
     if (stops.length === 1) {
       mapInstanceRef.current.setZoom(15);
     }
-  };
+  }, [selectedRota]);
 
   // Function to handle turno selection change
-  const handleTurnoChange = (value) => {
+  const handleTurnoChange = (value: string) => {
     setSelectedTurno(value);
   };
 
   // Function to handle route selection change
-  const handleRotaChange = (value) => {
+  const handleRotaChange = (value: string) => {
     setSelectedRota(value);
     if (mapLoaded) {
       displayRouteMarkers();
@@ -496,7 +499,7 @@ const MapaRotas = () => {
   };
 
   // Function to handle search input
-  const handleSearch = (e) => {
+  const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     // SearchBox will automatically handle the search via the places_changed event
   };
@@ -518,7 +521,7 @@ const MapaRotas = () => {
     if (mapLoaded) {
       displayRouteMarkers();
     }
-  }, [selectedRota, mapLoaded]);
+  }, [selectedRota, mapLoaded, displayRouteMarkers]);
 
   return (
     <div className="container py-6 mx-auto">
