@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -19,7 +20,7 @@ const MapaRotas = () => {
   const mapInstanceRef = useRef<google.maps.Map | null>(null);
   const markersRef = useRef<google.maps.Marker[]>([]);
   const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
-  const searchBoxRef = useRef<google.maps.places.SearchBox | null>(null);
+  const searchBoxRef = useRef<typeof google.maps.places.SearchBox | null>(null);
   const [selectedTurno, setSelectedTurno] = useState("1");
   const [selectedRota, setSelectedRota] = useState("P-01");
   const [mapLoaded, setMapLoaded] = useState(false);
@@ -141,4 +142,266 @@ const MapaRotas = () => {
       { lat: -16.285963, lng: -48.969648, nome: "P-05 14 - R. João Pinheiro / Esquina com a Rua Inhumas", semana: "05:13", sabado: "06:18" },
       { lat: -16.288850, lng: -48.968280, nome: "P-05 15 - R. João Pinheiro / Esquina com a Rua Pirinopolis", semana: "05:13", sabado: "06:18" },
       { lat: -16.292577, lng: -48.966514, nome: "P-05 16 - R. João Pinheiro / Esquina com a Rua Sussuapara", semana: "05:14", sabado: "06:19" },
-      { lat: -16
+      { lat: -16.295055, lng: -48.965286, nome: "P-05 17 - R. João Pinheiro / Esquina com a Rua Itaberai", semana: "05:15", sabado: "06:20" },
+      { lat: -16.298323, lng: -48.963693, nome: "P-05 18 - R. José Peixoto / Esquina com a Rua Rio de Janeiro", semana: "05:16", sabado: "06:21" },
+      { lat: -16.406940, lng: -48.921300, nome: "P-05 19 - Distrito Agroindustrial de Anápolis", semana: "05:35", sabado: "06:45" },
+    ],
+  };
+
+  useEffect(() => {
+    // Load Google Maps API script
+    const script = document.createElement("script");
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places`;
+    script.async = true;
+    script.defer = true;
+    script.onload = initMap;
+    document.head.appendChild(script);
+
+    return () => {
+      // Cleanup on component unmount
+      script.remove();
+    };
+  }, []);
+
+  const initMap = () => {
+    if (!mapRef.current) return;
+
+    // Initialize Google Map
+    const map = new google.maps.Map(mapRef.current, {
+      center: { lat: -16.328118, lng: -48.953529 },
+      zoom: 12,
+      mapTypeControl: true,
+      streetViewControl: false,
+      fullscreenControl: true,
+      zoomControl: true,
+    });
+
+    mapInstanceRef.current = map;
+    infoWindowRef.current = new google.maps.InfoWindow();
+
+    // Initialize search box
+    const input = document.getElementById("search-input") as HTMLInputElement;
+    const searchBox = new google.maps.places.SearchBox(input);
+
+    map.addListener("bounds_changed", () => {
+      searchBox.setBounds(map.getBounds() as google.maps.LatLngBounds);
+    });
+
+    searchBox.addListener("places_changed", () => {
+      const places = searchBox.getPlaces();
+      if (places?.length === 0) return;
+
+      const place = places?.[0];
+      if (!place?.geometry?.location) return;
+
+      // Center map on the selected place
+      map.setCenter(place.geometry.location);
+      map.setZoom(15);
+    });
+
+    setMapLoaded(true);
+    
+    // Display initial route markers
+    displayRouteMarkers(selectedRota);
+  };
+
+  const displayRouteMarkers = useCallback((route: string) => {
+    if (!mapInstanceRef.current) return;
+
+    // Clear existing markers
+    markersRef.current.forEach((marker) => marker.setMap(null));
+    markersRef.current = [];
+
+    // Get stops for the selected route
+    const stops = busStopsByRoute[route as keyof typeof busStopsByRoute] || [];
+    if (stops.length === 0) return;
+
+    const bounds = new google.maps.LatLngBounds();
+
+    // Create and place markers for each stop
+    stops.forEach((stop, index) => {
+      const position = { lat: stop.lat, lng: stop.lng };
+      bounds.extend(position);
+
+      const marker = new google.maps.Marker({
+        position,
+        map: mapInstanceRef.current,
+        title: stop.nome,
+        label: {
+          text: (index + 1).toString(),
+          color: "#FFFFFF",
+        },
+        animation: google.maps.Animation.DROP,
+      });
+
+      // Create info window content
+      const timeLabel = selectedTurno === "1" ? stop.semana : stop.sabado;
+      const contentString = `
+        <div class="p-3">
+          <h3 class="font-bold text-base mb-1">${stop.nome}</h3>
+          <p class="mb-1">Horário: ${timeLabel}</p>
+          <div class="flex mt-2">
+            <a href="https://www.google.com/maps?q=${stop.lat},${stop.lng}" target="_blank" class="text-blue-500 underline">Abrir no Google Maps</a>
+          </div>
+        </div>
+      `;
+
+      // Add click listener for info window
+      marker.addListener("click", () => {
+        if (infoWindowRef.current) {
+          infoWindowRef.current.setContent(contentString);
+          infoWindowRef.current.open({
+            anchor: marker,
+            map: mapInstanceRef.current,
+          });
+        }
+      });
+
+      markersRef.current.push(marker);
+    });
+
+    // Fit map to the bounds of all markers
+    mapInstanceRef.current.fitBounds(bounds);
+
+    // Create custom marker icon for bus stops
+    const busStopIcon = {
+      url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(`
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10" fill="#FFFFFF" stroke="#2563EB" stroke-width="2"/>
+          <rect x="9" y="7" width="6" height="10" rx="1" fill="#2563EB"/>
+          <line x1="9" y1="10" x2="15" y2="10" stroke="#FFFFFF" stroke-width="1"/>
+          <line x1="12" y1="7" x2="12" y2="17" stroke="#FFFFFF" stroke-width="1"/>
+        </svg>
+      `),
+      scaledSize: new google.maps.Size(32, 32),
+      origin: new google.maps.Point(0, 0),
+      anchor: new google.maps.Point(16, 16),
+    };
+
+    // Update marker icons
+    markersRef.current.forEach(marker => {
+      marker.setIcon(busStopIcon);
+    });
+  }, [busStopsByRoute, selectedTurno]);
+
+  useEffect(() => {
+    if (mapLoaded) {
+      displayRouteMarkers(selectedRota);
+    }
+  }, [selectedRota, selectedTurno, mapLoaded, displayRouteMarkers]);
+
+  const handleRouteChange = (value: string) => {
+    setSelectedRota(value);
+  };
+
+  const handleTurnoChange = (value: string) => {
+    setSelectedTurno(value);
+  };
+
+  const handleSearch = () => {
+    if (!searchQuery.trim() || !mapInstanceRef.current) return;
+
+    // Simple search through the stops
+    const allStops = Object.values(busStopsByRoute).flat();
+    const matchingStops = allStops.filter(stop => 
+      stop.nome.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    if (matchingStops.length > 0) {
+      const firstMatch = matchingStops[0];
+      mapInstanceRef.current.setCenter({ lat: firstMatch.lat, lng: firstMatch.lng });
+      mapInstanceRef.current.setZoom(17);
+
+      // Find and activate the corresponding marker
+      const matchingMarker = markersRef.current.find(marker => 
+        marker.getTitle()?.includes(firstMatch.nome)
+      );
+
+      if (matchingMarker && infoWindowRef.current) {
+        const timeLabel = selectedTurno === "1" ? firstMatch.semana : firstMatch.sabado;
+        const contentString = `
+          <div class="p-3">
+            <h3 class="font-bold text-base mb-1">${firstMatch.nome}</h3>
+            <p class="mb-1">Horário: ${timeLabel}</p>
+            <div class="flex mt-2">
+              <a href="https://www.google.com/maps?q=${firstMatch.lat},${firstMatch.lng}" target="_blank" class="text-blue-500 underline">Abrir no Google Maps</a>
+            </div>
+          </div>
+        `;
+
+        infoWindowRef.current.setContent(contentString);
+        infoWindowRef.current.open({
+          anchor: matchingMarker,
+          map: mapInstanceRef.current,
+        });
+      }
+    }
+  };
+
+  return (
+    <div className="container mx-auto p-4">
+      <Card className="mb-4">
+        <CardHeader className="pb-2">
+          <CardTitle>Mapa de Rotas de Transporte</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div>
+              <label className="text-sm font-medium mb-1 block">Turno</label>
+              <Select value={selectedTurno} onValueChange={handleTurnoChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o turno" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">1º Turno (Semana)</SelectItem>
+                  <SelectItem value="2">1º Turno (Sábado)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-1 block">Rota</label>
+              <Select value={selectedRota} onValueChange={handleRouteChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione a rota" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="P-01">P-01</SelectItem>
+                  <SelectItem value="P-02">P-02</SelectItem>
+                  <SelectItem value="P-03">P-03</SelectItem>
+                  <SelectItem value="P-04">P-04</SelectItem>
+                  <SelectItem value="P-05">P-05</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-1 block">Busca</label>
+              <div className="flex gap-2">
+                <Input
+                  id="search-input"
+                  placeholder="Buscar pontos ou endereços"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="flex-1"
+                />
+                <Button onClick={handleSearch}>
+                  <Search className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="overflow-hidden">
+        <CardContent className="p-0">
+          <div
+            ref={mapRef}
+            className="w-full h-[70vh] rounded-md"
+          />
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default MapaRotas;
