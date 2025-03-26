@@ -1,3 +1,4 @@
+
 import { TurnoRouteData } from "@/types/mapTypes";
 
 export const allRouteData: TurnoRouteData = {
@@ -847,3 +848,100 @@ export const allRouteData: TurnoRouteData = {
       },
       {
         lat: -16.324321,
+        lng: -48.992134,
+        nome: "Posto Ipiranga",
+        bairro: "Setor Oeste",
+        semana: "17:40",
+        sabado: "17:40"
+      }
+    ],
+    "T-06": [
+      {
+        lat: -16.339876,
+        lng: -48.932134,
+        nome: "Shopping Center",
+        bairro: "Setor Sul",
+        semana: "17:10",
+        sabado: "17:10"
+      },
+      {
+        lat: -16.343215,
+        lng: -48.936543,
+        nome: "Igreja Matriz",
+        bairro: "Centro",
+        semana: "17:20",
+        sabado: "17:20"
+      },
+      {
+        lat: -16.347654,
+        lng: -48.941234,
+        nome: "Terminal Rodoviário",
+        bairro: "Centro",
+        semana: "17:30",
+        sabado: "17:30"
+      }
+    ],
+    "T-07": [
+      {
+        lat: -16.302134,
+        lng: -48.972345,
+        nome: "Praça das Flores",
+        bairro: "Jardim Primavera",
+        semana: "17:15",
+        sabado: "17:15"
+      },
+      {
+        lat: -16.306543,
+        lng: -48.976543,
+        nome: "Hospital Regional",
+        bairro: "Jardim Primavera",
+        semana: "17:25",
+        sabado: "17:25"
+      },
+      {
+        lat: -16.310987,
+        lng: -48.981234,
+        nome: "Escola Técnica",
+        bairro: "Vila Industrial",
+        semana: "17:35",
+        sabado: "17:35"
+      }
+    ],
+    "T-08": [
+      {
+        lat: -16.276543,
+        lng: -48.947654,
+        nome: "Parque Municipal",
+        bairro: "Setor Campinas",
+        semana: "17:05",
+        sabado: "17:05"
+      },
+      {
+        lat: -16.281234,
+        lng: -48.952134,
+        nome: "Ginásio de Esportes",
+        bairro: "Setor Campinas",
+        semana: "17:15",
+        sabado: "17:15"
+      },
+      {
+        lat: -16.285678,
+        lng: -48.956543,
+        nome: "Centro Comercial",
+        bairro: "Setor Campinas",
+        semana: "17:25",
+        sabado: "17:25"
+      }
+    ]
+  }
+};
+
+// Helper function to get available turnos (shifts)
+export function getAvailableTurnos() {
+  return Object.keys(allRouteData);
+}
+
+// Helper function to get available routes for a specific turno
+export function getAvailableRoutes(turno: string) {
+  return Object.keys(allRouteData[turno] || {});
+}
