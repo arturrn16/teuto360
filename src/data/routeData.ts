@@ -119,12 +119,4 @@ const segundoTurnoRoutes: RouteData = {
     { lat: -16.261290, lng: -48.997326, nome: "S-01 04 - R. Araguaia / Esquina com a Rua Cedro", bairro: "Residencial Aldeia dos Sonhos", semana: "13:10", sabado: "09:50" },
     { lat: -16.261720, lng: -48.988930, nome: "S-01 05 - Av. Federal / Esquina com a Canela Branca", bairro: "Lot. Guanabara", semana: "13:12", sabado: "09:52" },
     { lat: -16.265385, lng: -48.983576, nome: "S-01 06 - Av. Federal / Esquina com a Rua 4", bairro: "Lot. Guanabara", semana: "13:13", sabado: "09:53" },
-    { lat: -16.268626, lng: -48.979451, nome: "S-01 07 - R. Constelação / Esquina com a Rua Netuno", bairro: "Res. Ana Caroline", semana: "13:14", sabado: "09:54" },
-    { lat: -16.270583, lng: -48.984287, nome: "S-01 08 - R. Tres Marias / Esquina com a Estr. p/ Miranápolis", bairro: "Res. Ana Caroline", semana: "13:16", sabado: "09:56" },
-    { lat: -16.274640, lng: -48.985030, nome: "S-01 09 - Av. Mariele / Com a Rua Abadia", bairro: "Adriana Parque", semana: "13:17", sabado: "09:57" },
-    { lat: -16.277620, lng: -48.985240, nome: "S-01 10 - R. G / Supermercado do Povo", bairro: "Adriana Parque", semana: "13:19", sabado: "09:59" },
-    { lat: -16.277642, lng: -48.987533, nome: "S-01 11 - R. G / Esquina com a Rua Lilian", bairro: "St. Res. Jandaia", semana: "13:19", sabado: "09:59" },
-    { lat: -16.277660, lng: -48.989450, nome: "S-01 12 - R. G / Esquina com a Av. Central", bairro: "St. Res. Jandaia", semana: "13:20", sabado: "10:00" },
-    { lat: -16.277680, lng: -48.992920, nome: "S-01 13 - R. Larissa / Com a Rua Takeda", bairro: "St. Escala", semana: "13:21", sabado: "10:01" },
-    { lat: -16.277346, lng: -48.995985, nome: "S-01 14 - Av. das Laranjeiras / Esquina com a Rua 4", bairro: "Res. Dom Felipe", semana: "13:22", sabado: "10:02" },
-    { lat: -16.274922, lng: -48.996629, nome: "S-01 15 - R. O
+    { lat: -16.268626, lng: -48.979451, nome: "S-01 07 - R. Constelação / Esquina com a Rua Netuno", bairro: "Res. Ana Caroline", semana: "13:14
