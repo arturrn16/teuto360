@@ -146,5 +146,5 @@ const MapaRotas = () => {
       { lat: -16.407132, lng: -48.918605, nome: "P-04 23 - Distrito Agroindustrial de Anápolis", bairro: "Laboratório Teuto", semana: "05:54", sabado: "06:58" }
     ],
     "P-05": [
-      { lat: -16.288661, lng: -48.949128, nome: "P-05 01 - Av. Santos Dumont / Esquina com a Av. Dr. Vital Brasil", bairro: "Cidade Universitária", semana: "04:59", sabado: "06:04" },
-      {
+      { lat: -16.288661, lng: -48.949128, nome: "P-05 01 - Av. Santos Dumont / Esquina com a Av. Dr. Vital Brasil", bairro: "Cidade Universitária", semana: "04:59", sabado: "06:04" }
+    ],
