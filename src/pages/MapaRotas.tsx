@@ -1,12 +1,9 @@
 
-import { useState, useEffect, useRef, useCallback } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { useState, useEffect, useRef } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -14,156 +11,121 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Map, Search, MapPin, Bus, Clock } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { Search, MapPin } from "lucide-react";
 
-// Tipos para o Google Maps
-declare global {
-  interface Window {
-    google: any;
-    initMap: () => void;
-  }
-}
-
-// Interface para paradas de ônibus
-interface ParadaOnibus {
-  lat: number;
-  lng: number;
-  nome: string;
-  semana?: string;
-  sabado?: string;
-}
+const GOOGLE_MAPS_API_KEY = "AIzaSyDKsBrWnONeKqDwT4I6ooc42ogm57cqJbI";
 
 const MapaRotas = () => {
-  const [selectedMap, setSelectedMap] = useState<string>("primeiroTurno");
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [isMapLoaded, setIsMapLoaded] = useState<boolean>(false);
-  const mapRef = useRef<HTMLDivElement>(null);
-  const googleMapRef = useRef<any>(null);
-  const markersRef = useRef<any[]>([]);
-  const searchBoxRef = useRef<any>(null);
-  const { toast } = useToast();
-  
-  // Rotas disponíveis
-  const rotasOptions = [
-    { id: "primeiroTurno", name: "1° Turno (P-01)" },
-    { id: "segundoTurno", name: "2° Turno (P-02)" },
-    { id: "terceiroTurno", name: "3° Turno (P-03)" },
-    { id: "goiania1", name: "Goiânia 1 (P-04)" },
-    { id: "goiania2", name: "Goiânia 2 (P-05)" },
-    { id: "rota6", name: "Rota 6 (P-06)" },
-    { id: "rota7", name: "Rota 7 (P-07)" },
-    { id: "rota8", name: "Rota 8 (P-08)" },
-    { id: "rota9", name: "Rota 9 (P-09)" },
-    { id: "rota10", name: "Rota 10 (P-10)" },
-  ];
+  const mapRef = useRef(null);
+  const mapInstanceRef = useRef(null);
+  const markersRef = useRef([]);
+  const infoWindowRef = useRef(null);
+  const searchBoxRef = useRef(null);
+  const [selectedTurno, setSelectedTurno] = useState("1");
+  const [selectedRota, setSelectedRota] = useState("P-01");
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  // Dados de paradas de ônibus por rota
-  const paradasPorRota: Record<string, ParadaOnibus[]> = {
-    primeiroTurno: [
-      // P-01
-      { lat: -16.278245, lng: -48.963118, nome: "P-01 01 - AV. Geraldo Pedro De Souza / Com a R. Dr José Machado de Silvério" },
-      { lat: -16.275960, lng: -48.966647, nome: "P-01 02 - R. 100 / Rua Florensa" },
-      { lat: -16.261218, lng: -48.988482, nome: "P-01 04 - Av. Federal / Rua 8 ( Colegio )" },
-      { lat: -16.261912, lng: -48.994349, nome: "P-01 05 - Av. Ipe Amarelo / Rotatória" },
-      { lat: -16.261266, lng: -48.997384, nome: "P-01 06 - R. Araguaia / Esquina com a Rua Cedro" },
-      { lat: -16.260235, lng: -48.999053, nome: "P-01 07 - R. Guatambu / Rua Guatambu (Ferragista Aldeia)" },
-      { lat: -16.258637, lng: -49.002028, nome: "P-01 08 - R. Araguaia / Rua Uruvalheiro (Choupana Beer)" },
-      { lat: -16.259925, lng: -49.004642, nome: "P-01 09 - R. Corumbá / Esquina com a Rua Buriti" },
-      { lat: -16.260237, lng: -49.000943, nome: "P-01 10 - R. Corumbá / Esquina com a Rua Jatoba" },
-      { lat: -16.264016, lng: -48.985605, nome: "P-01 11 - Av. Federal / Esquina com a Rua 6" },
-      { lat: -16.265407, lng: -48.983516, nome: "P-01 12 - Av. Federal / Esquina com a Rua 4" },
-      { lat: -16.271580, lng: -48.976411, nome: "P-01 13 - Av. Fernando Costa / Parque Jaiara" },
-      { lat: -16.274631, lng: -48.976366, nome: "P-01 14 - Av. Fernando Costa / Com a Travessa 2" },
-      { lat: -16.277164, lng: -48.975195, nome: "P-01 15 - Av. Fernando Costa / Com a Av. Patricia" },
-      { lat: -16.277030, lng: -48.977980, nome: "P-01 16 - R. Kátia / Com a R. 4 - Garagem da Urban" },
-      { lat: -16.281728, lng: -48.977505, nome: "P-01 17 - R. Buriti Alegre / Com a Rua Planalto" },
-      { lat: -16.282440, lng: -48.979140, nome: "P-01 18 - R. Buriti Alegre / Com a Rua Nova Capital - Merceágua" },
-      { lat: -16.283945, lng: -48.978982, nome: "P-01 19 - R. Ipameri / Rua Nova Capital - Mundo dos Pets" },
-      { lat: -16.284428, lng: -48.979883, nome: "P-01 20 - R. Ipameri / Com a Rua Paranagua" },
-      { lat: -16.285052, lng: -48.977595, nome: "P-01 21 - R. Uruaná / Com a Rua Taguatinga" },
-      { lat: -16.284035, lng: -48.975269, nome: "P-01 22 - R. Uruana / Com a Av. Bandeirantes" },
-      { lat: -16.288040, lng: -48.971360, nome: "P-01 23 - R. Itaberai / Com a Av. Bernardo Sayão" },
-      { lat: -16.283121, lng: -48.973479, nome: "P-01 24 - Av. Bernardo Sayão / Esquina com a R. Formosa" },
-      { lat: -16.280410, lng: -48.974480, nome: "P-01 25 - R. Buriti Alegre / 28° Batalhão da Polícia Militar" },
-      { lat: -16.275044, lng: -48.970956, nome: "P-01 26 - Av. Luís Carpaneda / Com a Rua Porangatu" },
-      { lat: -16.406940, lng: -48.921300, nome: "P-01 27 - Distrito Agroindustrial de Anápolis" },
+  // Bus stop data organized by routes
+  const busStopsByRoute = {
+    "P-01": [
+      { lat: -16.278245, lng: -48.963118, nome: "P-01 01 - AV. Geraldo Pedro De Souza / Com a R. Dr José Machado de Silvério", semana: "04:51", sabado: "06:01" },
+      { lat: -16.275960, lng: -48.966647, nome: "P-01 02 - R. 100 / Rua Florensa", semana: "04:52", sabado: "06:02" },
+      { lat: -16.261218, lng: -48.988482, nome: "P-01 04 - Av. Federal / Rua 8 ( Colegio )", semana: "04:54", sabado: "06:04" },
+      { lat: -16.261912, lng: -48.994349, nome: "P-01 05 - Av. Ipe Amarelo / Rotatória", semana: "04:55", sabado: "06:05" },
+      { lat: -16.261266, lng: -48.997384, nome: "P-01 06 - R. Araguaia / Esquina com a Rua Cedro", semana: "04:56", sabado: "06:06" },
+      { lat: -16.260235, lng: -48.999053, nome: "P-01 07 - R. Guatambu / Rua Guatambu (Ferragista Aldeia)", semana: "04:57", sabado: "06:07" },
+      { lat: -16.258637, lng: -49.002028, nome: "P-01 08 - R. Araguaia / Rua Uruvalheiro (Choupana Beer)", semana: "04:58", sabado: "06:08" },
+      { lat: -16.259925, lng: -49.004642, nome: "P-01 09 - R. Corumbá / Esquina com a Rua Buriti", semana: "04:59", sabado: "06:09" },
+      { lat: -16.260237, lng: -49.000943, nome: "P-01 10 - R. Corumbá / Esquina com a Rua Jatoba", semana: "05:00", sabado: "06:10" },
+      { lat: -16.264016, lng: -48.985605, nome: "P-01 11 - Av. Federal / Esquina com a Rua 6", semana: "05:01", sabado: "06:11" },
+      { lat: -16.265407, lng: -48.983516, nome: "P-01 12 - Av. Federal / Esquina com a Rua 4", semana: "05:02", sabado: "06:12" },
+      { lat: -16.271580, lng: -48.976411, nome: "P-01 13 - Av. Fernando Costa / Parque Jaiara", semana: "05:03", sabado: "06:13" },
+      { lat: -16.274631, lng: -48.976366, nome: "P-01 14 - Av. Fernando Costa / Com a Travessa 2", semana: "05:04", sabado: "06:14" },
+      { lat: -16.277164, lng: -48.975195, nome: "P-01 15 - Av. Fernando Costa / Com a Av. Patricia", semana: "05:05", sabado: "06:15" },
+      { lat: -16.277030, lng: -48.977980, nome: "P-01 16 - R. Kátia / Com a R. 4 - Garagem da Urban", semana: "05:06", sabado: "06:16" },
+      { lat: -16.281728, lng: -48.977505, nome: "P-01 17 - R. Buriti Alegre / Com a Rua Planalto", semana: "05:07", sabado: "06:17" },
+      { lat: -16.282440, lng: -48.979140, nome: "P-01 18 - R. Buriti Alegre / Com a Rua Nova Capital - Merceágua", semana: "05:08", sabado: "06:18" },
+      { lat: -16.283945, lng: -48.978982, nome: "P-01 19 - R. Ipameri / Rua Nova Capital - Mundo dos Pets", semana: "05:09", sabado: "06:19" },
+      { lat: -16.284428, lng: -48.979883, nome: "P-01 20 - R. Ipameri / Com a Rua Paranagua", semana: "05:10", sabado: "06:20" },
+      { lat: -16.285052, lng: -48.977595, nome: "P-01 21 - R. Uruaná / Com a Rua Taguatinga", semana: "05:11", sabado: "06:21" },
+      { lat: -16.284035, lng: -48.975269, nome: "P-01 22 - R. Uruana / Com a Av. Bandeirantes", semana: "05:12", sabado: "06:22" },
+      { lat: -16.288040, lng: -48.971360, nome: "P-01 23 - R. Itaberai / Com a Av. Bernardo Sayão", semana: "05:13", sabado: "06:23" },
+      { lat: -16.283121, lng: -48.973479, nome: "P-01 24 - Av. Bernardo Sayão / Esquina com a R. Formosa", semana: "05:14", sabado: "06:24" },
+      { lat: -16.280410, lng: -48.974480, nome: "P-01 25 - R. Buriti Alegre / 28° Batalhão da Polícia Militar", semana: "05:15", sabado: "06:25" },
+      { lat: -16.275044, lng: -48.970956, nome: "P-01 26 - Av. Luís Carpaneda / Com a Rua Porangatu", semana: "05:16", sabado: "06:26" },
+      { lat: -16.406940, lng: -48.921300, nome: "P-01 27 - Distrito Agroindustrial de Anápolis", semana: "05:45", sabado: "06:55" },
     ],
-    segundoTurno: [
-      // P-02
-      { lat: -16.270170, lng: -48.980090, nome: "P-02 01 - R. Mizael de Morais Filho / Com a Rua Cruzeiro do Sul" },
-      { lat: -16.270460, lng: -48.984000, nome: "P-02 02 - Estr. p/ Miranápolis / Com a Rua Três Marias" },
-      { lat: -16.274426, lng: -48.985019, nome: "P-02 03 - Av. Mariele / Com a Rua 'O'" },
-      { lat: -16.277609, lng: -48.985678, nome: "P-02 04 - R. Marielle / (Supermercado do Povo)" },
-      { lat: -16.276961, lng: -48.988451, nome: "P-02 05 - R. H / Paróquia Santíssima Trindade" },
-      { lat: -16.277673, lng: -48.990843, nome: "P-02 06 - R. G / Com a Rua Jandira" },
-      { lat: -16.277684, lng: -48.993085, nome: "P-02 07 - R. Larissa / Com a Rua Taqueda" },
-      { lat: -16.277320, lng: -48.995270, nome: "P-02 08 - Av. das Laranjeiras / Com a R. Três" },
-      { lat: -16.277349, lng: -48.997228, nome: "P-02 09 - Av. das Laranjeiras / Com a Rua 5" },
-      { lat: -16.281313, lng: -48.992338, nome: "P-02 10 - Av. Souzânia / Com a R. Fontenele Junior" },
-      { lat: -16.283412, lng: -48.988511, nome: "P-02 11 - Av. Souzânia / Com a Av. Patricia" },
-      { lat: -16.280145, lng: -48.985106, nome: "P-02 12 - Av. Patrícia / Com a Av. Marieli" },
-      { lat: -16.281196, lng: -48.985181, nome: "P-02 13 - R. Jk / Com a Rua Alan Kardec" },
-      { lat: -16.285276, lng: -48.984145, nome: "P-02 14 - Rua Mun. / Com a Rua Rio Negro" },
-      { lat: -16.286670, lng: -48.981300, nome: "P-02 15 - R. Uruana / Com a Rua Tocantins" },
-      { lat: -16.288339, lng: -48.972552, nome: "P-02 16 - R. Ouro Branco / Feirão Coberto da Vila Jaiara" },
-      { lat: -16.291053, lng: -48.973229, nome: "P-02 17 - R. Silvânia / Paróquia Nossa Senhora de Fátima" },
-      { lat: -16.291314, lng: -48.971297, nome: "P-02 18 - Av. Paulista / Com a Rua Ouro Branco" },
-      { lat: -16.291986, lng: -48.969406, nome: "P-02 19 - R. Anchieta / Restaurante Popular de Anápolis" },
-      { lat: -16.406940, lng: -48.921300, nome: "P-02 20 - Distrito Agroindustrial de Anápolis" },
+    "P-02": [
+      { lat: -16.270170, lng: -48.980090, nome: "P-02 01 - R. Mizael de Morais Filho / Com a Rua Cruzeiro do Sul", semana: "04:51", sabado: "06:01" },
+      { lat: -16.270460, lng: -48.984000, nome: "P-02 02 - Estr. p/ Miranápolis / Com a Rua Três Marias", semana: "04:52", sabado: "06:02" },
+      { lat: -16.274426, lng: -48.985019, nome: "P-02 03 - Av. Mariele / Com a Rua 'O'", semana: "04:53", sabado: "06:03" },
+      { lat: -16.277609, lng: -48.985678, nome: "P-02 04 - R. Marielle / (Supermercado do Povo)", semana: "04:54", sabado: "06:04" },
+      { lat: -16.276961, lng: -48.988451, nome: "P-02 05 - R. H / Paróquia Santíssima Trindade", semana: "04:55", sabado: "06:05" },
+      { lat: -16.277673, lng: -48.990843, nome: "P-02 06 - R. G / Com a Rua Jandira", semana: "04:56", sabado: "06:06" },
+      { lat: -16.277684, lng: -48.993085, nome: "P-02 07 - R. Larissa / Com a Rua Taqueda", semana: "04:57", sabado: "06:07" },
+      { lat: -16.277320, lng: -48.995270, nome: "P-02 08 - Av. das Laranjeiras / Com a R. Três", semana: "04:58", sabado: "06:08" },
+      { lat: -16.277349, lng: -48.997228, nome: "P-02 09 - Av. das Laranjeiras / Com a Rua 5", semana: "04:59", sabado: "06:09" },
+      { lat: -16.281313, lng: -48.992338, nome: "P-02 10 - Av. Souzânia / Com a R. Fontenele Junior", semana: "05:00", sabado: "06:10" },
+      { lat: -16.283412, lng: -48.988511, nome: "P-02 11 - Av. Souzânia / Com a Av. Patricia", semana: "05:01", sabado: "06:11" },
+      { lat: -16.280145, lng: -48.985106, nome: "P-02 12 - Av. Patrícia / Com a Av. Marieli", semana: "05:02", sabado: "06:12" },
+      { lat: -16.281196, lng: -48.985181, nome: "P-02 13 - R. Jk / Com a Rua Alan Kardec", semana: "05:03", sabado: "06:13" },
+      { lat: -16.285276, lng: -48.984145, nome: "P-02 14 - Rua Mun. / Com a Rua Rio Negro", semana: "05:04", sabado: "06:14" },
+      { lat: -16.286670, lng: -48.981300, nome: "P-02 15 - R. Uruana / Com a Rua Tocantins", semana: "05:05", sabado: "06:15" },
+      { lat: -16.288339, lng: -48.972552, nome: "P-02 16 - R. Ouro Branco / Feirão Coberto da Vila Jaiara", semana: "05:06", sabado: "06:16" },
+      { lat: -16.291053, lng: -48.973229, nome: "P-02 17 - R. Silvânia / Paróquia Nossa Senhora de Fátima", semana: "05:07", sabado: "06:17" },
+      { lat: -16.291314, lng: -48.971297, nome: "P-02 18 - Av. Paulista / Com a Rua Ouro Branco", semana: "05:08", sabado: "06:18" },
+      { lat: -16.291986, lng: -48.969406, nome: "P-02 19 - R. Anchieta / Restaurante Popular de Anápolis", semana: "05:09", sabado: "06:19" },
+      { lat: -16.406940, lng: -48.921300, nome: "P-02 20 - Distrito Agroindustrial de Anápolis", semana: "05:35", sabado: "06:45" },
     ],
-    terceiroTurno: [
-      // P-03
-      { lat: -16.285926, lng: -48.938760, nome: "P-03 01 - Av. Joao Florentino / Rua 03 - (Posto Recanto do Sol)" },
-      { lat: -16.284097, lng: -48.935658, nome: "P-03 02 - R. 3 / Rua 47 ( Supermercado Soberano )" },
-      { lat: -16.283959, lng: -48.931338, nome: "P-03 03 - R. 52 / Com a Rua 8" },
-      { lat: -16.281523, lng: -48.927637, nome: "P-03 04 - R. 55 / Com Rua 39" },
-      { lat: -16.276830, lng: -48.928940, nome: "P-03 05 - R. Direita / Esquina com a Rua 35" },
-      { lat: -16.279118, lng: -48.930556, nome: "P-03 06 - R. 54 / Com a Rua 24" },
-      { lat: -16.279748, lng: -48.932983, nome: "P-03 07 - Av. do Estado / Com a Rua 22" },
-      { lat: -16.278033, lng: -48.935336, nome: "P-03 08 - Av. do Estado / Com a Av. Dos Ipes" },
-      { lat: -16.276103, lng: -48.936288, nome: "P-03 09 - Av. Raimundo Carlos Costa e Silva / Com a Rua Carnauba ( Torre )" },
-      { lat: -16.273396, lng: -48.935617, nome: "P-03 10 - R. Ra / Com a Rua RA 18" },
-      { lat: -16.274272, lng: -48.937877, nome: "P-03 11 - R. Ra 17 / Esquina com a Rua RA 19" },
-      { lat: -16.277108, lng: -48.939888, nome: "P-03 12 - R. Ra 11 / Rua RA 13 ( Chacara da Policia Civil )" },
-      { lat: -16.280275, lng: -48.939791, nome: "P-03 13 - R. Prof. Clementino de Alencar Lima / Com a Rua Lisboa" },
-      { lat: -16.282340, lng: -48.939973, nome: "P-03 14 - Av. Raimundo C C E Silva / Com a Rua Porto Nacional" },
-      { lat: -16.250633, lng: -48.934771, nome: "P-03 15 - Av. Monte Sinai / Esquina com a Av. Wasfi Helou" },
-      { lat: -16.253541, lng: -48.934391, nome: "P-03 16 - Av. Sérgio Carneiro / Com a R. 2" },
-      { lat: -16.250019, lng: -48.937253, nome: "P-03 17 - R. SD / Esquina com a R. Sd-006" },
-      { lat: -16.250575, lng: -48.935499, nome: "P-03 18 - R. SD 12 / Esquina com a Rua SD 15" },
-      { lat: -16.268908, lng: -48.939586, nome: "P-03 19 - BR / Esquina com a Rua 2" },
-      { lat: -16.406940, lng: -48.921300, nome: "P-03 20 - Distrito Agroindustrial de Anápolis" },
+    "P-03": [
+      { lat: -16.285926, lng: -48.938760, nome: "P-03 01 - Av. Joao Florentino / Rua 03 - (Posto Recanto do Sol)", semana: "04:51", sabado: "06:01" },
+      { lat: -16.284097, lng: -48.935658, nome: "P-03 02 - R. 3 / Rua 47 ( Supermercado Soberano )", semana: "04:52", sabado: "06:02" },
+      { lat: -16.283959, lng: -48.931338, nome: "P-03 03 - R. 52 / Com a Rua 8", semana: "04:53", sabado: "06:03" },
+      { lat: -16.281523, lng: -48.927637, nome: "P-03 04 - R. 55 / Com Rua 39", semana: "04:54", sabado: "06:04" },
+      { lat: -16.276830, lng: -48.928940, nome: "P-03 05 - R. Direita / Esquina com a Rua 35", semana: "04:55", sabado: "06:05" },
+      { lat: -16.279118, lng: -48.930556, nome: "P-03 06 - R. 54 / Com a Rua 24", semana: "04:56", sabado: "06:06" },
+      { lat: -16.279748, lng: -48.932983, nome: "P-03 07 - Av. do Estado / Com a Rua 22", semana: "04:57", sabado: "06:07" },
+      { lat: -16.278033, lng: -48.935336, nome: "P-03 08 - Av. do Estado / Com a Av. Dos Ipes", semana: "04:58", sabado: "06:08" },
+      { lat: -16.276103, lng: -48.936288, nome: "P-03 09 - Av. Raimundo Carlos Costa e Silva / Com a Rua Carnauba ( Torre )", semana: "04:59", sabado: "06:09" },
+      { lat: -16.273396, lng: -48.935617, nome: "P-03 10 - R. Ra / Com a Rua RA 18", semana: "05:00", sabado: "06:10" },
+      { lat: -16.274272, lng: -48.937877, nome: "P-03 11 - R. Ra 17 / Esquina com a Rua RA 19", semana: "05:01", sabado: "06:11" },
+      { lat: -16.277108, lng: -48.939888, nome: "P-03 12 - R. Ra 11 / Rua RA 13 ( Chacara da Policia Civil )", semana: "05:02", sabado: "06:12" },
+      { lat: -16.280275, lng: -48.939791, nome: "P-03 13 - R. Prof. Clementino de Alencar Lima / Com a Rua Lisboa", semana: "05:03", sabado: "06:13" },
+      { lat: -16.282340, lng: -48.939973, nome: "P-03 14 - Av. Raimundo C C E Silva / Com a Rua Porto Nacional", semana: "05:04", sabado: "06:14" },
+      { lat: -16.250633, lng: -48.934771, nome: "P-03 15 - Av. Monte Sinai / Esquina com a Av. Wasfi Helou", semana: "05:05", sabado: "06:15" },
+      { lat: -16.253541, lng: -48.934391, nome: "P-03 16 - Av. Sérgio Carneiro / Com a R. 2", semana: "05:06", sabado: "06:16" },
+      { lat: -16.250019, lng: -48.937253, nome: "P-03 17 - R. SD / Esquina com a R. Sd-006", semana: "05:07", sabado: "06:17" },
+      { lat: -16.250575, lng: -48.935499, nome: "P-03 18 - R. SD 12 / Esquina com a Rua SD 15", semana: "05:08", sabado: "06:18" },
+      { lat: -16.268908, lng: -48.939586, nome: "P-03 19 - BR / Esquina com a Rua 2", semana: "05:09", sabado: "06:19" },
+      { lat: -16.406940, lng: -48.921300, nome: "P-03 20 - Distrito Agroindustrial de Anápolis", semana: "05:35", sabado: "06:45" },
     ],
-    goiania1: [
-      // P-04
-      { lat: -16.308900, lng: -48.943160, nome: "P-04 01 - Av. Brasil Norte / Leomed Drogarias 24 Horas" },
-      { lat: -16.298423, lng: -48.941830, nome: "P-04 02 - Av. Brasil Norte / Restaurante Sabor Na Mesa" },
-      { lat: -16.287548, lng: -48.933404, nome: "P-04 03 - R. Ra 1 / Rua RA 10" },
-      { lat: -16.289073, lng: -48.932159, nome: "P-04 04 - Av. Perimetral / Com a Rua 27" },
-      { lat: -16.291052, lng: -48.928992, nome: "P-04 05 - Alameda Portal do Sol / Esquina com a Rua 7" },
-      { lat: -16.297357, lng: -48.921444, nome: "P-04 06 - Ac. Fc 20 / Esquina com a Rua FC 19" },
-      { lat: -16.296501, lng: -48.920935, nome: "P-04 07 - Ac. Fc 20 / Esquina com a Rua FC - 15" },
-      { lat: -16.291220, lng: -48.921780, nome: "P-04 08 - R. 30 / Esquina com a Rua FC 3" },
-      { lat: -16.286690, lng: -48.920244, nome: "P-04 09 - R. 11 / Esquina com a Rua 25 ( Lava Jato )" },
-      { lat: -16.283723, lng: -48.921585, nome: "P-04 10 - R. 58 / Esquina com a Rua SW 2" },
-      { lat: -16.281920, lng: -48.923855, nome: "P-04 11 - R. 58 / Esquina com a Rua SW 8" },
-      { lat: -16.285849, lng: -48.924176, nome: "P-04 12 - R. 25 / Esquina com a Rua 6" },
-      { lat: -16.288384, lng: -48.924644, nome: "P-04 13 - R. 6 / Esquina com a Rua João Florentino" },
-      { lat: -16.289740, lng: -48.944640, nome: "P-04 14 - Av. Universitária / Esquina com a Av. Santos Dumont" },
-      { lat: -16.297410, lng: -48.946540, nome: "P-04 15 - Av. Universitária / Restaurante Barriga Cheia" },
-      { lat: -16.300902, lng: -48.947420, nome: "P-04 16 - Av. Universitária / Esquina com a Rua Chile" },
-      { lat: -16.306160, lng: -48.948620, nome: "P-04 17 - Av. Universitária / Sandro Veículos" },
-      { lat: -16.320808, lng: -48.952576, nome: "P-04 18 - Av. Sen. José Lourenço Dias / Grand Car" },
-      { lat: -16.328950, lng: -48.950100, nome: "P-04 19 - GO / Praça do Ancião" },
-      { lat: -16.330156, lng: -48.950612, nome: "P-04 20 - Av. Brasil / Prefeitura Municipal de Anápolis" },
-      { lat: -16.339588, lng: -48.953538, nome: "P-04 21 - Av. Brasil Sul / Autoeste Fiat" },
-      { lat: -16.341950, lng: -48.954630, nome: "P-04 22 - Av. Brasil Sul / Radar Rolamentos - Anápolis" },
-      { lat: -16.407132, lng: -48.918605, nome: "P-04 23 - Distrito Agroindustrial de Anápolis" }
+    "P-04": [
+      { lat: -16.308900, lng: -48.943160, nome: "P-04 01 - Av. Brasil Norte / Leomed Drogarias 24 Horas", semana: "04:50", sabado: "06:00" },
+      { lat: -16.298423, lng: -48.941830, nome: "P-04 02 - Av. Brasil Norte / Restaurante Sabor Na Mesa", semana: "04:52", sabado: "06:02" },
+      { lat: -16.287548, lng: -48.933404, nome: "P-04 03 - R. Ra 1 / Rua RA 10", semana: "04:54", sabado: "06:04" },
+      { lat: -16.289073, lng: -48.932159, nome: "P-04 04 - Av. Perimetral / Com a Rua 27", semana: "04:55", sabado: "06:05" },
+      { lat: -16.291052, lng: -48.928992, nome: "P-04 05 - Alameda Portal do Sol / Esquina com a Rua 7", semana: "04:56", sabado: "06:06" },
+      { lat: -16.297357, lng: -48.921444, nome: "P-04 06 - Ac. Fc 20 / Esquina com a Rua FC 19", semana: "04:58", sabado: "06:08" },
+      { lat: -16.296501, lng: -48.920935, nome: "P-04 07 - Ac. Fc 20 / Esquina com a Rua FC - 15", semana: "04:59", sabado: "06:09" },
+      { lat: -16.291220, lng: -48.921780, nome: "P-04 08 - R. 30 / Esquina com a Rua FC 3", semana: "05:00", sabado: "06:10" },
+      { lat: -16.286690, lng: -48.920244, nome: "P-04 09 - R. 11 / Esquina com a Rua 25 ( Lava Jato )", semana: "05:01", sabado: "06:11" },
+      { lat: -16.283723, lng: -48.921585, nome: "P-04 10 - R. 58 / Esquina com a Rua SW 2", semana: "05:02", sabado: "06:12" },
+      { lat: -16.281920, lng: -48.923855, nome: "P-04 11 - R. 58 / Esquina com a Rua SW 8", semana: "05:03", sabado: "06:13" },
+      { lat: -16.285849, lng: -48.924176, nome: "P-04 12 - R. 25 / Esquina com a Rua 6", semana: "05:04", sabado: "06:14" },
+      { lat: -16.288384, lng: -48.924644, nome: "P-04 13 - R. 6 / Esquina com a Rua João Florentino", semana: "05:05", sabado: "06:15" },
+      { lat: -16.289740, lng: -48.944640, nome: "P-04 14 - Av. Universitária / Esquina com a Av. Santos Dumont", semana: "05:08", sabado: "06:18" },
+      { lat: -16.297410, lng: -48.946540, nome: "P-04 15 - Av. Universitária / Restaurante Barriga Cheia", semana: "05:10", sabado: "06:20" },
+      { lat: -16.300902, lng: -48.947420, nome: "P-04 16 - Av. Universitária / Esquina com a Rua Chile", semana: "05:11", sabado: "06:21" },
+      { lat: -16.306160, lng: -48.948620, nome: "P-04 17 - Av. Universitária / Sandro Veículos", semana: "05:12", sabado: "06:22" },
+      { lat: -16.320808, lng: -48.952576, nome: "P-04 18 - Av. Sen. José Lourenço Dias / Grand Car", semana: "05:15", sabado: "06:25" },
+      { lat: -16.328950, lng: -48.950100, nome: "P-04 19 - GO / Praça do Ancião", semana: "05:18", sabado: "06:28" },
+      { lat: -16.330156, lng: -48.950612, nome: "P-04 20 - Av. Brasil / Prefeitura Municipal de Anápolis", semana: "05:19", sabado: "06:29" },
+      { lat: -16.339588, lng: -48.953538, nome: "P-04 21 - Av. Brasil Sul / Autoeste Fiat", semana: "05:21", sabado: "06:31" },
+      { lat: -16.341950, lng: -48.954630, nome: "P-04 22 - Av. Brasil Sul / Radar Rolamentos - Anápolis", semana: "05:22", sabado: "06:32" },
+      { lat: -16.407132, lng: -48.918605, nome: "P-04 23 - Distrito Agroindustrial de Anápolis", semana: "05:40", sabado: "06:50" }
     ],
-    goiania2: [
-      // P-05
+    "P-05": [
       { lat: -16.288661, lng: -48.949128, nome: "P-05 01 - Av. Santos Dumont / Esquina com a Av. Dr. Vital Brasil", semana: "04:59", sabado: "06:04" },
       { lat: -16.288158, lng: -48.952656, nome: "P-05 02 - Av. Santos Dumont / Esquina com a Av. Xavantina", semana: "05:00", sabado: "06:05" },
       { lat: -16.294524, lng: -48.955178, nome: "P-05 03 - Av. Jaiara / Supermercado Silva", semana: "05:02", sabado: "06:07" },
@@ -183,10 +145,9 @@ const MapaRotas = () => {
       { lat: -16.293538, lng: -48.966075, nome: "P-05 17 - R. João Pinheiro / Esquina com a Rua Goiânia", semana: "05:15", sabado: "06:20" },
       { lat: -16.294486, lng: -48.964792, nome: "P-05 18 - Av. 24 de Agosto / Esquina com a R. Dr. Alfredo Fleuri", semana: "05:15", sabado: "06:20" },
       { lat: -16.296555, lng: -48.963500, nome: "P-05 19 - R. Dr. Alfredo Fleuri / Esquina com a R. Tamandare", semana: "05:16", sabado: "06:21" },
-      { lat: -16.407070, lng: -48.917269, nome: "P-05 20 - D módulo 11 / Laboratório Teuto", semana: "05:45", sabado: "06:50" }
+      { lat: -16.407070, lng: -48.917269, nome: "P-05 20 - D módulo 11 / Laboratório Teuto", semana: "05:45", sabado: "06:50" },
     ],
-    rota6: [
-      // P-06
+    "P-06": [
       { lat: -16.311309, lng: -48.920828, nome: "P-06 01 - Av. RC 16 / Esquina com a Av. Cerejeiras", semana: "04:38", sabado: "05:49" },
       { lat: -16.312753, lng: -48.916932, nome: "P-06 02 - R. RC 9 / Esquina com a Rua RC - 19", semana: "04:41", sabado: "05:52" },
       { lat: -16.317963, lng: -48.918671, nome: "P-06 03 - R. RC-1 / Esquina com a R. RC-4", semana: "04:44", sabado: "05:55" },
@@ -217,10 +178,9 @@ const MapaRotas = () => {
       { lat: -16.315550, lng: -48.899456, nome: "P-06 28 - Av. Sérvio Túlio Jayme / Com a Rua Michel Aidar", semana: "05:23", sabado: "06:34" },
       { lat: -16.326710, lng: -48.893872, nome: "P-06 29 - Av. Sérvio Túlio Jayme / Com a Rua I -8", semana: "05:26", sabado: "06:37" },
       { lat: -16.336176, lng: -48.896571, nome: "P-06 30 - Av. Independência / Com a Rua Ana Guimaraes Alves", semana: "05:26", sabado: "06:37" },
-      { lat: -16.407204, lng: -48.920762, nome: "P-06 31 - Distrito Agroindustrial de Anápolis", semana: "05:44", sabado: "06:55" }
+      { lat: -16.407204, lng: -48.920762, nome: "P-06 31 - Distrito Agroindustrial de Anápolis", semana: "05:44", sabado: "06:55" },
     ],
-    rota7: [
-      // P-07
+    "P-07": [
       { lat: -16.318109, lng: -48.955068, nome: "P-07 01 - Av. Pres. Kennedy / Esquina com a R. Luís Schinor", semana: "05:00", sabado: "06:05" },
       { lat: -16.316668, lng: -48.955913, nome: "P-07 02 - Av. Pres. Kennedy / Pizzaria Presidente", semana: "05:00", sabado: "06:05" },
       { lat: -16.315025, lng: -48.956811, nome: "P-07 03 - Av. Pres. Kennedy / Esquina com a R. Joaquim da Cunha", semana: "05:01", sabado: "06:06" },
@@ -244,10 +204,9 @@ const MapaRotas = () => {
       { lat: -16.332229, lng: -48.959219, nome: "P-07 21 - Av. Getulino Artiaga / Esquina com a 14 de Julho ( Saneago )", semana: "05:25", sabado: "06:30" },
       { lat: -16.337070, lng: -48.957750, nome: "P-07 22 - R. Eng. Portela / Posto 9 Ipiranga Anápolis", semana: "05:28", sabado: "06:33" },
       { lat: -16.346932, lng: -48.958522, nome: "P-07 23 - R. Eng. Portela / Esquina com a R. Brasil Caiado", semana: "05:30", sabado: "06:35" },
-      { lat: -16.407122, lng: -48.919356, nome: "P-07 24 - Distrito Agroindustrial de Anápolis", semana: "05:45", sabado: "06:50" }
+      { lat: -16.407122, lng: -48.919356, nome: "P-07 24 - Distrito Agroindustrial de Anápolis", semana: "05:45", sabado: "06:50" },
     ],
-    rota8: [
-      // P-08
+    "P-08": [
       { lat: -16.313360, lng: -48.934760, nome: "P-08 01 - R. Dona Carime / Garagem São José", semana: "04:38", sabado: "05:43" },
       { lat: -16.315325, lng: -48.935764, nome: "P-08 02 - Av. Dona Elvira / Com a Rua Manoel Luiz da Fonseca", semana: "04:39", sabado: "05:44" },
       { lat: -16.320407, lng: -48.939063, nome: "P-08 03 - Av. Dona Elvira / Esquina com a R. Joaquim Esperidião", semana: "04:40", sabado: "05:45" },
@@ -280,8 +239,7 @@ const MapaRotas = () => {
       { lat: -16.347260, lng: -48.974300, nome: "P-08 30 - Praca Martins / Esquina com a Av. Cachoeira Dourada", semana: "05:25", sabado: "06:30" },
       { lat: -16.407122, lng: -48.918734, nome: "P-08 31 - Distrito Agroindustrial de Anápolis", semana: "05:45", sabado: "06:50" }
     ],
-    rota9: [
-      // P-09
+    "P-09": [
       { lat: -16.354320, lng: -48.974306, nome: "P-09 01 - Av. Isidório Rodrigues / Com a Rua Ana Lucia de Sousa", semana: "04:52", sabado: "06:01" },
       { lat: -16.355672, lng: -48.972233, nome: "P-09 02 - Av. Isidório Rodrigues / Com a Rua Marcos Irako Mendes (Rotatória)", semana: "04:52", sabado: "06:01" },
       { lat: -16.356524, lng: -48.970381, nome: "P-09 03 - Av. Isidoro Sabino Rodrigues / Com a Rua Waldir M. da Silva", semana: "04:53", sabado: "06:02" },
@@ -317,10 +275,9 @@ const MapaRotas = () => {
       { lat: -16.398832, lng: -48.899811, nome: "P-09 33 - R. das Amoras / Esquina com a Rua Jacarandá", semana: "05:33", sabado: "06:42" },
       { lat: -16.399277, lng: -48.903627, nome: "P-09 34 - R. Manga Rosa / Esquina com a Av. Araticum", semana: "05:34", sabado: "06:43" },
       { lat: -16.402062, lng: -48.907424, nome: "P-09 35 - R. 11 / Portaria 60 CAOA", semana: "05:35", sabado: "06:44" },
-      { lat: -16.407101, lng: -48.918927, nome: "P-09 36 - Distrito Agroindustrial de Anápolis", semana: "05:39", sabado: "06:48" }
+      { lat: -16.407101, lng: -48.918927, nome: "P-09 36 - Distrito Agroindustrial de Anápolis", semana: "05:39", sabado: "06:48" },
     ],
-    rota10: [
-      // P-10
+    "P-10": [
       { lat: -16.351145, lng: -48.975232, nome: "P-10 01 - Av. Pedro Ludovico / BARATÃO DA CONSTRUÇÃO", semana: "05:14", sabado: "06:19" },
       { lat: -16.356284, lng: -48.978053, nome: "P-10 02 - Av. Pedro Ludovico / Com a Rua dos Prefeitos", semana: "05:16", sabado: "06:21" },
       { lat: -16.359320, lng: -48.980080, nome: "P-10 03 - Av. Pedro Ludovico / Esquina com a Rua Paraguaçú", semana: "05:16", sabado: "06:21" },
@@ -339,378 +296,351 @@ const MapaRotas = () => {
       { lat: -16.417570, lng: -48.977780, nome: "P-10 16 - R. Santa Amélia / Esquina com a Rua Santa Genovena", semana: "05:29", sabado: "06:34" },
       { lat: -16.415525, lng: -48.979186, nome: "P-10 17 - R. Eduardo Marçal / Com a Rua João Batista F. Mendonça", semana: "05:30", sabado: "06:35" },
       { lat: -16.412740, lng: -48.977403, nome: "P-10 18 - Av. RT A / Com a Av. RT A ( Praça )", semana: "05:32", sabado: "06:37" },
-      { lat: -16.407019, lng: -48.917747, nome: "P-10 19 - Distrito Agroindustrial de Anápolis", semana: "05:45", sabado: "06:51" }
+      { lat: -16.407019, lng: -48.917747, nome: "P-10 19 - Distrito Agroindustrial de Anápolis", semana: "05:45", sabado: "06:51" },
     ],
   };
 
-  // Inicializar o mapa quando o script do Google Maps for carregado
-  const initializeMap = useCallback(() => {
-    if (!mapRef.current || !window.google || googleMapRef.current) return;
+  // Available turnos (shifts)
+  const turnos = [
+    { id: "1", nome: "1° Turno" },
+  ];
 
-    // Definir o centro do mapa na cidade de Anápolis
-    const anapolis = { lat: -16.3270, lng: -48.9525 };
-    
-    // Criar o mapa
+  // Available routes
+  const rotas = [
+    { id: "P-01", nome: "P-01" },
+    { id: "P-02", nome: "P-02" },
+    { id: "P-03", nome: "P-03" },
+    { id: "P-04", nome: "P-04" },
+    { id: "P-05", nome: "P-05" },
+    { id: "P-06", nome: "P-06" },
+    { id: "P-07", nome: "P-07" },
+    { id: "P-08", nome: "P-08" },
+    { id: "P-09", nome: "P-09" },
+    { id: "P-10", nome: "P-10" },
+  ];
+
+  // Function to load Google Maps API
+  const loadGoogleMapsAPI = () => {
+    if (window.google) {
+      initializeMap();
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places`;
+    script.async = true;
+    script.defer = true;
+    script.onload = initializeMap;
+    document.head.appendChild(script);
+  };
+
+  // Function to initialize the map
+  const initializeMap = () => {
+    if (!mapRef.current) return;
+
+    // Create the map instance
     const mapOptions = {
-      center: anapolis,
-      zoom: 13,
-      mapTypeId: window.google.maps.MapTypeId.ROADMAP,
-      mapTypeControl: true,
-      streetViewControl: true,
+      center: { lat: -16.328000, lng: -48.953000 },
+      zoom: 12,
+      mapTypeId: google.maps.MapTypeId.ROADMAP,
+      streetViewControl: false,
+      mapTypeControl: false,
       fullscreenControl: true,
+      zoomControl: true,
     };
-    
-    googleMapRef.current = new window.google.maps.Map(mapRef.current, mapOptions);
-    
-    // Configurar a barra de pesquisa
-    const input = document.getElementById("map-search-input") as HTMLInputElement;
-    searchBoxRef.current = new window.google.maps.places.SearchBox(input);
-    
-    // Vincular a barra de pesquisa ao mapa
-    googleMapRef.current.controls[window.google.maps.ControlPosition.TOP_LEFT].push(input);
-    
-    // Listener para atualizar os resultados da pesquisa quando o mapa se move
-    googleMapRef.current.addListener("bounds_changed", () => {
-      searchBoxRef.current.setBounds(googleMapRef.current.getBounds());
+
+    const map = new google.maps.Map(mapRef.current, mapOptions);
+    mapInstanceRef.current = map;
+
+    // Create info window once (will be reused)
+    infoWindowRef.current = new google.maps.InfoWindow();
+
+    // Initialize search box
+    const input = document.getElementById("map-search-input");
+    const searchBox = new google.maps.places.SearchBox(input);
+    searchBoxRef.current = searchBox;
+
+    // Bias search results to current map viewport
+    map.addListener("bounds_changed", () => {
+      searchBox.setBounds(map.getBounds());
     });
-    
-    // Listener para pegar os lugares selecionados na barra de pesquisa
-    searchBoxRef.current.addListener("places_changed", () => {
-      const places = searchBoxRef.current.getPlaces();
-      
+
+    // Listen for search box selection
+    searchBox.addListener("places_changed", () => {
+      const places = searchBox.getPlaces();
       if (places.length === 0) return;
-      
-      // Para cada lugar, exibir um marcador
-      const bounds = new window.google.maps.LatLngBounds();
-      
-      places.forEach((place: any) => {
+
+      // For each place, get location and center map
+      const bounds = new google.maps.LatLngBounds();
+      places.forEach((place) => {
         if (!place.geometry || !place.geometry.location) return;
-        
-        // Criar um marcador para o local pesquisado
-        const marker = new window.google.maps.Marker({
-          map: googleMapRef.current,
-          title: place.name,
+
+        // Create a marker for the search result
+        new google.maps.Marker({
+          map,
           position: place.geometry.location,
-          animation: window.google.maps.Animation.DROP,
+          title: place.name,
           icon: {
-            url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(`
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0047AB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 22s-8-4.5-8-11.8a8 8 0 0 1 16 0c0 7.3-8 11.8-8 11.8z"/>
-                <circle cx="12" cy="10" r="3"/>
-              </svg>
-            `),
-            scaledSize: new window.google.maps.Size(32, 32),
-          }
+            path: google.maps.SymbolPath.CIRCLE,
+            scale: 10,
+            fillColor: "#4285F4",
+            fillOpacity: 1,
+            strokeColor: "#ffffff",
+            strokeWeight: 2,
+          },
         });
-        
-        // Info Window para o local pesquisado
-        const infoWindow = new window.google.maps.InfoWindow({
-          content: `
-            <div style="padding: 8px; max-width: 280px;">
-              <h3 style="margin-top: 0; margin-bottom: 5px; color: #0047AB; font-weight: bold;">${place.name}</h3>
-              ${place.formatted_address ? `<p style="margin: 5px 0; font-size: 14px;">${place.formatted_address}</p>` : ''}
-              ${place.rating ? `<p style="margin: 5px 0; font-size: 14px;">Avaliação: ${place.rating} ⭐</p>` : ''}
-            </div>
-          `
-        });
-        
-        marker.addListener("click", () => {
-          infoWindow.open(googleMapRef.current, marker);
-        });
-        
+
         if (place.geometry.viewport) {
           bounds.union(place.geometry.viewport);
         } else {
           bounds.extend(place.geometry.location);
         }
       });
-      
-      googleMapRef.current.fitBounds(bounds);
+      map.fitBounds(bounds);
     });
-    
-    // Carregar os marcadores iniciais
-    loadMarkers();
-    setIsMapLoaded(true);
-  }, []);
 
-  // Carregar os marcadores das paradas de ônibus
-  const loadMarkers = useCallback(() => {
-    if (!googleMapRef.current) return;
-    
-    // Limpar marcadores anteriores
-    markersRef.current.forEach(marker => marker.setMap(null));
-    markersRef.current = [];
-    
-    // Obter as paradas da rota selecionada
-    const paradas = paradasPorRota[selectedMap] || [];
-    
-    if (paradas.length === 0) {
-      toast({
-        title: "Nenhuma parada encontrada",
-        description: "Não há paradas de ônibus registradas para esta rota.",
-        variant: "destructive",
-      });
-      return;
+    // Display markers for the selected route
+    displayRouteMarkers();
+    setMapLoaded(true);
+  };
+
+  // Function to display markers for the selected route
+  const displayRouteMarkers = () => {
+    if (!mapInstanceRef.current) return;
+
+    // Clear existing markers
+    if (markersRef.current.length > 0) {
+      markersRef.current.forEach((marker) => marker.setMap(null));
+      markersRef.current = [];
     }
-    
-    // Criar bounds para ajustar o zoom
-    const bounds = new window.google.maps.LatLngBounds();
-    
-    // Criar os marcadores no mapa com ícone de parada de ônibus personalizado
-    paradas.forEach((parada, index) => {
-      const marker = new window.google.maps.Marker({
-        position: { lat: parada.lat, lng: parada.lng },
-        map: googleMapRef.current,
-        title: parada.nome,
-        animation: window.google.maps.Animation.DROP,
-        icon: {
-          url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(`
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="28" viewBox="0 0 24 28" fill="#ea384c" stroke="white" stroke-width="1.5">
-              <path d="M12 2C7.58 2 4 5.58 4 10c0 1.5.5 3 1.38 4.5.44.73.96 1.41 1.58 2.03l.02.02c1.37 1.37 3.13 2.38 4.7 3.13.04.02.08.04.12.06l.01.01c.15.07.3.1.44.1s.29-.03.44-.1l.01-.01c.04-.02.08-.04.12-.06 1.57-.75 3.33-1.76 4.7-3.13l.02-.02c.62-.62 1.14-1.3 1.58-2.03.88-1.5 1.38-3 1.38-4.5 0-4.42-3.58-8-8-8zm0 11.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/>
-              <path d="M15 23H9v-1.5c0-1.1.9-2 2-2h2c1.1 0 2 .9 2 2V23z"/>
-              <path d="M12 28l-4-4h8l-4 4z"/>
-            </svg>
-          `),
-          scaledSize: new window.google.maps.Size(36, 36),
-          anchor: new window.google.maps.Point(18, 28)
-        },
-        label: {
-          text: (index + 1).toString(),
-          color: '#FFFFFF',
-          fontSize: '12px',
-          fontWeight: 'bold'
-        }
+
+    // Get stops for the selected route
+    const stops = busStopsByRoute[selectedRota] || [];
+    if (stops.length === 0) return;
+
+    const bounds = new google.maps.LatLngBounds();
+    const markers = [];
+
+    // Custom SVG bus stop icon
+    const busStopIcon = {
+      url: "data:image/svg+xml;charset=UTF-8," + 
+           encodeURIComponent(`
+             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+               <circle cx="12" cy="12" r="10" fill="#1e40af"/>
+               <rect x="8" y="8" width="8" height="8" fill="#ffffff" rx="1"/>
+               <line x1="9" y1="12" x2="15" y2="12" stroke="#1e40af" stroke-width="2"/>
+               <line x1="12" y1="9" x2="12" y2="15" stroke="#1e40af" stroke-width="2"/>
+             </svg>
+           `),
+      scaledSize: new google.maps.Size(36, 36),
+      anchor: new google.maps.Point(18, 18),
+    };
+
+    // Create markers for each stop
+    stops.forEach((stop, index) => {
+      const marker = new google.maps.Marker({
+        position: { lat: stop.lat, lng: stop.lng },
+        map: mapInstanceRef.current,
+        title: stop.nome,
+        icon: busStopIcon,
+        animation: google.maps.Animation.DROP,
+        zIndex: 10,
       });
-      
-      // Criar conteúdo para a janela de informação
-      let infoContent = `
-        <div style="padding: 10px; max-width: 300px; font-family: Arial, sans-serif;">
-          <div style="display: flex; align-items: center; margin-bottom: 8px;">
-            <div style="background-color: #ea384c; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 8px; font-weight: bold;">${index + 1}</div>
-            <h3 style="margin: 0; color: #ea384c; font-size: 16px; font-weight: bold;">${parada.nome}</h3>
-          </div>
-          <div style="margin-top: 10px;">
-            <p style="margin: 5px 0; font-size: 14px; color: #555;">
-              <span style="font-weight: bold;">Localização:</span> ${parada.lat.toFixed(6)}, ${parada.lng.toFixed(6)}
-            </p>
-      `;
-      
-      // Adicionar informações de horário se disponíveis
-      if (parada.semana || parada.sabado) {
-        infoContent += `<div style="background-color: #f5f5f5; padding: 8px; border-radius: 4px; margin-top: 8px;">`;
-        
-        if (parada.semana) {
-          infoContent += `
-            <div style="display: flex; align-items: center; margin-bottom: 4px;">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ea384c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <polyline points="12 6 12 12 16 14"></polyline>
-              </svg>
-              <span style="margin-left: 6px; font-weight: bold; color: #333;">Semana:</span>
-              <span style="margin-left: 6px; color: #333;">${parada.semana}</span>
-            </div>
-          `;
-        }
-        
-        if (parada.sabado) {
-          infoContent += `
-            <div style="display: flex; align-items: center;">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ea384c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <polyline points="12 6 12 12 16 14"></polyline>
-              </svg>
-              <span style="margin-left: 6px; font-weight: bold; color: #333;">Sábado:</span>
-              <span style="margin-left: 6px; color: #333;">${parada.sabado}</span>
-            </div>
-          `;
-        }
-        
-        infoContent += `</div>`;
-      }
-      
-      infoContent += `
+
+      // Create info window content
+      const contentString = `
+        <div class="p-2 max-w-xs">
+          <p class="font-bold text-blue-800 mb-1">${stop.nome}</p>
+          <div class="text-sm mt-1">
+            <p class="text-blue-700"><strong>Horário dia de semana:</strong> ${stop.semana}</p>
+            <p class="text-blue-700"><strong>Horário sábado:</strong> ${stop.sabado}</p>
           </div>
         </div>
       `;
-      
-      // Criar janela de informação para o marcador
-      const infoWindow = new window.google.maps.InfoWindow({
-        content: infoContent
-      });
-      
+
+      // Add click listener to show info window
       marker.addListener("click", () => {
-        // Fechar todas as janelas de informação abertas
-        markersRef.current.forEach(m => {
-          if (m.infoWindow && m.infoWindow.getMap()) {
-            m.infoWindow.close();
-          }
-        });
-        
-        infoWindow.open(googleMapRef.current, marker);
+        if (infoWindowRef.current) {
+          infoWindowRef.current.setContent(contentString);
+          infoWindowRef.current.open(mapInstanceRef.current, marker);
+        }
       });
-      
-      // Adicionar a janela de informação ao marcador para referência
-      marker.infoWindow = infoWindow;
-      
-      // Adicionar o marcador ao array de referência
-      markersRef.current.push(marker);
-      
-      // Estender os bounds para incluir este ponto
-      bounds.extend({ lat: parada.lat, lng: parada.lng });
+
+      markers.push(marker);
+      bounds.extend(marker.getPosition());
     });
-    
-    // Ajustar o mapa para mostrar todos os marcadores
-    googleMapRef.current.fitBounds(bounds);
-    
-    // Se houver apenas um marcador, ajustar o zoom
-    if (paradas.length === 1) {
-      googleMapRef.current.setZoom(15);
-    }
-    
-  }, [selectedMap, toast]);
 
-  // Carregar o script do Google Maps
-  useEffect(() => {
-    if (window.google) {
-      initializeMap();
-      return;
-    }
-    
-    // Função de callback global que o Google Maps chamará quando o script for carregado
-    window.initMap = () => {
-      initializeMap();
-    };
-    
-    // Adicionar o script do Google Maps à página
-    const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyDKsBrWnONeKqDwT4I6ooc42ogm57cqJbI&libraries=places&callback=initMap`;
-    script.async = true;
-    script.defer = true;
-    script.onerror = () => {
-      toast({
-        title: "Erro ao carregar o mapa",
-        description: "Não foi possível carregar o mapa do Google. Por favor, tente novamente mais tarde.",
-        variant: "destructive",
-      });
-    };
-    
-    document.head.appendChild(script);
-    
-    return () => {
-      // Limpar o callback global quando o componente for desmontado
-      window.initMap = () => {};
-      if (script.parentNode) {
-        script.parentNode.removeChild(script);
-      }
-    };
-  }, [initializeMap, toast]);
+    // Store markers reference for later cleanup
+    markersRef.current = markers;
 
-  // Atualizar os marcadores quando a rota selecionada mudar
-  useEffect(() => {
-    if (isMapLoaded) {
-      loadMarkers();
+    // Fit map to show all markers with some padding
+    mapInstanceRef.current.fitBounds(bounds, 50);
+    
+    // If there's only one marker, zoom out a bit
+    if (stops.length === 1) {
+      mapInstanceRef.current.setZoom(15);
     }
-  }, [selectedMap, isMapLoaded, loadMarkers]);
-
-  // Pesquisar paradas ao digitar no campo de pesquisa
-  const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
   };
 
+  // Function to handle turno selection change
+  const handleTurnoChange = (value) => {
+    setSelectedTurno(value);
+  };
+
+  // Function to handle route selection change
+  const handleRotaChange = (value) => {
+    setSelectedRota(value);
+    if (mapLoaded) {
+      displayRouteMarkers();
+    }
+  };
+
+  // Function to handle search input
+  const handleSearch = (e) => {
+    e.preventDefault();
+    // SearchBox will automatically handle the search via the places_changed event
+  };
+
+  // Load Google Maps API on component mount
+  useEffect(() => {
+    loadGoogleMapsAPI();
+    
+    // Cleanup function
+    return () => {
+      if (markersRef.current) {
+        markersRef.current.forEach((marker) => marker.setMap(null));
+      }
+    };
+  }, []);
+
+  // Update markers when selected route changes
+  useEffect(() => {
+    if (mapLoaded) {
+      displayRouteMarkers();
+    }
+  }, [selectedRota, mapLoaded]);
+
   return (
-    <div className="container max-w-full py-10 px-4 md:px-10">
+    <div className="container py-6 mx-auto">
       <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Map className="h-6 w-6 text-primary" />
-            Mapa de Rotas
+        <CardHeader className="pb-4">
+          <CardTitle className="text-center text-2xl font-bold text-blue-800">
+            Mapa de Rotas de Transporte
           </CardTitle>
-          <CardDescription>
-            Visualize as rotas disponíveis para os diferentes turnos e locais, com horários para dias de semana e sábados.
-          </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Selecione a rota que deseja visualizar:
-              </label>
-              <Select 
-                value={selectedMap}
-                onValueChange={setSelectedMap}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Selecione uma rota" />
-                </SelectTrigger>
-                <SelectContent>
-                  {rotasOptions.map(option => (
-                    <SelectItem key={option.id} value={option.id}>
-                      {option.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="space-y-2">
-              <label htmlFor="map-search-input" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Pesquisar localização:
-              </label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                <Input
-                  id="map-search-input"
-                  type="text"
-                  value={searchQuery}
-                  onChange={handleSearchInputChange}
-                  placeholder="Digite um endereço ou ponto de referência"
-                  className="pl-10"
-                />
-              </div>
-            </div>
-          </div>
-          
-          <div className="relative rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 h-[480px] md:h-[600px]">
-            {!isMapLoaded && (
-              <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
-                <div className="flex flex-col items-center">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-                  <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">Carregando mapa...</p>
+        <CardContent>
+          <div className="mb-6">
+            <Tabs defaultValue="mapa" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="mapa">Mapa</TabsTrigger>
+                <TabsTrigger value="controles">Controles</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="mapa" className="h-[70vh] sm:h-[80vh] relative">
+                <div ref={mapRef} className="w-full h-full rounded-md overflow-hidden border border-gray-200" />
+                
+                {!mapLoaded && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-gray-100 bg-opacity-75">
+                    <div className="text-center">
+                      <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
+                      <p className="mt-4 text-gray-600">Carregando mapa...</p>
+                    </div>
+                  </div>
+                )}
+              </TabsContent>
+              
+              <TabsContent value="controles">
+                <div className="space-y-6 py-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Turno
+                      </label>
+                      <Select
+                        value={selectedTurno}
+                        onValueChange={handleTurnoChange}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Selecione o turno" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {turnos.map((turno) => (
+                            <SelectItem key={turno.id} value={turno.id}>
+                              {turno.nome}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Rota
+                      </label>
+                      <Select
+                        value={selectedRota}
+                        onValueChange={handleRotaChange}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Selecione a rota" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {rotas.map((rota) => (
+                            <SelectItem key={rota.id} value={rota.id}>
+                              {rota.nome}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Buscar endereço
+                    </label>
+                    <form onSubmit={handleSearch} className="flex items-center gap-2">
+                      <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                        <Input
+                          id="map-search-input"
+                          className="pl-10"
+                          placeholder="Digite um endereço para buscar"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                      </div>
+                      <Button type="submit">Buscar</Button>
+                    </form>
+                  </div>
+                  
+                  <div className="bg-blue-50 p-4 rounded-md border border-blue-100">
+                    <h3 className="text-lg font-medium text-blue-800 mb-2 flex items-center">
+                      <MapPin className="h-5 w-5 mr-2" />
+                      Informações da Rota {selectedRota}
+                    </h3>
+                    <div className="text-sm space-y-1 text-blue-700">
+                      <p><strong>Total de paradas:</strong> {busStopsByRoute[selectedRota]?.length || 0}</p>
+                      <p><strong>Primeira parada:</strong> {busStopsByRoute[selectedRota]?.[0]?.nome || "N/A"}</p>
+                      <p><strong>Horário primeira parada (semana):</strong> {busStopsByRoute[selectedRota]?.[0]?.semana || "N/A"}</p>
+                      <p><strong>Horário primeira parada (sábado):</strong> {busStopsByRoute[selectedRota]?.[0]?.sabado || "N/A"}</p>
+                      <p><strong>Última parada:</strong> {busStopsByRoute[selectedRota]?.[busStopsByRoute[selectedRota]?.length - 1]?.nome || "N/A"}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-gray-50 p-4 rounded-md border border-gray-200">
+                    <h3 className="text-lg font-medium text-gray-800 mb-2">Legenda</h3>
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 bg-blue-700 rounded-full flex items-center justify-center">
+                        <div className="w-3 h-3 bg-white"></div>
+                      </div>
+                      <span className="text-gray-700">Parada de ônibus</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            )}
-            <div 
-              ref={mapRef} 
-              className="w-full h-full"
-              style={{ visibility: isMapLoaded ? 'visible' : 'hidden' }}
-            ></div>
+              </TabsContent>
+            </Tabs>
           </div>
-          
-          <div className="flex flex-wrap items-center gap-6 justify-center">
-            <div className="flex items-center gap-2">
-              <div className="flex items-center justify-center w-6 h-6">
-                <Bus className="h-5 w-5 text-red-500" />
-              </div>
-              <span className="text-sm text-gray-600">Parada de ônibus</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="flex items-center justify-center w-6 h-6">
-                <MapPin className="h-5 w-5 text-blue-700" />
-              </div>
-              <span className="text-sm text-gray-600">Local pesquisado</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="flex items-center justify-center w-6 h-6">
-                <Clock className="h-5 w-5 text-gray-500" />
-              </div>
-              <span className="text-sm text-gray-600">Horários disponíveis em algumas paradas</span>
-            </div>
-          </div>
-          
-          <p className="text-sm text-gray-500 dark:text-gray-400 text-center pt-2">
-            Observe o mapa para verificar se há uma rota que atende sua localidade.
-            Clique nos marcadores para ver mais detalhes e horários sobre cada parada.
-          </p>
         </CardContent>
       </Card>
     </div>
