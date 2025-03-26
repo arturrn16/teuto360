@@ -3,7 +3,6 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -11,10 +10,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, MapPin, Home, Info } from "lucide-react";
+import { Search } from "lucide-react";
 import { toast } from "sonner";
 
 const GOOGLE_MAPS_API_KEY = "AIzaSyDKsBrWnONeKqDwT4I6ooc42ogm57cqJbI";
+
+// Define route colors for visual differentiation on the map
+const ROUTE_COLORS = {
+  "P-01": "#E53E3E", // Red
+  "P-02": "#38A169", // Green
+  "P-03": "#3182CE", // Blue
+  "P-04": "#DD6B20", // Orange
+  "P-05": "#805AD5", // Purple
+};
 
 const MapaRotas = () => {
   const mapRef = useRef<HTMLDivElement>(null);
@@ -22,22 +30,10 @@ const MapaRotas = () => {
   const markersRef = useRef<google.maps.Marker[]>([]);
   const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
   const searchBoxRef = useRef<typeof google.maps.places.SearchBox | null>(null);
-  const userMarkerRef = useRef<google.maps.Marker | null>(null);
-  const routePathRef = useRef<google.maps.Polyline | null>(null);
-  const [selectedTurno, setSelectedTurno] = useState("1");
-  const [selectedRota, setSelectedRota] = useState("P-01");
+  const [selectedTurno, setSelectedTurno] = useState("1° Turno");
+  const [selectedRota, setSelectedRota] = useState<string | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [cep, setCep] = useState("");
-  const [isLoadingCep, setIsLoadingCep] = useState(false);
-  const [nearestStopInfo, setNearestStopInfo] = useState<{
-    nome: string;
-    rota: string;
-    horario: string;
-    distancia: string;
-    lat: number;
-    lng: number;
-  } | null>(null);
 
   // Bus stop data organized by routes
   const busStopsByRoute = {
@@ -214,74 +210,65 @@ const MapaRotas = () => {
 
     setMapLoaded(true);
     
-    // Display initial route markers
-    displayRouteMarkers(selectedRota);
+    // Display initial route markers based on selected turno
+    displayAllRouteMarkers();
   };
 
-  const displayRouteMarkers = useCallback((route: string) => {
+  // Function to display all route markers with different colors when only the shift is selected
+  const displayAllRouteMarkers = useCallback(() => {
     if (!mapInstanceRef.current) return;
 
     // Clear existing markers
     markersRef.current.forEach((marker) => marker.setMap(null));
     markersRef.current = [];
 
-    // Get stops for the selected route
-    const stops = busStopsByRoute[route as keyof typeof busStopsByRoute] || [];
-    if (stops.length === 0) return;
-
     const bounds = new google.maps.LatLngBounds();
-
-    // Create and place markers for each stop
-    stops.forEach((stop, index) => {
-      const position = { lat: stop.lat, lng: stop.lng };
-      bounds.extend(position);
-
-      const marker = new google.maps.Marker({
-        position,
-        map: mapInstanceRef.current,
-        title: stop.nome,
-        label: {
-          text: (index + 1).toString(),
-          color: "#FFFFFF",
-        },
-        animation: google.maps.Animation.DROP,
+    
+    // If a specific route is selected, only show markers for that route
+    if (selectedRota) {
+      const stops = busStopsByRoute[selectedRota as keyof typeof busStopsByRoute] || [];
+      if (stops.length === 0) return;
+      
+      stops.forEach((stop, index) => {
+        const position = { lat: stop.lat, lng: stop.lng };
+        bounds.extend(position);
+        
+        // Create a marker for this stop
+        const marker = createMarker(stop, selectedRota, index);
+        markersRef.current.push(marker);
       });
-
-      // Create info window content
-      const timeLabel = selectedTurno === "1" ? stop.semana : stop.sabado;
-      const contentString = `
-        <div class="p-3">
-          <h3 class="font-bold text-base mb-1">${stop.nome}</h3>
-          <p class="mb-1">Horário: ${timeLabel}</p>
-          <div class="flex mt-2">
-            <a href="https://www.google.com/maps?q=${stop.lat},${stop.lng}" target="_blank" class="text-blue-500 underline">Abrir no Google Maps</a>
-          </div>
-        </div>
-      `;
-
-      // Add click listener for info window
-      marker.addListener("click", () => {
-        if (infoWindowRef.current) {
-          infoWindowRef.current.setContent(contentString);
-          infoWindowRef.current.open({
-            anchor: marker,
-            map: mapInstanceRef.current,
-          });
-        }
+    } 
+    // If no specific route is selected but a shift is selected, show all stops color-coded by route
+    else {
+      Object.entries(busStopsByRoute).forEach(([routeName, stops]) => {
+        stops.forEach((stop, index) => {
+          const position = { lat: stop.lat, lng: stop.lng };
+          bounds.extend(position);
+          
+          // Create a marker for this stop
+          const marker = createMarker(stop, routeName, index);
+          markersRef.current.push(marker);
+        });
       });
-
-      markersRef.current.push(marker);
-    });
+    }
 
     // Fit map to the bounds of all markers
     mapInstanceRef.current.fitBounds(bounds);
+  }, [busStopsByRoute, selectedRota]);
 
-    // Create custom marker icon for bus stops
+  // Helper function to create a marker with the appropriate color and info window
+  const createMarker = (stop: any, routeName: string, index: number) => {
+    if (!mapInstanceRef.current) return null;
+    
+    const position = { lat: stop.lat, lng: stop.lng };
+    const routeColor = ROUTE_COLORS[routeName as keyof typeof ROUTE_COLORS] || "#333333";
+    
+    // Create SVG icon with route color
     const busStopIcon = {
       url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(`
-        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10" fill="#FFFFFF" stroke="#2563EB" stroke-width="2"/>
-          <rect x="9" y="7" width="6" height="10" rx="1" fill="#2563EB"/>
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="${routeColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10" fill="#FFFFFF" stroke="${routeColor}" stroke-width="2"/>
+          <rect x="9" y="7" width="6" height="10" rx="1" fill="${routeColor}"/>
           <line x1="9" y1="10" x2="15" y2="10" stroke="#FFFFFF" stroke-width="1"/>
           <line x1="12" y1="7" x2="12" y2="17" stroke="#FFFFFF" stroke-width="1"/>
         </svg>
@@ -290,18 +277,46 @@ const MapaRotas = () => {
       origin: new google.maps.Point(0, 0),
       anchor: new google.maps.Point(16, 16),
     };
-
-    // Update marker icons
-    markersRef.current.forEach(marker => {
-      marker.setIcon(busStopIcon);
+    
+    const marker = new google.maps.Marker({
+      position,
+      map: mapInstanceRef.current,
+      title: stop.nome,
+      icon: busStopIcon,
+      animation: google.maps.Animation.DROP,
     });
-  }, [busStopsByRoute, selectedTurno]);
+    
+    // Create info window content with both weekday and weekend schedules
+    const contentString = `
+      <div class="p-3">
+        <h3 class="font-bold text-base mb-1">${stop.nome}</h3>
+        <p class="mb-1"><strong>Dias de semana:</strong> ${stop.semana}</p>
+        <p class="mb-1"><strong>Sábado:</strong> ${stop.sabado}</p>
+        <div class="flex mt-2">
+          <a href="https://www.google.com/maps?q=${stop.lat},${stop.lng}" target="_blank" class="text-blue-500 underline">Abrir no Google Maps</a>
+        </div>
+      </div>
+    `;
+    
+    // Add click listener for info window
+    marker.addListener("click", () => {
+      if (infoWindowRef.current) {
+        infoWindowRef.current.setContent(contentString);
+        infoWindowRef.current.open({
+          anchor: marker,
+          map: mapInstanceRef.current,
+        });
+      }
+    });
+    
+    return marker;
+  };
 
   useEffect(() => {
     if (mapLoaded) {
-      displayRouteMarkers(selectedRota);
+      displayAllRouteMarkers();
     }
-  }, [selectedRota, selectedTurno, mapLoaded, displayRouteMarkers]);
+  }, [selectedRota, mapLoaded, displayAllRouteMarkers]);
 
   const handleRouteChange = (value: string) => {
     setSelectedRota(value);
@@ -309,6 +324,8 @@ const MapaRotas = () => {
 
   const handleTurnoChange = (value: string) => {
     setSelectedTurno(value);
+    // Reset route selection when changing turno
+    setSelectedRota(null);
   };
 
   const handleSearch = () => {
@@ -331,11 +348,11 @@ const MapaRotas = () => {
       );
 
       if (matchingMarker && infoWindowRef.current) {
-        const timeLabel = selectedTurno === "1" ? firstMatch.semana : firstMatch.sabado;
         const contentString = `
           <div class="p-3">
             <h3 class="font-bold text-base mb-1">${firstMatch.nome}</h3>
-            <p class="mb-1">Horário: ${timeLabel}</p>
+            <p class="mb-1"><strong>Dias de semana:</strong> ${firstMatch.semana}</p>
+            <p class="mb-1"><strong>Sábado:</strong> ${firstMatch.sabado}</p>
             <div class="flex mt-2">
               <a href="https://www.google.com/maps?q=${firstMatch.lat},${firstMatch.lng}" target="_blank" class="text-blue-500 underline">Abrir no Google Maps</a>
             </div>
@@ -348,211 +365,21 @@ const MapaRotas = () => {
           map: mapInstanceRef.current,
         });
       }
+    } else {
+      toast.error("Nenhum ponto encontrado com esse termo");
     }
   };
 
-  // Helper function to navigate to stop on map
-  const navigateToStop = (stop: { lat: number; lng: number; nome: string }) => {
-    if (!mapInstanceRef.current) return;
-    
-    mapInstanceRef.current.setCenter({ lat: stop.lat, lng: stop.lng });
-    mapInstanceRef.current.setZoom(17);
-    
-    // Find and activate the marker
-    const stopMarker = markersRef.current.find(marker => 
-      marker.getTitle() === stop.nome
-    );
-    
-    if (stopMarker && infoWindowRef.current && nearestStopInfo) {
-      const timeLabel = selectedTurno === "1" ? 
-        busStopsByRoute[nearestStopInfo.rota as keyof typeof busStopsByRoute]
-          .find(s => s.lat === stop.lat && s.lng === stop.lng)?.semana || "" : 
-        busStopsByRoute[nearestStopInfo.rota as keyof typeof busStopsByRoute]
-          .find(s => s.lat === stop.lat && s.lng === stop.lng)?.sabado || "";
-      
-      const contentString = `
-        <div class="p-3">
-          <h3 class="font-bold text-base mb-1">${stop.nome}</h3>
-          <p class="mb-1">Horário: ${timeLabel}</p>
-          <p class="mb-1">Distância: ${nearestStopInfo.distancia}</p>
-          <div class="flex mt-2">
-            <a href="https://www.google.com/maps?q=${stop.lat},${stop.lng}" target="_blank" class="text-blue-500 underline">Abrir no Google Maps</a>
-          </div>
-        </div>
-      `;
-      
-      infoWindowRef.current.setContent(contentString);
-      infoWindowRef.current.open({
-        anchor: stopMarker,
-        map: mapInstanceRef.current,
-      });
-    }
+  const clearRouteFilter = () => {
+    setSelectedRota(null);
   };
 
-  // Function to find nearest bus stop from CEP
-  const findNearestBusStop = async () => {
-    if (!cep.trim() || !mapInstanceRef.current) {
-      toast.error("Por favor, insira um CEP válido");
-      return;
+  // Get available routes based on selected turno
+  const getAvailableRoutes = () => {
+    if (selectedTurno === "1° Turno") {
+      return Object.keys(busStopsByRoute);
     }
-
-    setIsLoadingCep(true);
-    setNearestStopInfo(null); // Reset previous result
-
-    try {
-      // Clear existing user marker and path
-      if (userMarkerRef.current) {
-        userMarkerRef.current.setMap(null);
-        userMarkerRef.current = null;
-      }
-      
-      if (routePathRef.current) {
-        routePathRef.current.setMap(null);
-        routePathRef.current = null;
-      }
-
-      // Fetch address data from CEP
-      const response = await fetch(`https://viacep.com.br/ws/${cep.replace(/\D/g, '')}/json/`);
-      const cepData = await response.json();
-      
-      if (cepData.erro) {
-        toast.error("CEP não encontrado");
-        setIsLoadingCep(false);
-        return;
-      }
-
-      // Format address for geocoding
-      const address = `${cepData.logradouro}, ${cepData.bairro}, ${cepData.localidade}, ${cepData.uf}`;
-      
-      // Use Geocoding API to get coordinates
-      const geocoder = new google.maps.Geocoder();
-      geocoder.geocode({ address }, (results, status) => {
-        if (status !== 'OK' || !results || results.length === 0) {
-          toast.error("Não foi possível localizar o endereço");
-          setIsLoadingCep(false);
-          return;
-        }
-
-        const userLocation = results[0].geometry.location;
-        const formattedAddress = results[0].formatted_address;
-        
-        // Add home marker
-        const homeMarker = new google.maps.Marker({
-          position: userLocation,
-          map: mapInstanceRef.current,
-          title: "Sua localização",
-          icon: {
-            url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(`
-              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#FF5722" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                <polyline points="9 22 9 12 15 12 15 22"></polyline>
-              </svg>
-            `),
-            scaledSize: new google.maps.Size(32, 32),
-            origin: new google.maps.Point(0, 0),
-            anchor: new google.maps.Point(16, 16),
-          },
-          animation: google.maps.Animation.DROP,
-        });
-        
-        userMarkerRef.current = homeMarker;
-        
-        // Find nearest bus stop
-        let nearestStop = null;
-        let shortestDistance = Infinity;
-        let nearestRoute = "";
-        
-        // Check all routes
-        Object.entries(busStopsByRoute).forEach(([routeName, stops]) => {
-          stops.forEach(stop => {
-            const stopLocation = new google.maps.LatLng(stop.lat, stop.lng);
-            const distance = google.maps.geometry.spherical.computeDistanceBetween(
-              userLocation,
-              stopLocation
-            );
-            
-            if (distance < shortestDistance) {
-              shortestDistance = distance;
-              nearestStop = stop;
-              nearestRoute = routeName;
-            }
-          });
-        });
-        
-        if (nearestStop) {
-          // Update selected route
-          setSelectedRota(nearestRoute);
-          
-          // Center map to show both locations
-          const bounds = new google.maps.LatLngBounds();
-          bounds.extend(userLocation);
-          bounds.extend(new google.maps.LatLng(nearestStop.lat, nearestStop.lng));
-          mapInstanceRef.current?.fitBounds(bounds);
-          
-          // Draw route line
-          const path = new google.maps.Polyline({
-            path: [
-              { lat: userLocation.lat(), lng: userLocation.lng() },
-              { lat: nearestStop.lat, lng: nearestStop.lng }
-            ],
-            geodesic: true,
-            strokeColor: '#FF5722',
-            strokeOpacity: 0.8,
-            strokeWeight: 3
-          });
-          
-          path.setMap(mapInstanceRef.current);
-          routePathRef.current = path;
-          
-          // Get time information
-          const timeLabel = selectedTurno === "1" ? nearestStop.semana : nearestStop.sabado;
-          
-          // Store nearest stop info for display
-          setNearestStopInfo({
-            nome: nearestStop.nome,
-            rota: nearestRoute,
-            horario: timeLabel,
-            distancia: (shortestDistance / 1000).toFixed(2) + " km",
-            lat: nearestStop.lat,
-            lng: nearestStop.lng
-          });
-          
-          // Open infowindow on nearest stop
-          const nearestMarker = markersRef.current.find(marker => 
-            marker.getTitle() === nearestStop.nome
-          );
-          
-          if (nearestMarker && infoWindowRef.current) {
-            const contentString = `
-              <div class="p-3">
-                <h3 class="font-bold text-base mb-1">${nearestStop.nome}</h3>
-                <p class="mb-1">Horário: ${timeLabel}</p>
-                <p class="mb-1">Distância: ${(shortestDistance / 1000).toFixed(2)} km</p>
-                <div class="flex mt-2">
-                  <a href="https://www.google.com/maps?q=${nearestStop.lat},${nearestStop.lng}" target="_blank" class="text-blue-500 underline">Abrir no Google Maps</a>
-                </div>
-              </div>
-            `;
-            
-            infoWindowRef.current.setContent(contentString);
-            infoWindowRef.current.open({
-              anchor: nearestMarker,
-              map: mapInstanceRef.current,
-            });
-          }
-          
-          toast.success(`Ponto mais próximo encontrado na rota ${nearestRoute}`);
-        } else {
-          toast.error("Não foi possível encontrar um ponto de ônibus próximo");
-        }
-        
-        setIsLoadingCep(false);
-      });
-    } catch (error) {
-      console.error("Erro ao buscar CEP:", error);
-      toast.error("Erro ao processar o CEP");
-      setIsLoadingCep(false);
-    }
+    return [];
   };
 
   return (
@@ -562,7 +389,7 @@ const MapaRotas = () => {
           <CardTitle>Mapa de Rotas de Transporte</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div>
               <label className="text-sm font-medium mb-1 block">Turno</label>
               <Select value={selectedTurno} onValueChange={handleTurnoChange}>
@@ -570,28 +397,45 @@ const MapaRotas = () => {
                   <SelectValue placeholder="Selecione o turno" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="1">1º Turno (Semana)</SelectItem>
-                  <SelectItem value="2">1º Turno (Sábado)</SelectItem>
+                  <SelectItem value="1° Turno">1° Turno</SelectItem>
+                  <SelectItem value="2° Turno">2° Turno</SelectItem>
+                  <SelectItem value="3° Turno">3° Turno</SelectItem>
+                  <SelectItem value="Administrativo">Administrativo</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Rota</label>
-              <Select value={selectedRota} onValueChange={handleRouteChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione a rota" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="P-01">P-01</SelectItem>
-                  <SelectItem value="P-02">P-02</SelectItem>
-                  <SelectItem value="P-03">P-03</SelectItem>
-                  <SelectItem value="P-04">P-04</SelectItem>
-                  <SelectItem value="P-05">P-05</SelectItem>
-                </SelectContent>
-              </Select>
+              <label className="text-sm font-medium mb-1 block">Rota (Opcional)</label>
+              <div className="flex gap-2">
+                <Select 
+                  value={selectedRota || ""}
+                  onValueChange={handleRouteChange}
+                  disabled={selectedTurno !== "1° Turno"}
+                >
+                  <SelectTrigger className="flex-1">
+                    <SelectValue placeholder="Todas as rotas" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {getAvailableRoutes().map(route => (
+                      <SelectItem key={route} value={route}>
+                        {route}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {selectedRota && (
+                  <Button 
+                    variant="outline" 
+                    onClick={clearRouteFilter}
+                    className="shrink-0"
+                  >
+                    Limpar
+                  </Button>
+                )}
+              </div>
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Busca</label>
+              <label className="text-sm font-medium mb-1 block">Busca por Nome do Ponto</label>
               <div className="flex gap-2">
                 <Input
                   id="search-input"
@@ -605,60 +449,22 @@ const MapaRotas = () => {
                 </Button>
               </div>
             </div>
-            <div>
-              <label className="text-sm font-medium mb-1 block">Encontrar rota pelo CEP</label>
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Digite seu CEP"
-                  value={cep}
-                  onChange={(e) => setCep(e.target.value.replace(/\D/g, '').replace(/(\d{5})(\d)/, "$1-$2").substring(0, 9))}
-                  className="flex-1"
-                  maxLength={9}
-                />
-                <Button onClick={findNearestBusStop} disabled={isLoadingCep}>
-                  {isLoadingCep ? (
-                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                  ) : (
-                    <Home className="h-4 w-4" />
-                  )}
-                </Button>
-              </div>
-            </div>
           </div>
 
-          {nearestStopInfo && (
-            <Card className="mb-4 bg-blue-50 border-blue-200">
-              <CardContent className="pt-4">
-                <div className="flex items-start gap-3">
-                  <div className="bg-blue-100 p-2 rounded-full">
-                    <Info className="h-5 w-5 text-blue-600" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-bold text-base">Ponto de ônibus mais próximo:</h3>
-                    <div className="mt-2 space-y-1 text-sm">
-                      <p><strong>Rota:</strong> {nearestStopInfo.rota}</p>
-                      <p><strong>Ponto:</strong> {nearestStopInfo.nome}</p>
-                      <p><strong>Horário:</strong> {nearestStopInfo.horario}</p>
-                      <p><strong>Distância:</strong> {nearestStopInfo.distancia}</p>
-                    </div>
-                    <div className="mt-3">
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => navigateToStop({
-                          lat: nearestStopInfo.lat,
-                          lng: nearestStopInfo.lng,
-                          nome: nearestStopInfo.nome
-                        })}
-                      >
-                        <MapPin className="h-4 w-4 mr-1" />
-                        Ver no mapa
-                      </Button>
-                    </div>
-                  </div>
+          {/* Route color legend */}
+          {!selectedRota && selectedTurno === "1° Turno" && (
+            <div className="flex flex-wrap gap-4 mt-2 mb-4">
+              <div className="text-sm font-medium">Legenda:</div>
+              {Object.entries(ROUTE_COLORS).map(([route, color]) => (
+                <div key={route} className="flex items-center gap-1">
+                  <div 
+                    className="w-4 h-4 rounded-full" 
+                    style={{ backgroundColor: color }}
+                  ></div>
+                  <span className="text-sm">{route}</span>
                 </div>
-              </CardContent>
-            </Card>
+              ))}
+            </div>
           )}
         </CardContent>
       </Card>
