@@ -75,28 +75,42 @@ declare namespace google {
       constructor(opts?: NavigationControlOptions);
     }
 
-    class places {
-      static SearchBox: {
-        new(
-          inputField: HTMLInputElement,
-          opts?: SearchBoxOptions
-        ): SearchBox;
-      };
+    class StreetViewPanorama {
+      constructor(container: Element, opts?: StreetViewPanoramaOptions);
     }
 
-    interface SearchBox {
-      setBounds(bounds: LatLngBounds | LatLngBoundsLiteral): void;
-      getPlaces(): google.maps.places.PlaceResult[];
-      addListener(eventName: string, handler: Function): MapsEventListener;
+    interface StreetViewPanoramaOptions {
+      position?: LatLng | LatLngLiteral;
+      pov?: StreetViewPov;
+      zoom?: number;
+      visible?: boolean;
     }
 
-    interface PlaceResult {
-      geometry?: {
-        location: LatLng;
-        viewport?: LatLngBounds;
-      };
-      name?: string;
-      formatted_address?: string;
+    interface StreetViewPov {
+      heading?: number;
+      pitch?: number;
+    }
+
+    namespace places {
+      class SearchBox {
+        constructor(inputField: HTMLInputElement, opts?: SearchBoxOptions);
+        setBounds(bounds: LatLngBounds | LatLngBoundsLiteral): void;
+        getPlaces(): PlaceResult[];
+        addListener(eventName: string, handler: Function): MapsEventListener;
+      }
+
+      interface PlaceResult {
+        geometry?: {
+          location: LatLng;
+          viewport?: LatLngBounds;
+        };
+        name?: string;
+        formatted_address?: string;
+      }
+
+      interface SearchBoxOptions {
+        bounds?: LatLngBounds | LatLngBoundsLiteral;
+      }
     }
 
     interface MapOptions {
@@ -148,9 +162,20 @@ declare namespace google {
       west: number;
     }
 
-    interface Size {
+    class Size {
+      constructor(width: number, height: number, widthUnit?: string, heightUnit?: string);
       width: number;
       height: number;
+      equals(other: Size): boolean;
+      toString(): string;
+    }
+
+    class Point {
+      constructor(x: number, y: number);
+      x: number;
+      y: number;
+      equals(other: Point): boolean;
+      toString(): string;
     }
 
     interface Icon {
@@ -167,11 +192,6 @@ declare namespace google {
       fontFamily?: string;
       fontSize?: string;
       fontWeight?: string;
-    }
-
-    interface Point {
-      x: number;
-      y: number;
     }
 
     interface Symbol {
@@ -195,10 +215,6 @@ declare namespace google {
     interface NavigationControlOptions {
       position?: ControlPosition;
       visualizePitch?: boolean;
-    }
-
-    interface SearchBoxOptions {
-      bounds?: LatLngBounds | LatLngBoundsLiteral;
     }
 
     interface Padding {
