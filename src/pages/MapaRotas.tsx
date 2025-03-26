@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search } from "lucide-react";
+import { Search, House } from "lucide-react";
 import { toast } from "sonner";
 
 const GOOGLE_MAPS_API_KEY = "AIzaSyDKsBrWnONeKqDwT4I6ooc42ogm57cqJbI";
@@ -30,6 +30,7 @@ const MapaRotas = () => {
   const markersRef = useRef<google.maps.Marker[]>([]);
   const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
   const searchBoxRef = useRef<typeof google.maps.places.SearchBox | null>(null);
+  const homeMarkerRef = useRef<google.maps.Marker | null>(null);
   const [selectedTurno, setSelectedTurno] = useState("1° Turno");
   const [selectedRota, setSelectedRota] = useState<string | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
@@ -206,6 +207,52 @@ const MapaRotas = () => {
       // Center map on the selected place
       map.setCenter(place.geometry.location);
       map.setZoom(15);
+
+      // Add or update home marker
+      if (homeMarkerRef.current) {
+        homeMarkerRef.current.setMap(null);
+      }
+
+      // Create house icon SVG
+      const houseIcon = {
+        url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(`
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="#4B5563" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 10.182V22h18V10.182L12 2z"/>
+            <rect x="9" y="14" width="6" height="8"/>
+          </svg>
+        `),
+        scaledSize: new google.maps.Size(40, 40),
+        origin: new google.maps.Point(0, 0),
+        anchor: new google.maps.Point(20, 40),
+      };
+
+      // Create marker for home location
+      homeMarkerRef.current = new google.maps.Marker({
+        map: map,
+        position: place.geometry.location,
+        icon: houseIcon,
+        title: "Seu endereço",
+        zIndex: 1000, // Higher zIndex to appear above bus stop markers
+        animation: google.maps.Animation.DROP
+      });
+
+      // Add info window for home marker
+      homeMarkerRef.current.addListener("click", () => {
+        if (infoWindowRef.current) {
+          const contentString = `
+            <div class="p-3">
+              <h3 class="font-bold text-base mb-1">Seu endereço</h3>
+              <p class="mb-1">${place.formatted_address || place.name}</p>
+            </div>
+          `;
+          
+          infoWindowRef.current.setContent(contentString);
+          infoWindowRef.current.open({
+            anchor: homeMarkerRef.current,
+            map: mapInstanceRef.current,
+          });
+        }
+      });
     });
 
     setMapLoaded(true);
@@ -435,7 +482,7 @@ const MapaRotas = () => {
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Busca por Nome do Ponto</label>
+              <label className="text-sm font-medium mb-1 block">Busca por Nome do Ponto ou Endereço</label>
               <div className="flex gap-2">
                 <Input
                   id="search-input"
