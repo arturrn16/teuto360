@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -40,7 +41,6 @@ interface FormValues {
   cidade: string;
   turnoAtual: string;
   novoTurno: string;
-  novaRota: string;
   nomeGestor: string;
   motivo: string;
 }
@@ -60,7 +60,6 @@ const MudancaTurno = () => {
       cidade: "",
       turnoAtual: "",
       novoTurno: "",
-      novaRota: "",
       nomeGestor: "",
       motivo: "",
     },
@@ -77,31 +76,9 @@ const MudancaTurno = () => {
     "Gyn Adm 1", 
     "Gyn Adm 2", 
     "Gyn 1° Turno", 
-    "Gyn 2° Turno"
+    "Gyn 2° Turno",
+    "Faculdade"
   ];
-  
-  const getRotaOptions = () => {
-    if (["Gyn Adm 1", "Gyn Adm 2", "Gyn 1° Turno", "Gyn 2° Turno"].includes(novoTurno)) {
-      return [novoTurno];
-    } else if (novoTurno === "Administrativo") {
-      return Array.from({ length: 8 }, (_, i) => `ADM-${String(i + 1).padStart(2, '0')}`);
-    } else if (novoTurno === "1° Turno") {
-      return Array.from({ length: 15 }, (_, i) => `P-${String(i + 1).padStart(2, '0')}`);
-    } else if (novoTurno === "2° Turno") {
-      return Array.from({ length: 12 }, (_, i) => `S-${String(i + 1).padStart(2, '0')}`);
-    } else if (novoTurno === "3° Turno") {
-      return Array.from({ length: 8 }, (_, i) => `T-${String(i + 1).padStart(2, '0')}`);
-    }
-    return [];
-  };
-  
-  const rotaOptions = getRotaOptions();
-  
-  useEffect(() => {
-    if (["Gyn Adm 1", "Gyn Adm 2", "Gyn 1° Turno", "Gyn 2° Turno"].includes(novoTurno)) {
-      form.setValue("novaRota", novoTurno);
-    }
-  }, [novoTurno, form]);
   
   const buscarCep = async (cep: string) => {
     if (cep.length !== 8) return;
@@ -146,7 +123,7 @@ const MudancaTurno = () => {
         turno_atual: data.turnoAtual,
         novo_turno: data.novoTurno,
         turno_novo: data.novoTurno,
-        nova_rota: data.novaRota,
+        nova_rota: data.novoTurno, // Using novoTurno as nova_rota for database consistency
         nome_gestor: data.nomeGestor,
         motivo: data.motivo,
         status: 'pendente'
@@ -356,14 +333,7 @@ const MudancaTurno = () => {
                 <FormItem>
                   <FormLabel className="form-field-label">Novo Turno</FormLabel>
                   <Select 
-                    onValueChange={(value) => {
-                      field.onChange(value);
-                      if (["Gyn Adm 1", "Gyn Adm 2", "Gyn 1° Turno", "Gyn 2° Turno"].includes(value)) {
-                        form.setValue("novaRota", value);
-                      } else {
-                        form.setValue("novaRota", "");
-                      }
-                    }}
+                    onValueChange={field.onChange}
                     defaultValue={field.value}
                   >
                     <FormControl>
@@ -382,34 +352,6 @@ const MudancaTurno = () => {
               )}
             />
           </div>
-          
-          <FormField
-            control={form.control}
-            name="novaRota"
-            rules={{ required: "Nova rota é obrigatória" }}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="form-field-label">Nova Rota</FormLabel>
-                <Select 
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                  disabled={!novoTurno || ["Gyn Adm 1", "Gyn Adm 2", "Gyn 1° Turno", "Gyn 2° Turno"].includes(novoTurno)}
-                >
-                  <FormControl>
-                    <SelectTrigger className="form-select-input">
-                      <SelectValue placeholder="Selecione a nova rota" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {rotaOptions.map((rota) => (
-                      <SelectItem key={rota} value={rota}>{rota}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
           
           <FormField
             control={form.control}

@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { FlagTriangleLeft, FlagTriangleRight } from "lucide-react";
@@ -22,6 +23,12 @@ const RouteMap = ({ selectedRota, selectedTurno, busStopsByRoute, searchQuery }:
   const [mapLoaded, setMapLoaded] = useState(false);
 
   const GOOGLE_MAPS_API_KEY = "AIzaSyDKsBrWnONeKqDwT4I6ooc42ogm57cqJbI";
+
+  // City center coordinates
+  const CITY_CENTERS = {
+    anapolis: { lat: -16.328118, lng: -48.953529 },
+    goiania: { lat: -16.680882, lng: -49.253269 }
+  };
 
   // Helper function to create custom route icons
   const createRouteIcon = (routeName: string, routeColor: string) => {
@@ -66,7 +73,7 @@ const RouteMap = ({ selectedRota, selectedTurno, busStopsByRoute, searchQuery }:
 
     // Initialize Google Map with satellite view
     const map = new google.maps.Map(mapRef.current, {
-      center: { lat: -16.328118, lng: -48.953529 },
+      center: CITY_CENTERS.anapolis, // Default to Anápolis
       zoom: 12,
       mapTypeId: "satellite", // Set to satellite view by default
       mapTypeControl: true,
@@ -166,10 +173,25 @@ const RouteMap = ({ selectedRota, selectedTurno, busStopsByRoute, searchQuery }:
 
     const bounds = new google.maps.LatLngBounds();
     
+    // Center map on Goiânia if that shift is selected
+    if (selectedTurno === "Goiânia") {
+      mapInstanceRef.current.setCenter(CITY_CENTERS.goiania);
+      mapInstanceRef.current.setZoom(11);
+    }
+    
     // If a specific route is selected, only show markers for that route
     if (selectedRota) {
       const stops = busStopsByRoute[selectedRota] || [];
       if (stops.length === 0) return;
+      
+      // For Goiânia routes, focus on first point
+      if (selectedRota === "GYN ADM-01" || selectedRota === "GYN ADM-02") {
+        if (stops.length > 0) {
+          const firstStop = stops[0];
+          mapInstanceRef.current?.setCenter({ lat: firstStop.lat, lng: firstStop.lng });
+          mapInstanceRef.current?.setZoom(14);
+        }
+      }
       
       stops.forEach((stop, index) => {
         const position = { lat: stop.lat, lng: stop.lng };
@@ -217,11 +239,11 @@ const RouteMap = ({ selectedRota, selectedTurno, busStopsByRoute, searchQuery }:
       });
     }
 
-    // Fit map to the bounds of all markers
-    if (!bounds.isEmpty()) {
+    // Fit map to the bounds of all markers if not a Goiânia route
+    if (!bounds.isEmpty() && selectedTurno !== "Goiânia" && !selectedRota?.includes("GYN")) {
       mapInstanceRef.current.fitBounds(bounds);
     }
-  }, [busStopsByRoute, selectedRota]);
+  }, [busStopsByRoute, selectedRota, selectedTurno]);
 
   // Helper function to create a flag marker
   const createFlagMarker = (position: google.maps.LatLngLiteral, flagColor: 'green' | 'red', title: string, stop: BusStop) => {
@@ -325,11 +347,11 @@ const RouteMap = ({ selectedRota, selectedTurno, busStopsByRoute, searchQuery }:
     if (mapLoaded) {
       displayAllRouteMarkers();
     }
-  }, [selectedRota, mapLoaded, displayAllRouteMarkers]);
+  }, [selectedRota, selectedTurno, mapLoaded, displayAllRouteMarkers]);
 
-  // Handle search button click to search for stops by name
-  const handleSearch = () => {
-    if (!searchQuery.trim() || !mapInstanceRef.current) return;
+  // Handle search for stops by name and show results
+  useEffect(() => {
+    if (!mapLoaded || !searchQuery.trim() || !mapInstanceRef.current) return;
 
     // Simple search through the stops
     const allStops = Object.values(busStopsByRoute).flat();
@@ -366,10 +388,10 @@ const RouteMap = ({ selectedRota, selectedTurno, busStopsByRoute, searchQuery }:
           map: mapInstanceRef.current,
         });
       }
-    } else {
+    } else if (searchQuery.trim()) {
       toast.error("Nenhum ponto encontrado com esse termo");
     }
-  };
+  }, [searchQuery, mapLoaded, busStopsByRoute]);
 
   return (
     <Card className="overflow-hidden">

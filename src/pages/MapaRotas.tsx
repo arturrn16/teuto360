@@ -3,7 +3,7 @@ import { useState, useCallback } from "react";
 import { Container } from "@/components/ui/container";
 import MapControls from "@/components/maps/MapControls";
 import RouteMap from "@/components/maps/RouteMap";
-import { allRouteData, getAvailableTurnos, getAvailableRoutes } from "@/data/routeData";
+import { allRouteData, getAvailableTurnos, getAvailableRoutes } from "@/data/routes";
 
 const MapaRotas = () => {
   const [selectedTurno, setSelectedTurno] = useState("1° Turno");
@@ -22,7 +22,7 @@ const MapaRotas = () => {
 
   // Handle search
   const handleSearch = () => {
-    // This is just a proxy function - actual search happens in RouteMap component
+    // The actual search is handled in the RouteMap component through the searchQuery prop
   };
 
   return (
