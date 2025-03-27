@@ -34,13 +34,15 @@ import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { toast } from "sonner";
-import { getAvailableFormRoutes } from "@/data/routes";
+import { getAvailableFormRoutes, goyaniaTurnosOptions } from "@/data/routes";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface FormValues {
   matricula: string;
   colaboradorNome: string;
+  cargo: string;
+  setor: string;
   cidade: "Anápolis" | "Goiânia";
   turno: string;
   rota: string;
@@ -62,6 +64,8 @@ const TransporteRota = () => {
     defaultValues: {
       matricula: user?.matricula || "",
       colaboradorNome: user?.nome || "",
+      cargo: user?.cargo || "",
+      setor: user?.setor || "",
       cidade: "Anápolis",
       turno: "",
       rota: "",
@@ -75,6 +79,8 @@ const TransporteRota = () => {
     if (user) {
       form.setValue("matricula", user.matricula);
       form.setValue("colaboradorNome", user.nome);
+      form.setValue("cargo", user.cargo || "");
+      form.setValue("setor", user.setor || "");
     }
   }, [user, form]);
   
@@ -83,12 +89,12 @@ const TransporteRota = () => {
   
   const turnoOptions = cidade === "Anápolis" 
     ? ["Administrativo", "1° Turno", "2° Turno", "3° Turno", "Faculdade"]
-    : ["Goiânia", "GYN 1° TURNO", "GYN 2° TURNO"];
+    : goyaniaTurnosOptions;
 
   // Update available routes when turno changes
   useEffect(() => {
     if (turno) {
-      const routes = getAvailableFormRoutes(turno);
+      const routes = getAvailableFormRoutes(turno, cidade);
       setAvailableRoutes(routes);
       
       // Se apenas uma rota estiver disponível, selecioná-la automaticamente
@@ -100,7 +106,7 @@ const TransporteRota = () => {
     } else {
       setAvailableRoutes([]);
     }
-  }, [turno, form]);
+  }, [turno, cidade, form]);
   
   const formatDate = (date: Date) => {
     return format(date, "yyyy-MM-dd");
@@ -216,7 +222,7 @@ const TransporteRota = () => {
               className="form-select-input"
               value={form.watch("rota")}
               onChange={(e) => form.setValue("rota", e.target.value)}
-              disabled={!turno || (cidade === "Goiânia")}
+              disabled={!turno}
             >
               <option value="" disabled>Selecione a rota</option>
               {availableRoutes.map((option) => (
@@ -304,6 +310,36 @@ const TransporteRota = () => {
             />
           </div>
           
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <FormField
+              control={form.control}
+              name="cargo"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Cargo</FormLabel>
+                  <FormControl>
+                    <Input readOnly {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="setor"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Setor</FormLabel>
+                  <FormControl>
+                    <Input readOnly {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          
           <FormField
             control={form.control}
             name="cidade"
@@ -375,7 +411,7 @@ const TransporteRota = () => {
                 <Select 
                   onValueChange={field.onChange}
                   defaultValue={field.value}
-                  disabled={!turno || (cidade === "Goiânia")}
+                  disabled={!turno}
                 >
                   <FormControl>
                     <SelectTrigger>
