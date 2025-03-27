@@ -1,6 +1,6 @@
 import { BusStop, RouteData, TurnoRouteData } from "../types/mapTypes";
-import { routeDataP5ToP10 } from "./routeData-p5-p10";
-import { routeDataP11ToP15 } from "./routeData-p11-p15";
+import { routeDataP5toP10 } from "./routeData-p5-p10";
+import { routeDataP11toP15 } from "./routeData-p11-p15";
 import { routeDataS12 } from "./routeData-s12";
 
 // Sample data for bus stops (you can replace this with your actual data)
@@ -153,17 +153,17 @@ export const allRouteData: TurnoRouteData = {
   "1° Turno": {
     "P-01": busStopsP01,
     "P-02": busStopsP02,
-    "P-05": routeDataP5ToP10["P-05"],
-    "P-06": routeDataP5ToP10["P-06"],
-    "P-07": routeDataP5ToP10["P-07"],
-    "P-08": routeDataP5ToP10["P-08"],
-    "P-09": routeDataP5ToP10["P-09"],
-    "P-10": routeDataP5ToP10["P-10"],
-    "P-11": routeDataP11ToP15["P-11"],
-    "P-12": routeDataP11ToP15["P-12"],
-    "P-13": routeDataP11ToP15["P-13"],
-    "P-14": routeDataP11ToP15["P-14"],
-    "P-15": routeDataP11ToP15["P-15"],
+    "P-05": routeDataP5toP10["P-05"],
+    "P-06": routeDataP5toP10["P-06"],
+    "P-07": routeDataP5toP10["P-07"],
+    "P-08": routeDataP5toP10["P-08"],
+    "P-09": routeDataP5toP10["P-09"],
+    "P-10": routeDataP5toP10["P-10"],
+    "P-11": routeDataP11toP15["P-11"],
+    "P-12": routeDataP11toP15["P-12"],
+    "P-13": routeDataP11toP15["P-13"],
+    "P-14": routeDataP11toP15["P-14"],
+    "P-15": routeDataP11toP15["P-15"],
   },
   
   "2° Turno": {
@@ -204,12 +204,10 @@ export const allRouteData: TurnoRouteData = {
   }
 };
 
-// Function to get available shifts
 export const getAvailableTurnos = (): string[] => {
   return Object.keys(allRouteData);
 };
 
-// Function to get available routes for a specific shift
 export const getAvailableRoutes = (turno: string): string[] => {
   const turnoData = allRouteData[turno];
   return turnoData ? Object.keys(turnoData) : [];
