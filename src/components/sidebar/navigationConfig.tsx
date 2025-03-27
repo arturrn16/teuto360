@@ -96,7 +96,7 @@ export const navItems: NavItem[] = [
     ]
   },
   { 
-    name: "Avisos", 
+    name: "Comunicados", 
     href: "/comunicados", 
     icon: <span className="text-red-500 text-xl">📢</span>,
     allowedTypes: ["gestor", "comum", "colaborador"] as const
@@ -131,12 +131,6 @@ export const navItems: NavItem[] = [
     href: "/refeicao", 
     icon: <span className="text-amber-500 text-xl">🍽️</span>,
     allowedTypes: ["gestor"] as const 
-  },
-  { 
-    name: "Comunicados", 
-    href: "/comunicados", 
-    icon: <span className="text-red-400 text-xl">📢</span>,
-    allowedTypes: ["selecao", "gestor"] as const 
   },
   { 
     name: "Administração", 

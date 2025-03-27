@@ -59,12 +59,15 @@ const TransporteRota = () => {
   const [availableRoutes, setAvailableRoutes] = useState<string[]>([]);
   const isMobile = useIsMobile();
   
+  // Check if the current user is a "selecao" type user
+  const isSelecaoUser = user?.tipo_usuario === 'selecao';
+  
   const form = useForm<FormValues>({
     defaultValues: {
-      matricula: user?.matricula || "",
-      colaboradorNome: user?.nome || "",
-      cargo: user?.cargo || "",
-      setor: user?.setor || "",
+      matricula: isSelecaoUser ? "" : user?.matricula || "",
+      colaboradorNome: isSelecaoUser ? "" : user?.nome || "",
+      cargo: isSelecaoUser ? "" : user?.cargo || "",
+      setor: isSelecaoUser ? "" : user?.setor || "",
       cidade: "Anápolis",
       turno: "",
       rota: "",
@@ -75,13 +78,14 @@ const TransporteRota = () => {
   });
   
   useEffect(() => {
-    if (user) {
+    // Only auto-fill user data if not a selecao user
+    if (user && !isSelecaoUser) {
       form.setValue("matricula", user.matricula);
       form.setValue("colaboradorNome", user.nome);
       form.setValue("cargo", user.cargo || "");
       form.setValue("setor", user.setor || "");
     }
-  }, [user, form]);
+  }, [user, form, isSelecaoUser]);
   
   const cidade = form.watch("cidade");
   const turno = form.watch("turno");
@@ -165,33 +169,37 @@ const TransporteRota = () => {
             <label className="form-field-label">Matrícula</label>
             <input 
               type="text" 
-              className="form-field-input bg-gray-100" 
-              value={user?.matricula || ""} 
-              disabled 
+              className={`form-field-input ${isSelecaoUser ? "" : "bg-gray-100"}`}
+              value={form.watch("matricula")}
+              onChange={(e) => form.setValue("matricula", e.target.value)}
+              disabled={!isSelecaoUser}
             />
             
             <label className="form-field-label">Nome</label>
             <input 
               type="text" 
-              className="form-field-input bg-gray-100" 
-              value={user?.nome || ""} 
-              disabled 
+              className={`form-field-input ${isSelecaoUser ? "" : "bg-gray-100"}`}
+              value={form.watch("colaboradorNome")}
+              onChange={(e) => form.setValue("colaboradorNome", e.target.value)}
+              disabled={!isSelecaoUser}
             />
             
             <label className="form-field-label">Cargo</label>
             <input 
               type="text" 
-              className="form-field-input bg-gray-100" 
-              value={user?.cargo || ""} 
-              disabled 
+              className={`form-field-input ${isSelecaoUser ? "" : "bg-gray-100"}`}
+              value={form.watch("cargo")}
+              onChange={(e) => form.setValue("cargo", e.target.value)}
+              disabled={!isSelecaoUser}
             />
             
             <label className="form-field-label">Setor</label>
             <input 
               type="text" 
-              className="form-field-input bg-gray-100" 
-              value={user?.setor || ""} 
-              disabled 
+              className={`form-field-input ${isSelecaoUser ? "" : "bg-gray-100"}`}
+              value={form.watch("setor")}
+              onChange={(e) => form.setValue("setor", e.target.value)}
+              disabled={!isSelecaoUser}
             />
           </div>
           
@@ -300,7 +308,7 @@ const TransporteRota = () => {
                 <FormItem>
                   <FormLabel>Matrícula</FormLabel>
                   <FormControl>
-                    <Input readOnly {...field} />
+                    <Input readOnly={!isSelecaoUser} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -315,7 +323,7 @@ const TransporteRota = () => {
                 <FormItem>
                   <FormLabel>Nome do Colaborador</FormLabel>
                   <FormControl>
-                    <Input readOnly {...field} />
+                    <Input readOnly={!isSelecaoUser} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -331,7 +339,7 @@ const TransporteRota = () => {
                 <FormItem>
                   <FormLabel>Cargo</FormLabel>
                   <FormControl>
-                    <Input readOnly {...field} />
+                    <Input readOnly={!isSelecaoUser} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -345,7 +353,7 @@ const TransporteRota = () => {
                 <FormItem>
                   <FormLabel>Setor</FormLabel>
                   <FormControl>
-                    <Input readOnly {...field} />
+                    <Input readOnly={!isSelecaoUser} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
