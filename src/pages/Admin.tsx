@@ -1,4 +1,6 @@
+
 import { useState, useEffect } from "react";
+import React from "react"; // Add explicit React import
 import { useAuth } from "@/context/AuthContext";
 import { 
   supabase, 
