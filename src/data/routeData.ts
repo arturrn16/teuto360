@@ -1,496 +1,534 @@
+import { firstTurnoRoutesP5toP10 } from "./routeData-p5-p10";
+import { firstTurnoRoutesP11toP15 } from "./routeData-p11-p15";
 
-import { BusStop, RouteData, TurnoRouteData } from "@/types/mapTypes";
-import { routeDataP5toP10 } from "./routeData-p5-p10";
-import { routeDataP11toP15 } from "./routeData-p11-p15";
-
-// First shift (1° Turno) routes P-01 to P-04 data
-const primeiroTurnoRoutesP1toP4: RouteData = {
-  "P-01": [
-    { lat: -16.278245, lng: -48.963118, nome: "P-01 01 - AV. Geraldo Pedro De Souza / Com a R. Dr José Machado de Silvério", bairro: "Res. Veneza", semana: "04:44", sabado: "05:49" },
-    { lat: -16.275960, lng: -48.966647, nome: "P-01 02 - R. 100 / Rua Florensa", bairro: "Bandeiras", semana: "04:45", sabado: "05:50" },
-    { lat: -16.261218, lng: -48.988482, nome: "P-01 04 - Av. Federal / Rua 8 ( Colegio )", bairro: "Lot. Guanabara", semana: "04:50", sabado: "05:55" },
-    { lat: -16.261912, lng: -48.994349, nome: "P-01 05 - Av. Ipe Amarelo / Rotatória", bairro: "Residencial Aldeia dos Sonhos", semana: "04:51", sabado: "05:56" },
-    { lat: -16.261266, lng: -48.997384, nome: "P-01 06 - R. Araguaia / Esquina com a Rua Cedro", bairro: "Residencial Aldeia dos Sonhos", semana: "04:52", sabado: "05:57" },
-    { lat: -16.260235, lng: -48.999053, nome: "P-01 07 - R. Guatambu / Rua Guatambu (Ferragista Aldeia)", bairro: "Residencial Aldeia dos Sonhos", semana: "04:52", sabado: "05:57" },
-    { lat: -16.258637, lng: -49.002028, nome: "P-01 08 - R. Araguaia / Rua Uruvalheiro (Choupana Beer)", bairro: "Residencial Aldeia dos Sonhos", semana: "04:53", sabado: "05:58" },
-    { lat: -16.259925, lng: -49.004642, nome: "P-01 09 - R. Corumbá / Esquina com a Rua Buriti", bairro: "Residencial Aldeia dos Sonhos", semana: "04:56", sabado: "06:01" },
-    { lat: -16.260237, lng: -49.000943, nome: "P-01 10 - R. Corumbá / Esquina com a Rua Jatoba", bairro: "Residencial Aldeia dos Sonhos", semana: "04:58", sabado: "06:03" },
-    { lat: -16.264016, lng: -48.985605, nome: "P-01 11 - Av. Federal / Esquina com a Rua 6", bairro: "Lot. Guanabara", semana: "05:02", sabado: "06:07" },
-    { lat: -16.265407, lng: -48.983516, nome: "P-01 12 - Av. Federal / Esquina com a Rua 4", bairro: "Lot. Guanabara", semana: "05:03", sabado: "06:08" },
-    { lat: -16.271580, lng: -48.976411, nome: "P-01 13 - Av. Fernando Costa / Parque Jaiara", bairro: "Adriana Parque", semana: "05:05", sabado: "06:10" },
-    { lat: -16.274631, lng: -48.976366, nome: "P-01 14 - Av. Fernando Costa / Com a Travessa 2", bairro: "Adriana Parque", semana: "05:05", sabado: "06:10" },
-    { lat: -16.277164, lng: -48.975195, nome: "P-01 15 - Av. Fernando Costa / Com a Av. Patricia", bairro: "Las Palmas", semana: "05:06", sabado: "06:11" },
-    { lat: -16.277030, lng: -48.977980, nome: "P-01 16 - R. Kátia / Com a R. 4 - Garagem da Urban", bairro: "Adriana Parque", semana: "05:07", sabado: "06:12" },
-    { lat: -16.281728, lng: -48.977505, nome: "P-01 17 - R. Buriti Alegre / Com a Rua Planalto", bairro: "Vila Jaiara St. Norte", semana: "05:08", sabado: "06:13" },
-    { lat: -16.282440, lng: -48.979140, nome: "P-01 18 - R. Buriti Alegre / Com a Rua Nova Capital - Merceágua", bairro: "Vila Jaiara St. Norte", semana: "05:09", sabado: "06:14" },
-    { lat: -16.283945, lng: -48.978982, nome: "P-01 19 - R. Ipameri / Rua Nova Capital - Mundo dos Pets", bairro: "Vila Jaiara", semana: "05:10", sabado: "06:15" },
-    { lat: -16.284428, lng: -48.979883, nome: "P-01 20 - R. Ipameri / Com a Rua Paranagua", bairro: "Vila Jaiara", semana: "05:10", sabado: "06:15" },
-    { lat: -16.285052, lng: -48.977595, nome: "P-01 21 - R. Uruaná / Com a Rua Taguatinga", bairro: "Vila Jaiara St. Norte", semana: "05:11", sabado: "06:16" },
-    { lat: -16.284035, lng: -48.975269, nome: "P-01 22 - R. Uruana / Com a Av. Bandeirantes", bairro: "Vila Jaiara", semana: "05:12", sabado: "06:17" },
-    { lat: -16.288040, lng: -48.971360, nome: "P-01 23 - R. Itaberai / Com a Av. Bernardo Sayão", bairro: "Vila Jaiara St. Norte", semana: "05:15", sabado: "06:20" },
-    { lat: -16.283121, lng: -48.973479, nome: "P-01 24 - Av. Bernardo Sayão / Esquina com a R. Formosa", bairro: "Vila Jaiara St. Norte", semana: "05:16", sabado: "06:21" },
-    { lat: -16.280410, lng: -48.974480, nome: "P-01 25 - R. Buriti Alegre / 28° Batalhão da Polícia Militar", bairro: "Vila Jaiara St. Norte", semana: "05:17", sabado: "06:22" },
-    { lat: -16.275044, lng: -48.970956, nome: "P-01 26 - Av. Luís Carpaneda / Com a Rua Porangatu", bairro: "Vila Jaiara St. Norte", semana: "05:19", sabado: "06:24" },
-    { lat: -16.406940, lng: -48.921300, nome: "P-01 27 - Distrito Agroindustrial de Anápolis", bairro: "Laboratório Teuto", semana: "05:50", sabado: "06:55" },
-  ],
-  "P-02": [
-    { lat: -16.270170, lng: -48.980090, nome: "P-02 01 - R. Mizael de Morais Filho / Com a Rua Cruzeiro do Sul", bairro: "Res. Ana Caroline", semana: "04:51", sabado: "05:56" },
-    { lat: -16.270460, lng: -48.984000, nome: "P-02 02 - Estr. p/ Miranápolis / Com a Rua Três Marias", bairro: "Res. Ana Caroline", semana: "04:52", sabado: "05:57" },
-    { lat: -16.274426, lng: -48.985019, nome: "P-02 03 - Av. Mariele / Com a Rua 'O'", bairro: "Adriana Parque", semana: "04:54", sabado: "05:59" },
-    { lat: -16.277609, lng: -48.985678, nome: "P-02 04 - R. Marielle / (Supermercado do Povo)", bairro: "Adriana Parque", semana: "04:55", sabado: "06:00" },
-    { lat: -16.276961, lng: -48.988451, nome: "P-02 05 - R. H / Paróquia Santíssima Trindade", bairro: "Adriana Parque", semana: "04:57", sabado: "06:02" },
-    { lat: -16.277673, lng: -48.990843, nome: "P-02 06 - R. G / Com a Rua Jandira", bairro: "St. Res. Jandaia", semana: "04:58", sabado: "06:03" },
-    { lat: -16.277684, lng: -48.993085, nome: "P-02 07 - R. Larissa / Com a Rua Taqueda", bairro: "St. Escala", semana: "05:00", sabado: "06:05" },
-    { lat: -16.277320, lng: -48.995270, nome: "P-02 08 - Av. das Laranjeiras / Com a R. Três", bairro: "Res. Dom Felipe", semana: "05:00", sabado: "06:05" },
-    { lat: -16.277349, lng: -48.997228, nome: "P-02 09 - Av. das Laranjeiras / Com a Rua 5", bairro: "Res. Dom Felipe", semana: "05:01", sabado: "06:06" },
-    { lat: -16.281313, lng: -48.992338, nome: "P-02 10 - Av. Souzânia / Com a R. Fontenele Junior", bairro: "St. Res. Jandaia", semana: "05:04", sabado: "06:09" },
-    { lat: -16.283412, lng: -48.988511, nome: "P-02 11 - Av. Souzânia / Com a Av. Patricia", bairro: "St. Res. Jandaia", semana: "05:05", sabado: "06:10" },
-    { lat: -16.280145, lng: -48.985106, nome: "P-02 12 - Av. Patrícia / Com a Av. Marieli", bairro: "Adriana Parque", semana: "05:07", sabado: "06:12" },
-    { lat: -16.281196, lng: -48.985181, nome: "P-02 13 - R. Jk / Com a Rua Alan Kardec", bairro: "Res. Vila Nova", semana: "05:08", sabado: "06:13" },
-    { lat: -16.285276, lng: -48.984145, nome: "P-02 14 - Rua Mun. / Com a Rua Rio Negro", bairro: "Vila Jaiara St. Norte", semana: "05:11", sabado: "06:16" },
-    { lat: -16.286670, lng: -48.981300, nome: "P-02 15 - R. Uruana / Com a Rua Tocantins", bairro: "Vila Jaiara", semana: "05:12", sabado: "06:17" },
-    { lat: -16.288339, lng: -48.972552, nome: "P-02 16 - R. Ouro Branco / Feirão Coberto da Vila Jaiara", bairro: "Vila Jaiara St. Norte", semana: "05:16", sabado: "06:21" },
-    { lat: -16.291053, lng: -48.973229, nome: "P-02 17 - R. Silvânia / Paróquia Nossa Senhora de Fátima", bairro: "Vila Jaiara St. Norte", semana: "05:17", sabado: "06:22" },
-    { lat: -16.291314, lng: -48.971297, nome: "P-02 18 - Av. Paulista / Com a Rua Ouro Branco", bairro: "Jóquei Club", semana: "05:19", sabado: "06:24" },
-    { lat: -16.291986, lng: -48.969406, nome: "P-02 19 - R. Anchieta / Restaurante Popular de Anápolis", bairro: "Vila Jaiara St. Norte", semana: "05:19", sabado: "06:24" },
-    { lat: -16.406940, lng: -48.921300, nome: "P-02 20 - Distrito Agroindustrial de Anápolis", bairro: "Laboratório Teuto", semana: "05:50", sabado: "06:55" },
-  ],
-  "P-03": [
-    { lat: -16.285926, lng: -48.938760, nome: "P-03 01 - Av. Joao Florentino / Rua 03 - (Posto Recanto do Sol)", bairro: "Res. Araguaia", semana: "04:41", sabado: "05:51" },
-    { lat: -16.284097, lng: -48.935658, nome: "P-03 02 - R. 3 / Rua 47 ( Supermercado Soberano )", bairro: "Antonio Fernandes", semana: "04:43", sabado: "05:53" },
-    { lat: -16.283959, lng: -48.931338, nome: "P-03 03 - R. 52 / Com a Rua 8", bairro: "Recanto do Sol", semana: "04:45", sabado: "05:55" },
-    { lat: -16.281523, lng: -48.927637, nome: "P-03 04 - R. 55 / Com Rua 39", bairro: "Recanto do Sol", semana: "04:48", sabado: "05:58" },
-    { lat: -16.276830, lng: -48.928940, nome: "P-03 05 - R. Direita / Esquina com a Rua 35", bairro: "Recanto do Sol", semana: "04:51", sabado: "06:01" },
-    { lat: -16.279118, lng: -48.930556, nome: "P-03 06 - R. 54 / Com a Rua 24", bairro: "Recanto do Sol", semana: "04:53", sabado: "06:03" },
-    { lat: -16.279748, lng: -48.932983, nome: "P-03 07 - Av. do Estado / Com a Rua 22", bairro: "Jardim dos Ipes", semana: "04:55", sabado: "06:05" },
-    { lat: -16.278033, lng: -48.935336, nome: "P-03 08 - Av. do Estado / Com a Av. Dos Ipes", bairro: "Jardim dos Ipes", semana: "04:56", sabado: "06:06" },
-    { lat: -16.276103, lng: -48.936288, nome: "P-03 09 - Av. Raimundo Carlos Costa e Silva / Com a Rua Carnauba ( Torre )", bairro: "Jardim das Americas 3a Etapa", semana: "04:57", sabado: "06:07" },
-    { lat: -16.273396, lng: -48.935617, nome: "P-03 10 - R. Ra / Com a Rua RA 18", bairro: "Lot. Res. America", semana: "04:59", sabado: "06:09" },
-    { lat: -16.274272, lng: -48.937877, nome: "P-03 11 - R. Ra 17 / Esquina com a Rua RA 19", bairro: "Lot. Res. America", semana: "05:00", sabado: "06:10" },
-    { lat: -16.277108, lng: -48.939888, nome: "P-03 12 - R. Ra 11 / Rua RA 13 ( Chacara da Policia Civil )", bairro: "Lot. Res. America", semana: "05:02", sabado: "06:12" },
-    { lat: -16.280275, lng: -48.939791, nome: "P-03 13 - R. Prof. Clementino de Alencar Lima / Com a Rua Lisboa", bairro: "Lot. Res. America", semana: "05:03", sabado: "06:13" },
-    { lat: -16.282340, lng: -48.939973, nome: "P-03 14 - Av. Raimundo C C E Silva / Com a Rua Porto Nacional", bairro: "Jardim Das Americas III", semana: "05:05", sabado: "06:15" },
-    { lat: -16.250633, lng: -48.934771, nome: "P-03 15 - Av. Monte Sinai / Esquina com a Av. Wasfi Helou", bairro: "Res. Monte Sinai", semana: "05:11", sabado: "06:21" },
-    { lat: -16.253541, lng: -48.934391, nome: "P-03 16 - Av. Sérgio Carneiro / Com a R. 2", bairro: "Res. Monte Sinai", semana: "05:14", sabado: "06:24" },
-    { lat: -16.250019, lng: -48.937253, nome: "P-03 17 - R. SD / Esquina com a R. Sd-006", bairro: "Santos Dumont", semana: "05:16", sabado: "06:26" },
-    { lat: -16.250575, lng: -48.935499, nome: "P-03 18 - R. SD 12 / Esquina com a Rua SD 15", bairro: "Santos Dumont", semana: "05:18", sabado: "06:28" },
-    { lat: -16.268908, lng: -48.939586, nome: "P-03 19 - BR / Esquina com a Rua 2", bairro: "Vila Dom Bosco", semana: "05:21", sabado: "06:31" },
-    { lat: -16.406940, lng: -48.921300, nome: "P-03 20 - Distrito Agroindustrial de Anápolis", bairro: "Laboratório Teuto", semana: "05:45", sabado: "06:55" },
-  ],
-  "P-04": [
-    { lat: -16.308900, lng: -48.943160, nome: "P-04 01 - Av. Brasil Norte / Leomed Drogarias 24 Horas", bairro: "Jardim das Americas 2A Etapa", semana: "04:48", sabado: "05:52" },
-    { lat: -16.298423, lng: -48.941830, nome: "P-04 02 - Av. Brasil Norte / Restaurante Sabor Na Mesa", bairro: "Jardim das Americas 2A Etapa", semana: "04:52", sabado: "05:56" },
-    { lat: -16.287548, lng: -48.933404, nome: "P-04 03 - R. Ra 1 / Rua RA 10", bairro: "Res. Araguaia", semana: "04:56", sabado: "06:00" },
-    { lat: -16.289073, lng: -48.932159, nome: "P-04 04 - Av. Perimetral / Com a Rua 27", bairro: "Res. Araguaia", semana: "04:58", sabado: "06:02" },
-    { lat: -16.291052, lng: -48.928992, nome: "P-04 05 - Alameda Portal do Sol / Esquina com a Rua 7", bairro: "Residencial Vale do Sol", semana: "04:59", sabado: "06:03" },
-    { lat: -16.297357, lng: -48.921444, nome: "P-04 06 - Ac. Fc 20 / Esquina com a Rua FC 19", bairro: "Residencial Vale do Sol", semana: "05:02", sabado: "06:06" },
-    { lat: -16.296501, lng: -48.920935, nome: "P-04 07 - Ac. Fc 20 / Esquina com a Rua FC - 15", bairro: "Residencial Vale do Sol", semana: "05:04", sabado: "06:08" },
-    { lat: -16.291220, lng: -48.921780, nome: "P-04 08 - R. 30 / Esquina com a Rua FC 3", bairro: "Parque Res. das Flores", semana: "05:05", sabado: "06:09" },
-    { lat: -16.286690, lng: -48.920244, nome: "P-04 09 - R. 11 / Esquina com a Rua 25 ( Lava Jato )", bairro: "Parque Res. das Flores", semana: "05:07", sabado: "06:11" },
-    { lat: -16.283723, lng: -48.921585, nome: "P-04 10 - R. 58 / Esquina com a Rua SW 2", bairro: "Vila Norte", semana: "05:09", sabado: "06:13" },
-    { lat: -16.281920, lng: -48.923855, nome: "P-04 11 - R. 58 / Esquina com a Rua SW 8", bairro: "Vila Norte", semana: "05:10", sabado: "06:14" },
-    { lat: -16.285849, lng: -48.924176, nome: "P-04 12 - R. 25 / Esquina com a Rua 6", bairro: "Parque Res. das Flores", semana: "05:12", sabado: "06:16" },
-    { lat: -16.288384, lng: -48.924644, nome: "P-04 13 - R. 6 / Esquina com a Rua João Florentino", bairro: "Parque Res. das Flores", semana: "05:14", sabado: "06:18" },
-    { lat: -16.289740, lng: -48.944640, nome: "P-04 14 - Av. Universitária / Esquina com a Av. Santos Dumont", bairro: "Maracanã", semana: "05:21", sabado: "06:25" },
-    { lat: -16.297410, lng: -48.946540, nome: "P-04 15 - Av. Universitária / Restaurante Barriga Cheia", bairro: "Maracanã", semana: "05:23", sabado: "06:27" },
-    { lat: -16.300902, lng: -48.947420, nome: "P-04 16 - Av. Universitária / Esquina com a Rua Chile", bairro: "Maracanã", semana: "05:24", sabado: "06:28" },
-    { lat: -16.306160, lng: -48.948620, nome: "P-04 17 - Av. Universitária / Sandro Veículos", bairro: "Maracanã", semana: "05:26", sabado: "06:30" },
-    { lat: -16.320808, lng: -48.952576, nome: "P-04 18 - Av. Sen. José Lourenço Dias / Grand Car", bairro: "St. Central", semana: "05:30", sabado: "06:34" },
-    { lat: -16.328950, lng: -48.950100, nome: "P-04 19 - GO / Praça do Ancião", bairro: "Jundiaí", semana: "05:35", sabado: "06:39" },
-    { lat: -16.330156, lng: -48.950612, nome: "P-04 20 - Av. Brasil / Prefeitura Municipal de Anápolis", bairro: "St. Central", semana: "05:35", sabado: "06:39" },
-    { lat: -16.339588, lng: -48.953538, nome: "P-04 21 - Av. Brasil Sul / Autoeste Fiat", bairro: "Batista", semana: "05:38", sabado: "06:42" },
-    { lat: -16.341950, lng: -48.954630, nome: "P-04 22 - Av. Brasil Sul / Radar Rolamentos - Anápolis", bairro: "Batista", semana: "05:38", sabado: "06:42" },
-    { lat: -16.407132, lng: -48.918605, nome: "P-04 23 - Distrito Agroindustrial de Anápolis", bairro: "Laboratório Teuto", semana: "05:54", sabado: "06:58" }
-  ],
+// First Shift (1° Turno) routes - P-01 to P-15
+const firstTurnoRoutes = {
+    "P-01": [
+        {
+            lat: -16.330820,
+            lng: -48.947660,
+            nome: "Av. Minas Gerais / Esquina com a R. Pedro Braz de Queirós",
+            bairro: "Jundiaí",
+            semana: "05:56:00",
+            sabado: "05:56:00"
+        },
+        {
+            lat: -16.328118,
+            lng: -48.953529,
+            nome: "Av. Minas Gerais / Esquina com a Rua 21 de Abril",
+            bairro: "Jundiaí",
+            semana: "05:58:00",
+            sabado: "05:58:00"
+        },
+        {
+            lat: -16.325950,
+            lng: -48.954180,
+            nome: "Rua 21 de Abril / Paróquia São Francisco de Assis",
+            bairro: "Jundiaí",
+            semana: "06:00:00",
+            sabado: "06:00:00"
+        }
+    ],
+    "P-02": [
+        {
+            lat: -16.328620,
+            lng: -48.957520,
+            nome: "Av. Contorno c/ R. 2",
+            bairro: "Jardim Ana Paula",
+            semana: "05:55:00",
+            sabado: "05:55:00"
+        },
+        {
+            lat: -16.330820,
+            lng: -48.959520,
+            nome: "Av. Contorno / Faculdade Fibra",
+            bairro: "Jardim Alexandrina",
+            semana: "05:57:00",
+            sabado: "05:57:00"
+        },
+        {
+            lat: -16.332830,
+            lng: -48.961480,
+            nome: "Av. Contorno / Esquina com a R. Dom Pedro I",
+            bairro: "Jardim Alexandrina",
+            semana: "05:59:00",
+            sabado: "05:59:00"
+        }
+    ],
+    "P-03": [
+        {
+            lat: -16.315160,
+            lng: -48.950660,
+            nome: "R. Engenheiro Portela / Esquina com a R. Senador Jaime",
+            bairro: "Jundiaí",
+            semana: "05:57:00",
+            sabado: "05:57:00"
+        },
+        {
+            lat: -16.317680,
+            lng: -48.952480,
+            nome: "R. Senador Jaime / Esquina com a R. 21 de Abril",
+            bairro: "Jundiaí",
+            semana: "05:59:00",
+            sabado: "05:59:00"
+        }
+    ],
+    "P-04": [
+        {
+            lat: -16.342010,
+            lng: -48.956380,
+            nome: "R. Aderbal / Esquina com a R. Aderbal",
+            bairro: "Vila Brasil",
+            semana: "05:59:00",
+            sabado: "05:59:00"
+        },
+        {
+            lat: -16.343880,
+            lng: -48.957030,
+            nome: "R. Aderbal / Esquina com a R. 14",
+            bairro: "Vila Brasil",
+            semana: "06:01:00",
+            sabado: "06:01:00"
+        }
+    ],
+    ...firstTurnoRoutesP5toP10,
+    ...firstTurnoRoutesP11toP15
 };
 
-// Combine all route data for 1° Turno
-const primeiroTurnoRoutes = {
-  ...primeiroTurnoRoutesP1toP4,
-  ...routeDataP5toP10,
-  ...routeDataP11toP15
+// Second Shift (2° Turno) routes - S-01 to S-12
+const secondTurnoRoutes = {
+    "S-01": [
+        {
+            lat: -16.350830,
+            lng: -48.956740,
+            nome: "R. Bela Vista / Farmácia Evangélica",
+            bairro: "Jardim Goncalves",
+            semana: "13:10:00",
+            sabado: "09:50:00"
+        },
+        {
+            lat: -16.350490,
+            lng: -48.954460,
+            nome: "Ac. Bela Vista / Esquina com a Rua 1",
+            bairro: "Jardim Goncalves",
+            semana: "13:12:00",
+            sabado: "09:52:00"
+        }
+    ],
+    "S-02": [
+        {
+            lat: -16.351860,
+            lng: -48.952250,
+            nome: "R. 4 / Colégio Estadual Durval Nunes Da Mata",
+            bairro: "Vila Joao Luiz de Oliveira",
+            semana: "13:13:00",
+            sabado: "09:53:00"
+        }
+    ],
+    "S-03": [
+        {
+            lat: -16.356540,
+            lng: -48.953450,
+            nome: "R. 1 / Esquina com a Rua 9",
+            bairro: "Batista",
+            semana: "13:16:00",
+            sabado: "09:56:00"
+        }
+    ],
+    "S-04": [
+        {
+            lat: -16.358190,
+            lng: -48.952670,
+            nome: "R. Construtor José Francisco / Esquina com a R. Construtor José Francisco",
+            bairro: "Jardim Bom Clima",
+            semana: "13:16:00",
+            sabado: "09:56:00"
+        }
+    ],
+    "S-05": [
+        {
+            lat: -16.359410,
+            lng: -48.955800,
+            nome: "R. Construtor José Francisco / Esquina com a R. Maria Melo",
+            bairro: "Jardim Bom Clima",
+            semana: "13:19:00",
+            sabado: "09:59:00"
+        }
+    ],
+    "S-06": [
+        {
+            lat: -16.363470,
+            lng: -48.956110,
+            nome: "Av. Contôrno / Residencial Première Bela Vista",
+            bairro: "Jardim Arco Verde",
+            semana: "13:22:00",
+            sabado: "10:02:00"
+        }
+    ],
+    "S-07": [
+        {
+            lat: -16.355160,
+            lng: -48.957410,
+            nome: "Av. Jorge G De Almeida / Esquina com a Av. Jorge Guimarães de Almeida",
+            bairro: "Santo André",
+            semana: "13:26:00",
+            sabado: "10:06:00"
+        }
+    ],
+    "S-08": [
+        {
+            lat: -16.344680,
+            lng: -48.967480,
+            nome: "Av. Pres. José Sarney / Posto Sol II",
+            bairro: "St. Sul Jamil Miguel",
+            semana: "13:31:00",
+            sabado: "10:11:00"
+        }
+    ],
+    "S-09": [
+        {
+            lat: -16.343880,
+            lng: -48.970510,
+            nome: "R. 9 / Esquina com a Rua 9",
+            bairro: "Vila Sao Joaquim",
+            semana: "13:34:00",
+            sabado: "10:14:00"
+        }
+    ],
+    "S-10": [
+        {
+            lat: -16.349030,
+            lng: -48.973810,
+            nome: "Av. Pedro Ludovico / Esquina com a R. Deocleciano Moreira Alves",
+            bairro: "Vila Sao Joaquim",
+            semana: "13:36:00",
+            sabado: "10:16:00"
+        }
+    ],
+    "S-11": [
+        {
+            lat: -16.353800,
+            lng: -48.976670,
+            nome: "R. Santa Aparecida / Esquina com a R. Santa Aparecida",
+            bairro: "Jardim Calixto",
+            semana: "13:38:00",
+            sabado: "10:18:00"
+        }
+    ],
+    "S-12": [
+        {
+            lat: -16.320400,
+            lng: -48.939060,
+            nome: "Av. Dona Elvira / Esquina com a R. Joaquim Esperidião",
+            bairro: "São Carlos",
+            semana: "12:55:00",
+            sabado: "09:35:00"
+        },
+        {
+            lat: -16.325230,
+            lng: -48.927620,
+            nome: "Av. Eng. Geraldo de Pina / Esquina com a R. S-51",
+            bairro: "Anápolis City",
+            semana: "13:00:00",
+            sabado: "09:40:00"
+        },
+        {
+            lat: -16.325450,
+            lng: -48.923930,
+            nome: "Av. Mato Grosso / ( Posto City )",
+            bairro: "Anápolis City",
+            semana: "13:00:00",
+            sabado: "09:40:00"
+        },
+        {
+            lat: -16.311430,
+            lng: -48.921130,
+            nome: "R. dos Coqueirais, 201 /  Esquina com a Av. Cerejeiras",
+            bairro: "Residencial das Cerejeiras",
+            semana: "13:03:00",
+            sabado: "09:43:00"
+        },
+        {
+            lat: -16.320830,
+            lng: -48.917080,
+            nome: "Av. Ayrton Senna da Silva / Esquina com a R. PB 17",
+            bairro: "Parque Brasilia 2A Etapa",
+            semana: "13:08:00",
+            sabado: "09:48:00"
+        },
+        {
+            lat: -16.319220,
+            lng: -48.914360,
+            nome: "Av. Ayrton Senna da Silva / Esquina com a R. PB 50",
+            bairro: "Parque Sao Jeronimo",
+            semana: "13:09:00",
+            sabado: "09:49:00"
+        },
+        {
+            lat: -16.317270,
+            lng: -48.907100,
+            nome: "R. MN 3 / Esquina com a R. MN 18",
+            bairro: "Conj. Hab. Filostro Machado Carneiro",
+            semana: "13:10:00",
+            sabado: "09:50:00"
+        },
+        {
+            lat: -16.316720,
+            lng: -48.904600,
+            nome: "Av. Jorn Euripedes G Melo / Esquina com a R. Dr. Zico Faria",
+            bairro: "Jardim Itália",
+            semana: "13:12:00",
+            sabado: "09:52:00"
+        },
+        {
+            lat: -16.319000,
+            lng: -48.902800,
+            nome: "Av. Jorn. Eurípedes Gomes de Melo / Esquina com a R. Zacarias Elias",
+            bairro: "Conj. Hab. Filostro Machado Carneiro",
+            semana: "13:12:00",
+            sabado: "09:52:00"
+        },
+        {
+            lat: -16.323620,
+            lng: -48.904050,
+            nome: "R. Napoli - Jardim Itália/Esquina com a R.Cantazaro",
+            bairro: "Jardim Itália",
+            semana: "13:14:00",
+            sabado: "09:54:00"
+        },
+        {
+            lat: -16.317230,
+            lng: -48.900220,
+            nome: "Av. das Laranjeiras / Esquina com a Av. Pinheiro",
+            bairro: "Gran Ville",
+            semana: "13:17:00",
+            sabado: "09:57:00"
+        },
+        {
+            lat: -16.312340,
+            lng: -48.910880,
+            nome: "R. Zacarias Elias / Com a Av. Comendador Jose Abidala",
+            bairro: "Conj. Hab. Filostro Machado Carneiro",
+            semana: "13:24:00",
+            sabado: "10:04:00"
+        },
+        {
+            lat: -16.315370,
+            lng: -48.908690,
+            nome: "Av. Ayrton Senna da Silva / Esquina com a MN3",
+            bairro: "Parque Sao Jeronimo",
+            semana: "13:25:00",
+            sabado: "10:05:00"
+        },
+        {
+            lat: -16.311970,
+            lng: -48.904400,
+            nome: "Av. Comendador José Abdala / Esquina com a Av. Ayrton Senna da Silva",
+            bairro: "Conj. Hab. Filostro Machado Carneiro",
+            semana: "13:26:00",
+            sabado: "10:06:00"
+        },
+        {
+            lat: -16.310620,
+            lng: -48.902810,
+            nome: "Av. Ayrton Senna da Silva / Esquina com a R. Antônio de Souza França",
+            bairro: "Parque Sao Jeronimo",
+            semana: "13:27:00",
+            sabado: "10:07:00"
+        },
+        {
+            lat: -16.303070,
+            lng: -48.898030,
+            nome: "R. JP 3 / Esquina com a Rua JP 10",
+            bairro: "Jardim Primavera 1A Etapa",
+            semana: "13:29:00",
+            sabado: "10:09:00"
+        },
+        {
+            lat: -16.301100,
+            lng: -48.895790,
+            nome: "R. Jp 3 / Com a Rua JP 14",
+            bairro: "Jardim Primavera I",
+            semana: "13:30:00",
+            sabado: "10:10:00"
+        },
+        {
+            lat: -16.303230,
+            lng: -48.894060,
+            nome: "R. JP 39 / Esquina com a Av. Ayrton Senna da Silva",
+            bairro: "Jardim Primavera 2A Etapa",
+            semana: "13:30:00",
+            sabado: "10:10:00"
+        },
+        {
+            lat: -16.304610,
+            lng: -48.890760,
+            nome: "R. Jp 39 / Esquina com a R. Jp 47",
+            bairro: "Jardim Primavera II",
+            semana: "13:31:00",
+            sabado: "10:11:00"
+        },
+        {
+            lat: -16.302490,
+            lng: -48.887560,
+            nome: "Av. Jp 34 / Com a Rua JP 52",
+            bairro: "Jardim Primavera II",
+            semana: "13:33:00",
+            sabado: "10:13:00"
+        },
+        {
+            lat: -16.301070,
+            lng: -48.891050,
+            nome: "Av. JP 34 / Com a Rua JP 59",
+            bairro: "Jardim Primavera 2A Etapa",
+            semana: "13:34:00",
+            sabado: "10:14:00"
+        },
+        {
+            lat: -16.304380,
+            lng: -48.895860,
+            nome: "Av. Ayrton Senna da Silva / Esquina com a R. JP 30",
+            bairro: "Jardim Primavera 1A Etapa",
+            semana: "13:36:00",
+            sabado: "10:16:00"
+        },
+        {
+            lat: -16.315240,
+            lng: -48.899610,
+            nome: "Av. Sérvio Túlio Jayme / Esquina com a R. Antônio Pio",
+            bairro: "Conj. Hab. Filostro Machado Carneiro",
+            semana: "13:38:00",
+            sabado: "10:18:00"
+        },
+        {
+            lat: -16.326950,
+            lng: -48.893800,
+            nome: "Av. Sérvio Túlio Jayme / Esquina com a R. I-8",
+            bairro: "Anápolis",
+            semana: "13:40:00",
+            sabado: "10:20:00"
+        },
+        {
+            lat: -16.333460,
+            lng: -48.901560,
+            nome: "Av. Independência / Esquina com a Av. Ilda Gonçalves Ferreira",
+            bairro: "Jardim Ibirapuera",
+            semana: "13:43:00",
+            sabado: "10:23:00"
+        },
+        {
+            lat: -16.329950,
+            lng: -48.909660,
+            nome: "Av. Independência / Esquina com a R. PB 27",
+            bairro: "Jardim Ibirapuera",
+            semana: "13:44:00",
+            sabado: "10:24:00"
+        },
+        {
+            lat: -16.329380,
+            lng: -48.913590,
+            nome: "Av. Independência / Esquina com a R. PB 22",
+            bairro: "Jardim Ibirapuera",
+            semana: "13:45:00",
+            sabado: "10:25:00"
+        },
+        {
+            lat: -16.331460,
+            lng: -48.918820,
+            nome: "Av. Comercial / Esquina com a Rua 10",
+            bairro: "Lourdes",
+            semana: "13:48:00",
+            sabado: "10:28:00"
+        },
+        {
+            lat: -16.335030,
+            lng: -48.920940,
+            nome: "Av. Angélica / Esquina com a Av. Patriarca",
+            bairro: "Lourdes",
+            semana: "13:50:00",
+            sabado: "10:30:00"
+        },
+        {
+            lat: -16.336680,
+            lng: -48.918630,
+            nome: "Av. Comercial / Esquina com a Av. Angélica",
+            bairro: "Lourdes",
+            semana: "13:50:00",
+            sabado: "10:30:00"
+        },
+        {
+            lat: -16.338930,
+            lng: -48.918510,
+            nome: "Av. Comercial / Com a Rua 14",
+            bairro: "Lourdes",
+            semana: "13:51:00",
+            sabado: "10:31:00"
+        },
+        {
+            lat: -16.342890,
+            lng: -48.918330,
+            nome: "Av. Comercial / Com a Rua 15",
+            bairro: "Lourdes",
+            semana: "13:52:00",
+            sabado: "10:32:00"
+        },
+        {
+            lat: -16.343010,
+            lng: -48.920710,
+            nome: "R. 15 / Esquina com a Av. Patriarca",
+            bairro: "Lourdes",
+            semana: "13:53:00",
+            sabado: "10:33:00"
+        },
+        {
+            lat: -16.346930,
+            lng: -48.920590,
+            nome: "Av. Patriarca / Esquina com a Rua 17",
+            bairro: "Lourdes",
+            semana: "13:53:00",
+            sabado: "10:33:00"
+        },
+        {
+            lat: -16.348880,
+            lng: -48.920720,
+            nome: "Av. Patriarca / Esquina com a R. 19",
+            bairro: "Lourdes",
+            semana: "13:54:00",
+            sabado: "10:34:00"
+        },
+        {
+            lat: -16.348930,
+            lng: -48.916420,
+            nome: "Av. Brasil / Esquina com a R. 23",
+            bairro: "Chácaras Americanas",
+            semana: "13:55:00",
+            sabado: "10:35:00"
+        },
+        {
+            lat: -16.407150,
+            lng: -48.919910,
+            nome: "Viela Vp / Laboratório Teuto",
+            bairro: "Distrito Agroindustrial de Anápolis",
+            semana: "14:09:00",
+            sabado: "10:49:00"
+        }
+    ]
 };
 
-// Create new routes for S-09, S-10, and S-11
-const routeDataS9toS11: RouteData = {
-  "S-09": [
-    { lat: -16.350830, lng: -48.956740, nome: "S-09 01 - R. Bela Vista / Farmácia Evangélica", bairro: "Jardim Goncalves", semana: "13:10", sabado: "09:50" },
-    { lat: -16.350490, lng: -48.954460, nome: "S-09 02 - Ac. Bela Vista / Esquina com a Rua 1", bairro: "Jardim Goncalves", semana: "13:12", sabado: "09:52" },
-    { lat: -16.351860, lng: -48.952250, nome: "S-09 03 - R. 4 / Colégio Estadual Durval Nunes Da Mata", bairro: "Vila Joao Luiz de Oliveira", semana: "13:13", sabado: "09:53" },
-    { lat: -16.356540, lng: -48.953450, nome: "S-09 04 - R. 1 / Esquina com a Rua 9", bairro: "Batista", semana: "13:16", sabado: "09:56" },
-    { lat: -16.358190, lng: -48.952670, nome: "S-09 05 - R. Construtor José Francisco / Esquina com a R. Construtor José Francisco", bairro: "Jardim Bom Clima", semana: "13:16", sabado: "09:56" },
-    { lat: -16.359410, lng: -48.955800, nome: "S-09 06 - R. Construtor José Francisco / Esquina com a R. Maria Melo", bairro: "Jardim Bom Clima", semana: "13:19", sabado: "09:59" },
-    { lat: -16.363470, lng: -48.956110, nome: "S-09 07 - Av. Contôrno / Residencial Première Bela Vista", bairro: "Jardim Arco Verde", semana: "13:22", sabado: "10:02" },
-    { lat: -16.355160, lng: -48.957410, nome: "S-09 08 - Av. Jorge G De Almeida / Esquina com a Av. Jorge Guimarães de Almeida", bairro: "Santo André", semana: "13:26", sabado: "10:06" },
-    { lat: -16.344680, lng: -48.967480, nome: "S-09 09 - Av. Pres. José Sarney / Posto Sol II", bairro: "St. Sul Jamil Miguel", semana: "13:31", sabado: "10:11" },
-    { lat: -16.343880, lng: -48.970510, nome: "S-09 10 - R. 9 / Esquina com a Rua 9", bairro: "Vila Sao Joaquim", semana: "13:34", sabado: "10:14" },
-    { lat: -16.349030, lng: -48.973810, nome: "S-09 11 - Av. Pedro Ludovico / Esquina com a R. Deocleciano Moreira Alves", bairro: "Vila Sao Joaquim", semana: "13:36", sabado: "10:16" },
-    { lat: -16.353800, lng: -48.976670, nome: "S-09 12 - R. Santa Aparecida / Esquina com a R. Santa Aparecida", bairro: "Jardim Calixto", semana: "13:38", sabado: "10:18" },
-    { lat: -16.356570, lng: -48.978250, nome: "S-09 13 - R. dos Prefeitos / Com a Rua dos Prefeitos", bairro: "Jibran El Hadj", semana: "13:38", sabado: "10:18" },
-    { lat: -16.359320, lng: -48.980080, nome: "S-09 14 - Av. Pedro Ludovico /  Esquina com a R. Paraguaçú", bairro: "Paraíso", semana: "13:40", sabado: "10:20" },
-    { lat: -16.363310, lng: -48.983520, nome: "S-09 15 - Estrada sem nome / Posto Ipiranga", bairro: "Jibran El Hadj", semana: "13:41", sabado: "10:21" },
-    { lat: -16.369750, lng: -48.982630, nome: "S-09 16 - Acampament Pedro Ludovico /  Esquina com a Av. dos Burtitis", bairro: "Jibran El Hadj", semana: "13:43", sabado: "10:23" },
-    { lat: -16.373940, lng: -48.979660, nome: "S-09 17 - R. RC 4 / IFG", bairro: "Residencial Reny Cury", semana: "13:44", sabado: "10:24" },
-    { lat: -16.376030, lng: -48.978200, nome: "S-09 18 - R. Gílson J. L. Teixeira Balbi / Auto Posto Reny Cury", bairro: "Viviam Parque", semana: "13:45", sabado: "10:25" },
-    { lat: -16.382860, lng: -48.977100, nome: "S-09 19 - R. Inézia Conceição Braga / Com a Inezia Conceição Braga", bairro: "Viviam Parque", semana: "13:46", sabado: "10:26" },
-    { lat: -16.389740, lng: -48.978710, nome: "S-09 20 - R. Henriqueta T. Bitencourt / Com a Rua Alberico Nogueira Terra", bairro: "Conj. Hab. Esperanca II", semana: "13:49", sabado: "10:29" },
-    { lat: -16.390830, lng: -48.978960, nome: "S-09 21 - Acampament Pedro Ludovico /  Com a Rua Associação Imobiliaria", bairro: "Viviam Parque", semana: "13:49", sabado: "10:29" },
-    { lat: -16.394690, lng: -48.978980, nome: "S-09 22 - Av. Pedro Ludovico / Com a Rua Anapolis", bairro: "Vivian Parque", semana: "13:51", sabado: "10:31" },
-    { lat: -16.400220, lng: -48.978100, nome: "S-09 23 - Av. Pedro Ludovico / Com a Rua Ceres", bairro: "Parque Calixtopolis", semana: "13:51", sabado: "10:31" },
-    { lat: -16.415680, lng: -48.980160, nome: "S-09 24 - Estr. p/ Igrejinha / Esquina com a Av. São Francisco de Paula e Silva", bairro: "Vila São Vicente", semana: "13:56", sabado: "10:36" },
-    { lat: -16.417770, lng: -48.978280, nome: "S-09 25 - R. Santa Amélia / Com a R. Santa Genoveva", bairro: "Vila São Vicente", semana: "13:59", sabado: "10:39" },
-    { lat: -16.416580, lng: -48.978200, nome: "S-09 26 - R. Francisco Melo Moura / Com a Rua João Batista F. Mendonça", bairro: "Vila São Vicente", semana: "14:00", sabado: "10:40" },
-    { lat: -16.412790, lng: -48.976910, nome: "S-09 27 - Av. Rt A / Esquina com a R. RT 2", bairro: "Res. do Trab.", semana: "14:04", sabado: "10:44" },
-    { lat: -16.407150, lng: -48.919910, nome: "S-09 28 - GO / Laboratório Teuto", bairro: "Distrito Agro", semana: "14:15", sabado: "10:55" },
-  ],
-  "S-10": [
-    { lat: -16.353350, lng: -48.977470, nome: "S-10 01 - R. Santa Aparecida / Esquina com a Rua Isaíra", bairro: "Jardim Calixto", semana: "13:34", sabado: "10:14" },
-    { lat: -16.353951, lng: -48.979908, nome: "S-10 02 - Av. Cachoeira Dourada / Academia Biofitness", bairro: "Novo Paraíso", semana: "13:35", sabado: "10:15" },
-    { lat: -16.356220, lng: -48.981700, nome: "S-10 03 - Av. Cachoeira Dourada / Mercadinho Paraíso", bairro: "Novo Paraíso", semana: "13:36", sabado: "10:16" },
-    { lat: -16.358850, lng: -48.983790, nome: "S-10 04 - Av. Cachoeira Dourada / Capela Nossa Senhora Rosa Mística e Divino Pai Eterno", bairro: "Novo Paraíso", semana: "13:37", sabado: "10:17" },
-    { lat: -16.361170, lng: -48.985560, nome: "S-10 05 - Av. Morumbi / Esquina com a Oriente", bairro: "Vila Mariana", semana: "13:37", sabado: "10:17" },
-    { lat: -16.363110, lng: -48.987040, nome: "S-10 06 - Av. Morumbi / Com a Rua Dona Barbara", bairro: "Vila Mariana", semana: "13:38", sabado: "10:18" },
-    { lat: -16.365750, lng: -48.988500, nome: "S-10 07 - Acampament Ipiranga / Com a Trav. Alburquerque", bairro: "Vila Mariana", semana: "13:39", sabado: "10:19" },
-    { lat: -16.368900, lng: -48.988820, nome: "S-10 08 - R. 8 / Com a Rua 13", bairro: "Conj. Hab. Vila Uniao", semana: "13:40", sabado: "10:20" },
-    { lat: -16.369240, lng: -48.987420, nome: "S-10 09 - R. 13 / Com a Rua 5", bairro: "Conj. Hab. Vila Uni", semana: "13:40", sabado: "10:20" },
-    { lat: -16.372780, lng: -48.987730, nome: "S-10 10 - R. 4 / Esquina com a TV. 6", bairro: "Conj. Hab. Vila Uniao", semana: "13:42", sabado: "10:22" },
-    { lat: -16.375031, lng: -48.987998, nome: "S-10 11 - Av. Lídia Sousa Fernandes / Com a Rua Copa 6", bairro: "Conj. Hab. Vila Uniao", semana: "13:43", sabado: "10:23" },
-    { lat: -16.377656, lng: -48.987239, nome: "S-10 12 - R. Copa 9 / Com a Rua Copa 11", bairro: "Residencial Copacabana", semana: "13:44", sabado: "10:24" },
-    { lat: -16.377120, lng: -48.985896, nome: "S-10 13 - R. Copa 12 / Com a Rua Copa 6", bairro: "Residencial Copacabana", semana: "13:46", sabado: "10:26" },
-    { lat: -16.378041, lng: -48.986792, nome: "S-10 14 - R. Copa 9 / Com a Rua Copa 12", bairro: "Residencial Copacabana", semana: "13:46", sabado: "10:26" },
-    { lat: -16.379252, lng: -48.988003, nome: "S-10 15 - R. Copa 12 / Com a Rua Copa 14", bairro: "Residencial Copacabana", semana: "13:47", sabado: "10:27" },
-    { lat: -16.380810, lng: -48.986150, nome: "S-10 16 - R. Copa 24 / Esquina com a Rua Copa 15", bairro: "Residencial Copacabana", semana: "13:48", sabado: "10:28" },
-    { lat: -16.377380, lng: -48.982618, nome: "S-10 17 - R. Copa 23 / Esquina com a Rua Copa 24", bairro: "Residencial Copacabana", semana: "13:50", sabado: "10:30" },
-    { lat: -16.376703, lng: -48.981563, nome: "S-10 18 - R. Copa 24 / Esquina com a R. RC 11", bairro: "Residencial Reny Cury", semana: "13:50", sabado: "10:30" },
-    { lat: -16.379068, lng: -48.979344, nome: "S-10 19 - R. Gílson Júnior / Paróquia Sagrado Coração De Jesus", bairro: "Viviam Parque", semana: "13:52", sabado: "10:32" },
-    { lat: -16.384842, lng: -48.980908, nome: "S-10 20 - R. Itá Gontijo Braga / Esquina com a R. Odilia Ferreira Borges", bairro: "Viviam Parque", semana: "13:55", sabado: "10:35" },
-    { lat: -16.388584, lng: -48.980542, nome: "S-10 21 - R. Henrique Bitencourt / Esquina com a R. Albérico Nogueira Terra", bairro: "Viviam Parque", semana: "13:56", sabado: "10:36" },
-    { lat: -16.395223, lng: -48.982406, nome: "S-10 22 - R. Uruaçu / Esquina coma R. dos Calixtos", bairro: "Parque Calixtopolis", semana: "13:58", sabado: "10:38" },
-    { lat: -16.397050, lng: -48.982180, nome: "S-10 23 - R. Uruaçu / Esquina com a R. Luziania", bairro: "Parque Calixtopolis", semana: "13:59", sabado: "10:39" },
-    { lat: -16.407140, lng: -48.919730, nome: "S-10 24 - Viela Vp / Laboratório Teuto", bairro: "Distrito Agroindustrial de Anápolis", semana: "14:12", sabado: "10:52" },
-  ],
-  "S-11": [
-    { lat: -16.330820, lng: -48.947660, nome: "S-11 01 - Av. Minas Gerais / Esquina com a R. Pedro Braz de Queirós", bairro: "Jundiaí", semana: "13:01", sabado: "09:41" },
-    { lat: -16.338070, lng: -48.943977, nome: "S-11 02 - GO-330 / Unidade de Saúde Jundiaí", bairro: "Jundiaí", semana: "13:06", sabado: "09:46" },
-    { lat: -16.341630, lng: -48.948310, nome: "S-11 03 - Av. Pres. Wilson / Esquina com a Rua 8", bairro: "Vila Industrial", semana: "13:09", sabado: "09:49" },
-    { lat: -16.344467, lng: -48.945911, nome: "S-11 04 - Av. Sebastião Pedro Junqueira / Esquina com a Rua 10", bairro: "Vila Industrial", semana: "13:11", sabado: "09:51" },
-    { lat: -16.348300, lng: -48.944280, nome: "S-11 05 - Av. Anderson Clayton / Esquina com a Rua 3", bairro: "Eldorado", semana: "13:12", sabado: "09:52" },
-    { lat: -16.353279, lng: -48.942194, nome: "S-11 06 - Av. Anderson Clayton / Esquina com a Rua 8A", bairro: "Eldorado", semana: "13:14", sabado: "09:54" },
-    { lat: -16.354020, lng: -48.941890, nome: "S-11 07 - R. 09 / Esquina com a Rua 09", bairro: "Vila Formosa", semana: "13:14", sabado: "09:54" },
-    { lat: -16.353601, lng: -48.940830, nome: "S-11 08 - Ac. Frei Joao Batista Voguel / Supermercado Bom Preço", bairro: "Vila Formosa", semana: "13:16", sabado: "09:56" },
-    { lat: -16.352420, lng: -48.931850, nome: "S-11 09 - R. Goiânia / Esquina com a Rua Goiânia", bairro: "Jardim Eldorado", semana: "13:19", sabado: "09:59" },
-    { lat: -16.376800, lng: -48.906390, nome: "S-11 10 - Estrada sem nome / Residencial Boa Esperança", bairro: "Residencial Boa Esperança", semana: "13:27", sabado: "10:07" },
-    { lat: -16.363030, lng: -48.914730, nome: "S-11 11 - Av. Pres. Vargas / Esquina com a R. Padre Antônio Feijó", bairro: "Jardim Alvorada", semana: "13:32", sabado: "10:12" },
-    { lat: -16.360380, lng: -48.913850, nome: "S-11 12 - Praça Tiradentes / Capela Nossa Senhora Das Graças", bairro: "Campos Elísios", semana: "13:34", sabado: "10:14" },
-    { lat: -16.359680, lng: -48.911590, nome: "S-11 13 - R. L 35 / Esquina com a R. Goncalves Ledo", bairro: "Res. Leblon", semana: "13:36", sabado: "10:16" },
-    { lat: -16.359460, lng: -48.906760, nome: "S-11 14 - Av. Central / Esquina com a R. L16", bairro: "Jardim Alvorada", semana: "13:38", sabado: "10:18" },
-    { lat: -16.360370, lng: -48.904570, nome: "S-11 15 - Av. Ilha Formosa / Esquina com a R. L23", bairro: "Jardim Alvorada", semana: "13:39", sabado: "10:19" },
-    { lat: -16.358690, lng: -48.905050, nome: "S-11 16 - R. L 3 / Esquina com a Rua L-20", bairro: "Res. Leblon", semana: "13:41", sabado: "10:21" },
-    { lat: -16.357500, lng: -48.907620, nome: "S-11 17 - Ac. 8 / Esquina com a Rua L 8", bairro: "Res. Leblon", semana: "13:42", sabado: "10:22" },
-    { lat: -16.356350, lng: -48.912240, nome: "S-11 18 - R. Bernardo Sayão / Esquina com a Av. Hong Kong", bairro: "Jardim Alvorada", semana: "13:46", sabado: "10:26" },
-    { lat: -16.354350, lng: -48.912460, nome: "S-11 19 - R. Bernardo Sayão / Com a Av. Cruzeiro do Sul", bairro: "Jardim Alvorada", semana: "13:46", sabado: "10:26" },
-    { lat: -16.353800, lng: -48.910470, nome: "S-11 20 - R. Cruzeiro do Sul / Esquina com a Av. Paranoá", bairro: "Jardim Alvorada", semana: "13:48", sabado: "10:28" },
-    { lat: -16.354660, lng: -48.907440, nome: "S-11 21 - Av. Rio Araguaia / Esquina com a Av. Rio Araguaia", bairro: "Vila Operaria", semana: "13:49", sabado: "10:29" },
-    { lat: -16.353130, lng: -48.904750, nome: "S-11 22 - R. Ventura / Esquina com a R. Dos Astros", bairro: "Jardim Tesouro", semana: "13:51", sabado: "10:31" },
-    { lat: -16.347620, lng: -48.903660, nome: "S-11 23 - R. D / Noronha Esporte Clube", bairro: "Santo Antonio", semana: "13:52", sabado: "10:32" },
-    { lat: -16.344710, lng: -48.899970, nome: "S-11 24 - R. D / Esquina com a Av. Elias Isaac", bairro: "Santo Antonio", semana: "13:54", sabado: "10:34" },
-    { lat: -16.341310, lng: -48.897940, nome: "S-11 25 - R. Padre Henrique / Academia JS FITNESS", bairro: "Santo Antonio", semana: "13:55", sabado: "10:35" },
-    { lat: -16.341110, lng: -48.897080, nome: "S-11 26 - Chacara Dom Fernando Gomes / Esquina com a R. Zaqueu Crispim", bairro: "Santo Antonio", semana: "13:57", sabado: "10:37" },
-    { lat: -16.343130, lng: -48.908740, nome: "S-11 27 - Av. Gomes de Souza Ramos / Esquina com a R. Comandatuba", bairro: "Jardim Flor de Liz", semana: "14:02", sabado: "10:42" },
-    { lat: -16.343990, lng: -48.904870, nome: "S-11 28 - R. das Laranjeiras / Praça de Boas Vindas Summerville", bairro: "Jardim Ibirapuera", semana: "14:04", sabado: "10:44" },
-    { lat: -16.352710, lng: -48.919310, nome: "S-11 29 - R. Sessenta / Pérola Distribuição", bairro: "Jóquei Club", semana: "14:06", sabado: "10:46" },
-    { lat: -16.407148, lng: -48.919844, nome: "S-11 30 - VP 7 / Laboratório Teuto", bairro: "Distrito Agroindustrial de Anápolis", semana: "14:22", sabado: "11:02" },
-  ]
+// All route data by turno
+export const allRouteData = {
+    "1° Turno": firstTurnoRoutes,
+    "2° Turno": secondTurnoRoutes,
+    "3° Turno": {},
+    "Administrativo": {}
 };
 
-// 2° Turno routes data
-const segundoTurnoRoutes: RouteData = {
-  "S-01": [
-    { lat: -16.260024, lng: -49.005162, nome: "S-01 01 - R. Jequitiba / Esquina com a R. Corumba", bairro: "Residencial Aldeia dos Sonhos", semana: "13:06", sabado: "09:46" },
-    { lat: -16.258635, lng: -49.002169, nome: "S-01 02 - R. Araguaia / Esquina com a R. Burburimao", bairro: "Residencial Aldeia dos Sonhos", semana: "13:09", sabado: "09:49" },
-    { lat: -16.260174, lng: -48.999195, nome: "S-01 03 - Av. Araguaia / Esquina com a R. Guatambu", bairro: "Residencial Aldeia dos Sonhos", semana: "13:10", sabado: "09:50" },
-    { lat: -16.261290, lng: -48.997326, nome: "S-01 04 - R. Araguaia / Esquina com a Rua Cedro", bairro: "Residencial Aldeia dos Sonhos", semana: "13:10", sabado: "09:50" },
-    { lat: -16.261720, lng: -48.988930, nome: "S-01 05 - Av. Federal / Esquina com a Canela Branca", bairro: "Lot. Guanabara", semana: "13:12", sabado: "09:52" },
-    { lat: -16.265385, lng: -48.983576, nome: "S-01 06 - Av. Federal / Esquina com a Rua 4", bairro: "Lot. Guanabara", semana: "13:13", sabado: "09:53" },
-    { lat: -16.268626, lng: -48.979451, nome: "S-01 07 - R. Constelação / Esquina com a Rua Netuno", bairro: "Res. Ana Caroline", semana: "13:14", sabado: "09:54" },
-    { lat: -16.270583, lng: -48.984287, nome: "S-01 08 - R. Tres Marias / Esquina com a Estr. p/ Miranápolis", bairro: "Res. Ana Caroline", semana: "13:16", sabado: "09:56" },
-    { lat: -16.274640, lng: -48.985030, nome: "S-01 09 - Av. Mariele / Com a Rua Abadia", bairro: "Adriana Parque", semana: "13:17", sabado: "09:57" },
-    { lat: -16.277620, lng: -48.985240, nome: "S-01 10 - R. G / Supermercado do Povo", bairro: "Adriana Parque", semana: "13:19", sabado: "09:59" },
-    { lat: -16.277642, lng: -48.987533, nome: "S-01 11 - R. G / Esquina com a Rua Lilian", bairro: "St. Res. Jandaia", semana: "13:19", sabado: "09:59" },
-    { lat: -16.277660, lng: -48.989450, nome: "S-01 12 - R. G / Esquina com a Av. Central", bairro: "St. Res. Jandaia", semana: "13:20", sabado: "10:00" },
-    { lat: -16.277680, lng: -48.992920, nome: "S-01 13 - R. Larissa / Com a Rua Takeda", bairro: "St. Escala", semana: "13:21", sabado: "10:01" },
-    { lat: -16.277346, lng: -48.995985, nome: "S-01 14 - Av. das Laranjeiras / Esquina com a Rua 4", bairro: "Res. Dom Felipe", semana: "13:22", sabado: "10:02" },
-    { lat: -16.274922, lng: -48.996629, nome: "S-01 15 - R. Oito / Esquina com a Av. das Palmeiras", bairro: "Res. Dom Felipe", semana: "13:23", sabado: "10:03" },
-    { lat: -16.281400, lng: -48.992150, nome: "S-01 16 - Av. Souzânia / Esquina com a Rua Fontinelle Junior", bairro: "St. Res. Jandaia", semana: "13:25", sabado: "10:05" },
-    { lat: -16.282830, lng: -48.989390, nome: "S-01 17 - Av. Souzânia /Esquina com a Av. Central", bairro: "St. Res. Jandaia", semana: "13:26", sabado: "10:06" },
-    { lat: -16.283890, lng: -48.984780, nome: "S-01 18 - R. Jk / Esquina com a Rua JK 3", bairro: "Res. Vila Nova", semana: "13:28", sabado: "10:08" },
-    { lat: -16.286241, lng: -48.983658, nome: "S-01 19 - Rua Mun. / Esquina com a Rua Ipameri", bairro: "Vila Jaiara St. Norte", semana: "13:28", sabado: "10:08" },
-    { lat: -16.288997, lng: -48.977777, nome: "S-01 20 - R. Paranaguá / Esquina com a R. Ipê", bairro: "Res. Monica Braga", semana: "13:31", sabado: "10:11" },
-    { lat: -16.291050, lng: -48.973230, nome: "S-01 21 - R. Silvânia / Paróquia Nossa Senhora de Fátima", bairro: "Vila Jaiara St. Norte", semana: "13:33", sabado: "10:13" },
-    { lat: -16.291161, lng: -48.968349, nome: "S-01 22 - Av. Fernando Costa / Farmácias Nissei", bairro: "Adriana Parque", semana: "13:35", sabado: "10:15" },
-    { lat: -16.282872, lng: -48.972264, nome: "S-01 23 - Av. Fernando Costa / Esquina com a Rua Formosa", bairro: "Vila Jaiara", semana: "13:37", sabado: "10:17" },
-    { lat: -16.407150, lng: -48.919910, nome: "S-01 24 - Distrito Agroindustrial de Anápolis", bairro: "Laboratório Teuto", semana: "14:04", sabado: "10:44" },
-  ],
-  "S-02": [
-    { lat: -16.291680, lng: -48.964560, nome: "S-02 01 - R. Mal. Gouveia / Com a Rua Sussuapara", bairro: "Vila Jaiara St. Sul", semana: "13:10", sabado: "09:50" },
-    { lat: -16.287350, lng: -48.965970, nome: "S-02 02 - Av. Estados Unidos / Esquina com a Rua Jaragua", bairro: "Bandeiras", semana: "13:11", sabado: "09:51" },
-    { lat: -16.282906, lng: -48.966676, nome: "S-02 03 - Av. Estados Unidos / Com a Rua Marta Irene", bairro: "Bandeiras", semana: "13:13", sabado: "09:53" },
-    { lat: -16.280339, lng: -48.966984, nome: "S-02 04 - Av. Estados Unidos  / Esquina com a R. Jonas Duarte", bairro: "Bandeiras", semana: "13:14", sabado: "09:54" },
-    { lat: -16.277740, lng: -48.969930, nome: "S-02 05 - R. Assis Brasil / Esquina com a Rua Niquelandia", bairro: "Vila Jaiara St. Norte", semana: "13:17", sabado: "09:57" },
-    { lat: -16.276920, lng: -48.971910, nome: "S-02 06 - Av. Luís Carpaneda / Esquina com a Rua G", bairro: "Vila Jaiara St. Norte", semana: "13:18", sabado: "09:58" },
-    { lat: -16.279830, lng: -48.973430, nome: "S-02 07 - Av. Luís Carpaneda / Posto Napolitano II & Loja de Conveniência", bairro: "Vila Jaiara St. Norte", semana: "13:20", sabado: "10:00" },
-    { lat: -16.277220, lng: -48.975030, nome: "S-02 08 - Av. Fernando Costa / Mais Sabor Caseiros", bairro: "Adriana Parque", semana: "13:21", sabado: "10:01" },
-    { lat: -16.276530, lng: -48.975360, nome: "S-02 09 - Av. Fernando Costa / SUPERMERCADO BOM DEMAIS", bairro: "Adriana Parque", semana: "13:22", sabado: "10:02" },
-    { lat: -16.274033, lng: -48.973727, nome: "S-02 10 - R. 7 / Com a Rua 10", bairro: "Lot. Las Palmas", semana: "13:25", sabado: "10:05" },
-    { lat: -16.276979, lng: -48.977610, nome: "S-02 11 - Av. Patrícia / ( Garagem Urban )", bairro: "Adriana Parque", semana: "13:29", sabado: "10:09" },
-    { lat: -16.281452, lng: -48.976882, nome: "S-02 12 - R. Buriti Alegre / Esquina com a Av. Bandeirantes", bairro: "Vila Jaiara St. Norte", semana: "13:30", sabado: "10:10" },
-    { lat: -16.285213, lng: -48.978387, nome: "S-02 13 - R. Nova Capital / Esquina com a Rua Uruana", bairro: "Vila Jaiara St. Norte", semana: "13:33", sabado: "10:13" },
-    { lat: -16.283846, lng: -48.974857, nome: "S-02 14 - R. Formosa / Esquina com a Ouro Branco", bairro: "Vila Jaiara St. Norte", semana: "13:34", sabado: "10:14" },
-    { lat: -16.287438, lng: -48.972979, nome: "S-02 15 - R. Ouro Branco / Esquina com a R. Inhumas", bairro: "Vila Jaiara St. Norte", semana: "13:36", sabado: "10:16" },
-    { lat: -16.296215, lng: -48.966097, nome: "S-02 16 - Av. Pres. Kennedy / Esquina com a R. Nossa Sra. da Conceição", bairro: "Jardim Alexandrina", semana: "13:40", sabado: "10:20" },
-    { lat: -16.320760, lng: -48.952588, nome: "S-02 17 - Av. Sen. José Lourenço Dias / Esquina com a R. Tonico De Pina", bairro: "St. Central", semana: "13:47", sabado: "10:27" },
-    { lat: -16.331560, lng: -48.951230, nome: "S-02 18 - Av. Brasil Sul / Fórum de Anápolis", bairro: "Cidade Jardim", semana: "13:51", sabado: "10:31" },
-    { lat: -16.407180, lng: -48.920460, nome: "S-02 19 - Distrito Agroindustrial de Anápolis", bairro: "Laboratório Teuto", semana: "14:10", sabado: "10:50" },
-  ],
-  "S-03": [
-    { lat: -16.314060, lng: -48.934800, nome: "S-03 01 - Av. Dona Elvira  / Esquina com a Av. Dr. Calil", bairro: "São Carlos 2A Etapa", semana: "13:07", sabado: "09:47" },
-    { lat: -16.308778, lng: -48.934412, nome: "S-03 02 - R. 23 / Esquina com a R. 13", bairro: "Boa Vista", semana: "13:09", sabado: "09:49" },
-    { lat: -16.306084, lng: -48.931355, nome: "S-03 03 - R. Sen. Nereu Ramos / Esquina com a R. 24", bairro: "Boa Vista", semana: "13:13", sabado: "09:53" },
-    { lat: -16.306492, lng: -48.936309, nome: "S-03 04 - R. Argentina / Esquina com a Av. das Rosas", bairro: "Boa Vista", semana: "13:16", sabado: "09:56" },
-    { lat: -16.305940, lng: -48.938610, nome: "S-03 05 - R. Argentina / Esquina com a Rua 8", bairro: "Boa Vista", semana: "13:16", sabado: "09:56" },
-    { lat: -16.302410, lng: -48.945330, nome: "S-03 06 - Av. Palestina / Esquina com a Rua Equador", bairro: "Boa Vista", semana: "13:20", sabado: "10:00" },
-    { lat: -16.299140, lng: -48.946010, nome: "S-03 07 - Av. Palestina / Esquina com a Rua Paraguai", bairro: "Boa Vista", semana: "13:21", sabado: "10:01" },
-    { lat: -16.292635, lng: -48.950806, nome: "S-03 08 - Av. Bernardo Sayão / Esquina com a Av. Estados Unidos", bairro: "Parque Iracema", semana: "13:25", sabado: "10:05" },
-    { lat: -16.292049, lng: -48.954518, nome: "S-03 09 - Av. dos Palmares / Esquina com a Av. Paranapuã", bairro: "Parque Iracema", semana: "13:26", sabado: "10:06" },
-    { lat: -16.290070, lng: -48.957910, nome: "S-03 10 - Av. 10 / Esquina com a Rua 19", bairro: "Cidade Universitária", semana: "13:29", sabado: "10:09" },
-    { lat: -16.286710, lng: -48.957280, nome: "S-03 11 - Av. 10 / Com a Rua P 45", bairro: "Jardim Progresso", semana: "13:29", sabado: "10:09" },
-    { lat: -16.284790, lng: -48.956930, nome: "S-03 12 - Av. 10 / Com a Rua P 53", bairro: "Rev. Archibald", semana: "13:31", sabado: "10:11" },
-    { lat: -16.280300, lng: -48.955090, nome: "S-03 13 - Av. dos Pirineus / Com Rua PP 05", bairro: "Parque dos Pirineus", semana: "13:32", sabado: "10:12" },
-    { lat: -16.276890, lng: -48.955100, nome: "S-03 14 - Av. dos Pirineus / Com a Rua PP 11", bairro: "Parque dos Pirineus", semana: "13:34", sabado: "10:14" },
-    { lat: -16.275220, lng: -48.955120, nome: "S-03 15 - Av. dos Pirineus / Com a Rua PP-14", bairro: "Parque dos Pirineus", semana: "13:34", sabado: "10:14" },
-    { lat: -16.274650, lng: -48.955120, nome: "S-03 16 - Av. Dos Pirineus / Com a Rua PP 15", bairro: "Parque dos Pirineus", semana: "13:35", sabado: "10:15" },
-    { lat: -16.272400, lng: -48.955130, nome: "S-03 17 - R. PP 19 / Com a Rua PP 19", bairro: "Parque dos Pirineus", semana: "13:36", sabado: "10:16" },
-    { lat: -16.271811, lng: -48.950157, nome: "S-03 18 - Av. Colorado / Esquina com a R. PP 20", bairro: "Eldorado", semana: "13:39", sabado: "10:19" },
-    { lat: -16.273220, lng: -48.950570, nome: "S-03 19 - Av. Colorado / Com a Rua 4", bairro: "Eldorado", semana: "13:39", sabado: "10:19" },
-    { lat: -16.274900, lng: -48.947150, nome: "S-03 20 - R. 6 / Condomínio Residencial Royal Garden", bairro: "Chácaras Colorado", semana: "13:42", sabado: "10:22" },
-    { lat: -16.284997, lng: -48.946579, nome: "S-03 21 - R. Gustavo Leyser / Esquina com a R. Dona Henriqueta Leyse", bairro: "Residencial Santa Cruz", semana: "13:47", sabado: "10:27" },
-    { lat: -16.407150, lng: -48.919910, nome: "S-03 22 - Distrito Agroindustrial de Anápolis", bairro: "Laboratório Teuto", semana: "14:10", sabado: "10:50" },
-  ],
-  "S-04": [
-    { lat: -16.308930, lng: -48.943170, nome: "S-04 01 - Av. Brasil Norte / Auto Posto Imperial", bairro: "Jardim das Americas 2A Etapa", semana: "12:42", sabado: "09:22" },
-    { lat: -16.305160, lng: -48.942310, nome: "S-04 02 - R. Argentina / com Rua Argentina (Supermercado Senna)", bairro: "Boa Vista", semana: "12:44", sabado: "09:24" },
-    { lat: -16.301920, lng: -48.941530, nome: "S-04 03 - Av. Brasil Norte / Com a Rua Chile", bairro: "Jardim das Americas 2A Etapa", semana: "12:46", sabado: "09:26" },
-    { lat: -16.299997, lng: -48.936041, nome: "S-04 04 - R. Jarbas Jaime Filho / Esquina com a R. Profa. Belisaria Faria", bairro: "St. Bougainville", semana: "12:48", sabado: "09:28" },
-    { lat: -16.299100, lng: -48.941730, nome: "S-04 05 - Av. Brasil Norte / Com Rua Graciano Antonio Souza", bairro: "Jardim das Americas 2A Etapa", semana: "12:51", sabado: "09:31" },
-    { lat: -16.295774, lng: -48.942213, nome: "S-04 06 - Av. Brasil Norte / Com a Rua Bernardo Sayão", bairro: "Jardim das Americas 2A Etapa", semana: "12:52", sabado: "09:32" },
-    { lat: -16.287827, lng: -48.943362, nome: "S-04 07 - Av. Brasil Norte / Posto Carreteiro", bairro: "Jardim das Americas 2A Etapa", semana: "12:54", sabado: "09:34" },
-    { lat: -16.286650, lng: -48.939620, nome: "S-04 08 - R. Almiro de Amorim / Com a Rua Almiro de Amorim", bairro: "Jardim dos Ipes", semana: "12:55", sabado: "09:35" },
-    { lat: -16.286460, lng: -48.936210, nome: "S-04 09 - R. João Florentino / Com a Rua RA 9", bairro: "Res. Araguaia", semana: "12:57", sabado: "09:37" },
-    { lat: -16.287329, lng: -48.930979, nome: "S-04 10 - Av. Perimetral / Com a R. João Florentino", bairro: "Res. Araguaia", semana: "12:58", sabado: "09:38" },
-    { lat: -16.287074, lng: -48.928767, nome: "S-04 11 - Av. 28 / Esquina com a R. 2", bairro: "Parque Res. das Flores", semana: "13:00", sabado: "09:40" },
-    { lat: -16.290836, lng: -48.928718, nome: "S-04 12 - R. 7 / Esquina com a Alameda Portal Do Sol", bairro: "Residencial Vale do Sol", semana: "13:02", sabado: "09:42" },
-    { lat: -16.292305, lng: -48.925648, nome: "S-04 13 - Alameda Portal do Sol / Casa de Carne Lobo", bairro: "Residencial Vale do Sol", semana: "13:03", sabado: "09:43" },
-    { lat: -16.296882, lng: -48.922975, nome: "S-04 14 - Ac. Fc 17 / Com a Rua FC 12", bairro: "Residencial Vale do Sol", semana: "13:07", sabado: "09:47" },
-    { lat: -16.296340, lng: -48.920880, nome: "S-04 15 - Ac. Fc 20 / Com a Rua FC 15", bairro: "Residencial Vale do Sol", semana: "13:08", sabado: "09:48" },
-    { lat: -16.289080, lng: -48.921130, nome: "S-04 16 - R. 16 / Esquina com a Av. 25", bairro: "Parque Res. das Flores", semana: "13:11", sabado: "09:51" },
-    { lat: -16.286890, lng: -48.920340, nome: "S-04 17 - R. 11 / Com a R. João Florentino", bairro: "Parque Res. das Flores", semana: "13:12", sabado: "09:52" },
-    { lat: -16.287280, lng: -48.917582, nome: "S-04 18 - R. 11 / Com a Av. 25", bairro: "Parque Res. das Flores", semana: "13:14", sabado: "09:54" },
-    { lat: -16.284500, lng: -48.923210, nome: "S-04 19 - Av. Perimetral / Com Rua SW 03", bairro: "Vila Norte", semana: "13:16", sabado: "09:56" },
-    { lat: -16.281573, lng: -48.927585, nome: "S-04 20 - R. 55 / Drogaria Familiar", bairro: "Recanto do Sol", semana: "13:20", sabado: "10:00" },
-    { lat: -16.278390, lng: -48.931410, nome: "S-04 21 - R. 54 / Com a Rua 22", bairro: "Recanto do Sol", semana: "13:22", sabado: "10:02" },
-    { lat: -16.279492, lng: -48.933350, nome: "S-04 22 - Av. do Estado / Com Rua 10", bairro: "Jardim dos Ipes", semana: "13:23", sabado: "10:03" },
-    { lat: -16.277076, lng: -48.936658, nome: "S-04 23 - Av. Estado / Com a Av. Raimundo Carlos Silva", bairro: "Jardim dos Ipes", semana: "13:24", sabado: "10:04" },
-    { lat: -16.273870, lng: -48.936800, nome: "S-04 24 - R. RA 21 / Com a Rua RA 21", bairro: "Lot. Res. America", semana: "13:28", sabado: "10:08" },
-    { lat: -16.274790, lng: -48.939230, nome: "S-04 25 - R. Ra 17 / Com a Rua RA 13", bairro: "Lot. Res. America", semana: "13:29", sabado: "10:09" },
-    { lat: -16.277657, lng: -48.940833, nome: "S-04 26 - R. Ra 11 / Esquina com a R. Maj. Arnaldo", bairro: "Lot. Res. America", semana: "13:31", sabado: "10:11" },
-    { lat: -16.280390, lng: -48.939740, nome: "S-04 27 - R. Prof. Clementino de Alencar Lima / Esquina com a Rua Lisboa", bairro: "Lot. Res. America", semana: "13:32", sabado: "10:12" },
-    { lat: -16.281696, lng: -48.939638, nome: "S-04 28 - Av. Raimundo Carlos Costa e Silva / Esquina com a Rua Ouro Verde", bairro: "Jardim das Americas 3a Etapa", semana: "13:33", sabado: "10:13" },
-    { lat: -16.284103, lng: -48.941091, nome: "S-04 29 - R. Cel. Waltervan / Esquina com a Av. Raimundo Carlos Costa e Silva", bairro: "Jardim das Americas 3a Etapa", semana: "13:34", sabado: "10:14" },
-    { lat: -16.250840, lng: -48.932600, nome: "S-04 30 - Av. Ernesto M da Cruz / IASD Monte Sinai", bairro: "Res. Monte Sinai", semana: "13:42", sabado: "10:22" },
-    { lat: -16.253080, lng: -48.937150, nome: "S-04 31 - Av. Vilmar Adair Gomes / Mercadinho Melo", bairro: "Santos Dumont", semana: "13:46", sabado: "10:26" },
-    { lat: -16.407150, lng: -48.919910, nome: "S-04 32 - Viela Vp / Laboratório Teuto", bairro: "Distrito Agroindustrial de Anápolis", semana: "14:12", sabado: "10:52" },
-  ],
-  "S-05": [
-    { lat: -16.303860, lng: -48.948070, nome: "S-05 01 - Av. Universitária / Esquina com a Rua Argentina", bairro: "Vila Santa Isabel", semana: "13:01", sabado: "09:41" },
-    { lat: -16.305780, lng: -48.948540, nome: "S-05 02 - Av. Universitária / Esquina com a Rua Venezuela", bairro: "Maracanã", semana: "13:03", sabado: "09:43" },
-    { lat: -16.308589, lng: -48.949204, nome: "S-05 03 - Av. Universitária / UNIASSELVI", bairro: "Maracanã", semana: "13:04", sabado: "09:44" },
-    { lat: -16.313480, lng: -48.950400, nome: "S-05 04 - Av. Universitária / Justiça Federal", bairro: "Jardim Bandeirante", semana: "13:06", sabado: "09:46" },
-    { lat: -16.317770, lng: -48.953380, nome: "S-05 05 - Av. Universitária / Esquina com a Av. Senador Ramos Caiado ( Rio Vermelho )", bairro: "Maracanã", semana: "13:07", sabado: "09:47" },
-    { lat: -16.318040, lng: -48.955135, nome: "S-05 06 - Av. Pres. Kennedy / Esquina com a R. Luís Schinor", bairro: "Maracanã", semana: "13:08", sabado: "09:48" },
-    { lat: -16.314757, lng: -48.956954, nome: "S-05 07 - Av. Pres. Kennedy / Esquina com a Rua Joaquim da Cunha", bairro: "Jardim Alexandrina", semana: "13:10", sabado: "09:50" },
-    { lat: -16.313097, lng: -48.957812, nome: "S-05 08 - Av. Pres. Kennedy / Esquina com a R. Francisco Silvério de Faria", bairro: "Jardim Alexandrina", semana: "13:10", sabado: "09:50" },
-    { lat: -16.309190, lng: -48.959870, nome: "S-05 09 - Av. Pres. Kennedy / Explorernet", bairro: "Maracanã", semana: "13:12", sabado: "09:52" },
-    { lat: -16.304580, lng: -48.961850, nome: "S-05 10 - Av. Pres. Kennedy / ( Praça dos Romeiros )", bairro: "Jardim Alexandrina", semana: "13:13", sabado: "09:53" },
-    { lat: -16.300195, lng: -48.958806, nome: "S-05 11 - Av. Dona Albertina de Pina / Esquina com a R. Souzania", bairro: "Jardim Alexandrina", semana: "13:16", sabado: "09:56" },
-    { lat: -16.298367, lng: -48.958475, nome: "S-05 12 - R. Souzania / Casa de Carnes Maná", bairro: "Jardim Alexandrina", semana: "13:16", sabado: "09:56" },
-    { lat: -16.298971, lng: -48.967021, nome: "S-05 13 - R. do Ouro / Esquina com a R.das Esmeraldas", bairro: "Itamaraty", semana: "13:21", sabado: "10:01" },
-    { lat: -16.302736, lng: -48.970787, nome: "S-05 14 - Av. José de Deus / Esquina com a R. 9", bairro: "Itamaraty II", semana: "13:23", sabado: "10:03" },
-    { lat: -16.302450, lng: -48.965490, nome: "S-05 15 - R. Circular / Esquina com a Av Tiradentes", bairro: "Itamaraty", semana: "13:26", sabado: "10:06" },
-    { lat: -16.309480, lng: -48.963010, nome: "S-05 16 - R. Leopoldo de Bulhões / Com a Rua Cuiaba", bairro: "Ind da Estacao", semana: "13:28", sabado: "10:08" },
-    { lat: -16.312882, lng: -48.961109, nome: "S-05 17 - R. Leopoldo de Bulhões / Com a Rua Xavantes", bairro: "Ind da Estacao", semana: "13:30", sabado: "10:10" },
-    { lat: -16.319230, lng: -48.960460, nome: "S-05 18 - R. Benjamin Constant / Com a Rua Mauá", bairro: "St. Central", semana: "13:31", sabado: "10:11" },
-    { lat: -16.318250, lng: -48.963630, nome: "S-05 19 - R. Mauá / Com a Rua Padre Anchieta", bairro: "Nossa Sra. Aparecida", semana: "13:33", sabado: "10:13" },
-    { lat: -16.317720, lng: -48.965370, nome: "S-05 20 - R. Mauá / Com a Rua Oswaldo Cruz", bairro: "Nossa Sra. Aparecida", semana: "13:33", sabado: "10:13" },
-    { lat: -16.319738, lng: -48.966263, nome: "S-05 21 - R. Osvaldo Cruz / Esquina com a Av. Federal", bairro: "Vila Sao Jorge", semana: "13:35", sabado: "10:15" },
-    { lat: -16.319630, lng: -48.970214, nome: "S-05 22 - Tv. 8 / Campo de Futebol do Bairro Frei Eustáquio", bairro: "Frei Eustaquio", semana: "13:36", sabado: "10:16" },
-    { lat: -16.321430, lng: -48.964111, nome: "S-05 23 - R. José Gomes de Paula / Com a Av. Ipiranga", bairro: "Vila Sao Jorge", semana: "13:39", sabado: "10:19" },
-    { lat: -16.326548, lng: -48.962122, nome: "S-05 24 - R. Firmo de Velasco / Esquina com a R. Barão do Rio Branco", bairro: "St. Central", semana: "13:41", sabado: "10:21" },
-    { lat: -16.331985, lng: -48.962191, nome: "S-05 25 - Av. Getulino Artiaga / Rua Firmo de Velasco", bairro: "São José", semana: "13:44", sabado: "10:24" },
-    { lat: -16.338140, lng: -48.953080, nome: "S-05 26 - Av. Brasil Sul / Posto Nota 10", bairro: "Batista", semana: "13:49", sabado: "10:29" },
-    { lat: -16.342276, lng: -48.954769, nome: "S-05 27 - Av. Brasil Sul / Esquina com a R. Miguel Elias", bairro: "Vila Verde", semana: "13:51", sabado: "10:31" },
-    { lat: -16.346778, lng: -48.957120, nome: "S-05 28 - Av. Brasil Sul / Hiper Festa Brasil Sul - Anápolis", bairro: "Calixtolândia", semana: "13:52", sabado: "10:32" },
-    { lat: -16.368502, lng: -48.958523, nome: "S-05 29 - R. 2 Quadra D, 676 / Esquina com a R.6", bairro: "Residencial Geovanni", semana: "13:59", sabado: "10:39" },
-    { lat: -16.370040, lng: -48.963570, nome: "S-05 30 - R. dos Goianos / PEROLA DISTRIBUIÇÃO", bairro: "Calixtolândia", semana: "14:02", sabado: "10:42" },
-    { lat: -16.407154, lng: -48.920008, nome: "S-05 31 - Viela Vp-7D / Laboratório Teuto", bairro: "Distrito Agroindustrial de Anápolis", semana: "14:13", sabado: "10:53" },
-  ],
-  "S-06": [
-    { lat: -16.326400, lng: -48.950880, nome: "S-06 01 - Av. Sen. José Lourenço Dias / Esquina com a R. Aluísio Crispim", bairro: "St. Central", semana: "12:59", sabado: "09:39" },
-    { lat: -16.328630, lng: -48.953920, nome: "S-06 02 - Av. Goiás /Esquina com a R. Manoel Dabadia", bairro: "Vila Brasil", semana: "13:03", sabado: "09:43" },
-    { lat: -16.328270, lng: -48.958630, nome: "S-06 03 - Av. Goiás / Esquina com a R. Quatorze de Julho", bairro: "Vila Brasil", semana: "13:05", sabado: "09:45" },
-    { lat: -16.328130, lng: -48.961330, nome: "S-06 04 - R. Benjamin Constant / Esquina com a R. Benjamin Constant", bairro: "St. Central", semana: "13:06", sabado: "09:46" },
-    { lat: -16.328000, lng: -48.962690, nome: "S-06 05 - Av. Goiás / Com a Rua Amazonas", bairro: "Vila Brasil", semana: "13:07", sabado: "09:47" },
-    { lat: -16.330000, lng: -48.964850, nome: "S-06 06 - R. Sen. Sócrates Mardochen Diniz / Esquina com a R. Benjamin Viêira", bairro: "Dom Pedro II", semana: "13:09", sabado: "09:49" },
-    { lat: -16.329700, lng: -48.969610, nome: "S-06 07 - R. Sen. Sócrates Mardochen Diniz / Esquina com a R. Eduardo Pereira", bairro: "Dom Pedro II", semana: "13:11", sabado: "09:51" },
-    { lat: -16.326290, lng: -48.969750, nome: "S-06 08 - R. Eduardo Pereira / Esquina com a Rua 2", bairro: "Vila Brasil", semana: "13:12", sabado: "09:52" },
-    { lat: -16.325960, lng: -48.971690, nome: "S-06 09 - Praca Lemos / Praça Lemos", bairro: "Jardim Petropolis", semana: "13:14", sabado: "09:54" },
-    { lat: -16.329530, lng: -49.013230, nome: "S-06 10 - R. Pompéia / Esquina com a R. Pompéia", bairro: "Lapa", semana: "13:22", sabado: "10:02" },
-    { lat: -16.334910, lng: -49.011950, nome: "S-06 11 - Av. Francisco Alves / Esquina com a Rua Pasteur", bairro: "Lapa", semana: "13:24", sabado: "10:04" },
-    { lat: -16.327900, lng: -48.996640, nome: "S-06 12 - GO-330 / Colégio Estadual Adolpho Batista", bairro: "Vila Fabril", semana: "13:28", sabado: "10:08" },
-    { lat: -16.325270, lng: -48.985520, nome: "S-06 13 - Av. Goiás / Residencial Vale Verde", bairro: "Vila Fabril", semana: "13:32", sabado: "10:12" },
-    { lat: -16.329860, lng: -48.979510, nome: "S-06 14 - R. São Simão / Esquina com a R. São Simão", bairro: "Jardim das Oliveiras", semana: "13:33", sabado: "10:13" },
-    { lat: -16.332720, lng: -48.975910, nome: "S-06 15 - Av. Prof. Benvindo Machado / ( Residencial São Jose )", bairro: "Jardim Santana", semana: "13:35", sabado: "10:15" },
-    { lat: -16.334980, lng: -48.972690, nome: "S-06 16 - GO-330 / Esquina com a R. Bela Vista", bairro: "Jardim Santana", semana: "13:36", sabado: "10:16" },
-    { lat: -16.336880, lng: -48.967860, nome: "S-06 17 - Av. Prof. Benvindo Machado / Supervi Supermercados", bairro: "Jardim Santana", semana: "13:38", sabado: "10:18" },
-    { lat: -16.335270, lng: -48.964040, nome: "S-06 18 - R. 2 / Churrasquinho do Claudinho", bairro: "Parque das Nações", semana: "13:39", sabado: "10:19" },
-    { lat: -16.334060, lng: -48.961030, nome: "S-06 19 - R. Floriano Peixoto / Arte Trigo", bairro: "St. Central", semana: "13:41", sabado: "10:21" },
-    { lat: -16.332300, lng: -48.958330, nome: "S-06 20 - Av. Getulino Artiaga / Esquina com a Av. Getulino Artiaga", bairro: "St. Central", semana: "13:42", sabado: "10:22" },
-    { lat: -16.334150, lng: -48.957440, nome: "S-06 21 - Av. Sen. José Lourenço Dias / Esquina com a v. Sen. José Lourenço Dias", bairro: "St. Central", semana: "13:44", sabado: "10:24" },
-    { lat: -16.334370, lng: -48.954780, nome: "S-06 22 - R. José Ludovíco de Almeida / Esquina com a Rua 1", bairro: "Vila Góis", semana: "13:47", sabado: "10:27" },
-    { lat: -16.335800, lng: -48.956530, nome: "S-06 23 - R. José Ludovíco de Almeida / Esquina com a Rua 4", bairro: "Vila Góis", semana: "13:49", sabado: "10:29" },
-    { lat: -16.337070, lng: -48.957750, nome: "S-06 24 - R. Eng. Portela / Posto9 Ipiranga Anápolis", bairro: "Vila Góis", semana: "13:50", sabado: "10:30" },
-    { lat: -16.341150, lng: -48.960120, nome: "S-06 25 - Av. Divino Pai Eterno / Hospital de Queimaduras", bairro: "Vila Góis", semana: "13:52", sabado: "10:32" },
-    { lat: -16.341280, lng: -48.962770, nome: "S-06 26 - Av. Contorno / Esquina com a Rua 12", bairro: "Jardim Nações Unidas", semana: "13:53", sabado: "10:33" },
-    { lat: -16.340380, lng: -48.958090, nome: "S-06 27 - R. Eng. Portela / 1724 c/ Rua 1 - de frente a praça do Restaurante Recanto Sabores", bairro: "Vila Góis", semana: "13:56", sabado: "10:36" },
-    { lat: -16.342680, lng: -48.958330, nome: "S-06 28 - R. Eng. Portela / Esquina com a Rua 6", bairro: "Vila Góis", semana: "13:56", sabado: "10:36" },
-    { lat: -16.406940, lng: -48.921300, nome: "S-06 29 - Viela Vp-7D / Laboratório Teuto", bairro: "Distrito Agroindustrial de Anápolis", semana: "14:12", sabado: "10:52" },
-  ],
-  "S-07": [
-    { lat: -16.341795, lng: -48.968923, nome: "S-07 01 - Av. Pedro Ludovico / Esquiuna com a R. Nova Delhi", bairro: "Jardim Nações Unidas", semana: "13:16", sabado: "09:56" },
-    { lat: -16.345775, lng: -48.971898, nome: "S-07 02 - Av. Pedro Ludovico / Esquina com a Av. Cachoeira Dourada", bairro: "Vila Sao Joaquim", semana: "13:17", sabado: "09:57" },
-    { lat: -16.351119, lng: -48.975223, nome: "S-07 03 - Av. Pedro Ludovico / Esquina com a R. Pinas", bairro: "Jardim Calixto", semana: "13:18", sabado: "09:58" },
-    { lat: -16.353790, lng: -48.975186, nome: "S-07 04 - Av. Isidoro Sabino Rodrigues / Esquina com a R. Willian S Rodrigues", bairro: "Parque das Primaveras", semana: "13:20", sabado: "10:00" },
-    { lat: -16.355869, lng: -48.971814, nome: "S-07 05 - Av. Isidoro Sabino Rodrigues / Esquina com a R. Marcos Hirako Mendes", bairro: "Parque das Primaveras", semana: "13:21", sabado: "10:01" },
-    { lat: -16.356983, lng: -48.969907, nome: "S-07 06 - Av. Isidoro Sabino Rodrigues / Esquina com a R. Antônio Sabino Rodrigues", bairro: "Parque das Primaveras", semana: "13:22", sabado: "10:02" },
-    { lat: -16.358950, lng: -48.965925, nome: "S-07 07 - Av. Acdo Adahil L Dias / Com a Rua JM 19", bairro: "St. Sul Jamil Miguel", semana: "13:23", sabado: "10:03" },
-    { lat: -16.366131, lng: -48.966463, nome: "S-07 08 - R. Pedro Tonelini / Com a Av. dos Operários", bairro: "Calixtolândia", semana: "13:25", sabado: "10:05" },
-    { lat: -16.367436, lng: -48.966807, nome: "S-07 09 - R. Pedro Tonelini / Com a Rua Brasiliense", bairro: "Res. Itatiaia", semana: "13:27", sabado: "10:07" },
-    { lat: -16.367344, lng: -48.969265, nome: "S-07 10 - Av. Mirage / Esquina com a R. Brasiliense", bairro: "Polocentro L", semana: "13:26", sabado: "10:06" },
-    { lat: -16.372310, lng: -48.968850, nome: "S-07 11 - Av. Mirage / Esquina com a R. do Contorno", bairro: "Polocentro L", semana: "13:29", sabado: "10:09" },
-    { lat: -16.375711, lng: -48.968193, nome: "S-07 12 - Av. Mirage / Esquina com a Av. Cantor Sinhozinho", bairro: "Polocentro L", semana: "13:31", sabado: "10:11" },
-    { lat: -16.379584, lng: -48.968270, nome: "S-07 13 - R. Col. Libanesa / Esquina com a Rua João Ocazias", bairro: "Polocentro L", semana: "13:32", sabado: "10:12" },
-    { lat: -16.379719, lng: -48.967445, nome: "S-07 14 - Av. Mirage / Com a Rua Sargento Euclides", bairro: "Polocentro L", semana: "13:33", sabado: "10:13" },
-    { lat: -16.379614, lng: -48.965990, nome: "S-07 15 - R. Srg. Euclídes / Esquina com a R. Prof. Pedro Baio", bairro: "Polocentro L", semana: "13:33", sabado: "10:13" },
-    { lat: -16.383061, lng: -48.963160, nome: "S-07 16 - R. Santana das Antas / Esquina com a R. Poe. Paulo Nunes Batista", bairro: "Polocentro 1A Etapa", semana: "13:34", sabado: "10:14" },
-    { lat: -16.385482, lng: -48.962645, nome: "S-07 17 - Av. Brasil Sul / Esquina com a R. da Associação Atlética Anapolina", bairro: "Cidade Jardim", semana: "13:36", sabado: "10:16" },
-    { lat: -16.396798, lng: -48.903089, nome: "S-07 18 - R. das Laranjeiras / Esquina com a R. Dos Eucaliptos", bairro: "Res. Cidade Industrial", semana: "13:46", sabado: "10:26" },
-    { lat: -16.394796, lng: -48.900097, nome: "S-07 19 - R. Ipê Amarelo / Esquina com a R. Jaboticabeira", bairro: "Res. Cidade Industrial", semana: "13:47", sabado: "10:27" },
-    { lat: -16.396707, lng: -48.900011, nome: "S-07 20 - R. Jerivá / Esquina com a Rua Peroba Rosa", bairro: "Res. Cidade Industrial", semana: "13:49", sabado: "10:29" },
-    { lat: -16.397641, lng: -48.899184, nome: "S-07 21 - Rua Das Amoras / Esquina com a R. dos Eucaliptos", bairro: "Res. Cidade Industrial", semana: "13:50", sabado: "10:30" },
-    { lat: -16.409100, lng: -48.901010, nome: "S-07 22 - R. 13 / Esquina com a 2", bairro: "St. Industrial Munir Calixto", semana: "13:52", sabado: "10:32" },
-    { lat: -16.407320, lng: -48.903380, nome: "S-07 23 - Av. Central / Esquina com a Rua 2", bairro: "St. Industrial Munir Calixto", semana: "13:56", sabado: "10:36" },
-    { lat: -16.411814, lng: -48.896082, nome: "S-07 24 - Av. Federal / Casa De Carnes Alves", bairro: "Jardim Esperança", semana: "13:59", sabado: "10:39" },
-    { lat: -16.409363, lng: -48.895595, nome: "S-07 25 - R. Tocantins / Esquina com a TV1", bairro: "Jardim Esperança", semana: "14:00", sabado: "10:40" },
-    { lat: -16.408148, lng: -48.894188, nome: "S-07 26 - R. Tocantins / Peg Pag Fernandes", bairro: "Jardim Esperança", semana: "14:00", sabado: "10:40" },
-    { lat: -16.407258, lng: -48.893204, nome: "S-07 27 - R. Tocantins / Esquina com a José Otílio", bairro: "Jardim Esperança", semana: "14:00", sabado: "10:40" },
-    { lat: -16.404179, lng: -48.895413, nome: "S-07 28 - R. 3 / Mercado Sobral", bairro: "St. Industrial Munir Calixto", semana: "14:03", sabado: "10:43" },
-    { lat: -16.408144, lng: -48.897596, nome: "S-07 29 - R. Higor / Esquina com a Rua Adriana Monteiro", bairro: "Jardim Esperança", semana: "14:06", sabado: "10:46" },
-    { lat: -16.409004, lng: -48.898191, nome: "S-07 30 - R. 6 / Comercial Machado", bairro: "St. Industrial Munir Calixto", semana: "14:07", sabado: "10:47" },
-    { lat: -16.406720, lng: -48.902480, nome: "S-07 31 - R. 4 / Esquina com a Av. Central", bairro: "St. Industrial Munir Calixto", semana: "14:09", sabado: "10:49" },
-    { lat: -16.404223, lng: -48.904896, nome: "S-07 32 - R. 12 / Com a Rua 5", bairro: "St. Industrial Munir Calixto", semana: "14:09", sabado: "10:49" },
-    { lat: -16.400980, lng: -48.904493, nome: "S-07 33 - R. 9 / ( Supermercado Super Jota )", bairro: "St. Industrial Munir Calixto", semana: "13:53", sabado: "10:33" },
-    { lat: -16.402030, lng: -48.907400, nome: "S-07 34 - R. 11 / Esquina com a Rua 5", bairro: "St. Industrial Munir Calixto", semana: "13:54", sabado: "10:34" },
-    { lat: -16.407150, lng: -48.919910, nome: "S-07 35 - Distrito Agroindustrial de Anápolis", bairro: "Laboratório Teuto", semana: "13:45", sabado: "10:25" },
-  ],
-  "S-08": [
-    { lat: -16.327496, lng: -48.944000, nome: "S-08 01 - Av. Mato Grosso / Esquina com a R. Vítor de Azevedo", bairro: "Jundiaí", semana: "13:14", sabado: "09:54" },
-    { lat: -16.326391, lng: -48.939123, nome: "S-08 02 - Av. Mato Grosso / Esquina com a R. José Neto Paranhos", bairro: "Jundiaí", semana: "13:16", sabado: "09:56" },
-    { lat: -16.327695, lng: -48.936176, nome: "S-08 03 - R. José Neto Paranhos / Esquina com a Rua Francisco Fontes", bairro: "Jundiaí", semana: "13:18", sabado: "09:58" },
-    { lat: -16.329140, lng: -48.935380, nome: "S-08 04 - R. José Neto Paranhos / Com a Rua Pereira de Alencastro", bairro: "Jundiaí", semana: "13:19", sabado: "09:59" },
-    { lat: -16.332940, lng: -48.934310, nome: "S-08 05 - R. José Neto Paranhos / Com a Av. Pereira do Lago", bairro: "Jundiaí", semana: "13:21", sabado: "10:01" },
-    { lat: -16.337130, lng: -48.928090, nome: "S-08 06 - R. L / Com a Av. L-15", bairro: "Jardim Europa", semana: "13:23", sabado: "10:03" },
-    { lat: -16.342288, lng: -48.936425, nome: "S-08 07 - Praça Jamel Cecílio / Planetário Digital de Anápolis", bairro: "JK Nova Capital", semana: "13:27", sabado: "10:07" },
-    { lat: -16.344580, lng: -48.935700, nome: "S-08 08 - Av. Jamel Cecílio / Esquina com a Rua 9", bairro: "Jundiaí", semana: "13:28", sabado: "10:08" },
-    { lat: -16.347500, lng: -48.935310, nome: "S-08 09 - Av. Jamel Cecílio / Esquina com a R. 23", bairro: "Jundiaí", semana: "13:30", sabado: "10:10" },
-    { lat: -16.351770, lng: -48.936420, nome: "S-08 10 - R. 09 / Casa Nobre Restaurante", bairro: "Alto da Bela Vista", semana: "13:32", sabado: "10:12" },
-    { lat: -16.354850, lng: -48.937020, nome: "S-08 11 - Av. Paraguai / Com a Rua 136", bairro: "Alto da Bela Vista", semana: "13:34", sabado: "10:14" },
-    { lat: -16.358418, lng: -48.935297, nome: "S-08 12 - Av. Paraguai / Esquina com a R. Diamantina", bairro: "São Sebastiao", semana: "13:35", sabado: "10:15" },
-    { lat: -16.359996, lng: -48.938611, nome: "S-08 13 - R. Jamil Aidar / Com a Rua Ouro Branco", bairro: "São Sebastiao", semana: "13:37", sabado: "10:17" },
-    { lat: -16.362730, lng: -48.938310, nome: "S-08 14 - Av. Arco Verde / Esquina com a Rua 26", bairro: "Jardim Arco Verde", semana: "13:38", sabado: "10:18" },
-    { lat: -16.361966, lng: -48.942258, nome: "S-08 15 - R. Silvia Vitória Leão Braga Gomes / Esquina com a R. Gabriela Alexandre Dutra", bairro: "St. Sul 3A Etapa", semana: "13:40", sabado: "10:20" },
-    { lat: -16.360209, lng: -48.944004, nome: "S-08 16 - R. Maria Augusta Rocha / Esquina com a R. Cristiane Alexandre dos Santos", bairro: "St. Sul III", semana: "13:41", sabado: "10:21" },
-    { lat: -16.358712, lng: -48.946491, nome: "S-08 17 - Rua 1 / Esquina com a R. Lucinda Silva Santos", bairro: "Residencial Itororó", semana: "13:44", sabado: "10:24" },
-    { lat: -16.364383, lng: -48.943029, nome: "S-08 18 - R. 21 / Esquina com a Av. Ferroviária,", bairro: "Jardim Arco Verde", semana: "13:46", sabado: "10:26" },
-    { lat: -16.365600, lng: -48.942370, nome: "S-08 19 - Av. Arco Verde / Mercadinho 2 Irmãos", bairro: "Jardim Arco Verde", semana: "13:48", sabado: "10:28" },
-    { lat: -16.368540, lng: -48.943900, nome: "S-08 20 - Av. Arco Verde / Esquina com a Rua 17", bairro: "Jardim Arco Verde", semana: "13:49", sabado: "10:29" },
-    { lat: -16.368250, lng: -48.946310, nome: "S-08 21 - Av. Principal / Esquina com a Rua 7", bairro: "St. Santa Clara", semana: "13:51", sabado: "10:31" },
-    { lat: -16.365500, lng: -48.949006, nome: "S-08 22 - Av. Principal / Esquina com a R. Diana Batista", bairro: "Res. Geovanni Braga", semana: "13:51", sabado: "10:31" },
-    { lat: -16.368702, lng: -48.951621, nome: "S-08 23 - Av. Amanda Braga Tiburcio / Mercearia Olimpio", bairro: "St. Sul", semana: "13:54", sabado: "10:34" },
-    { lat: -16.370007, lng: -48.950272, nome: "S-08 24 - Av. Amanda Braga Tibúrcio / Esquina com a R. Dirce Maria Nunes", bairro: "St. Sul", semana: "13:54", sabado: "10:34" },
-    { lat: -16.372097, lng: -48.948205, nome: "S-08 25 - R. SC 7 / Esquina com a R. SC 3", bairro: "St. Santa Clara", semana: "13:56", sabado: "10:36" },
-    { lat: -16.372880, lng: -48.949720, nome: "S-08 26 - Av. Tiradentes / Com a Av. Ipiranga", bairro: "Jardim Sao Paulo", semana: "13:58", sabado: "10:38" },
-    { lat: -16.376986, lng: -48.949745, nome: "S-08 27 - Av. Ipiranga / Esquina com a R. São João", bairro: "Jardim Sao Paulo", semana: "13:59", sabado: "10:39" },
-    { lat: -16.377900, lng: -48.951600, nome: "S-08 28 - Av. Contorno / SUPERMERCADO SALERNO", bairro: "Jardim Arco Verde", semana: "14:00", sabado: "10:40" },
-    { lat: -16.381270, lng: -48.957940, nome: "S-08 29 - Av. São Paulo / Supermercado Melo", bairro: "São João", semana: "14:02", sabado: "10:42" },
-    { lat: -16.387450, lng: -48.959400, nome: "S-08 30 - Av. Independência / Com a Av. Travessa A", bairro: "Vila Esperanca", semana: "14:05", sabado: "10:45" },
-    { lat: -16.387316, lng: -48.956927, nome: "S-08 31 - Av. Independência / Esquina com a R. da Abolição", bairro: "Vila Esperanca", semana: "14:07", sabado: "10:47" },
-    { lat: -16.389570, lng: -48.957950, nome: "S-08 32 - R. Abolição / Com a Rua 29 de Dezembro", bairro: "Vila Esperanca", semana: "14:07", sabado: "10:47" },
-    { lat: -16.407141, lng: -48.919515, nome: "S-08 33 - GO / Laboratório Teuto", bairro: "Distrito Agro", semana: "14:18", sabado: "10:58" },
-  ],
-  ...routeDataS9toS11
+// Helper function to get available turnos
+export const getAvailableTurnos = () => {
+    return Object.keys(allRouteData);
 };
 
-const terceiroTurnoRoutes: RouteData = {
-  "T-01": [
-    { lat: -16.328118, lng: -48.953529, nome: "T-01 01 - Exemplo ponto 3° Turno", bairro: "Centro", semana: "22:10", sabado: "22:10" },
-    { lat: -16.407132, lng: -48.918605, nome: "T-01 Final - Distrito Agroindustrial de Anápolis", bairro: "Laboratório Teuto", semana: "23:00", sabado: "23:00" },
-  ],
-  // Add more routes for 3° Turno when available
+// Helper function to get available routes
+export const getAvailableRoutes = (turno) => {
+    return Object.keys(allRouteData[turno] || {});
 };
-
-const administrativoRoutes: RouteData = {
-  "A-01": [
-    { lat: -16.328118, lng: -48.953529, nome: "A-01 01 - Exemplo ponto Administrativo", bairro: "Centro", semana: "07:10", sabado: "07:10" },
-    { lat: -16.407132, lng: -48.918605, nome: "A-01 Final - Distrito Agroindustrial de Anápolis", bairro: "Laboratório Teuto", semana: "08:00", sabado: "08:00" },
-  ],
-  // Add more routes for Administrativo when available
-};
-
-// Combined data structure for all shifts
-export const allRouteData: TurnoRouteData = {
-  "1° Turno": primeiroTurnoRoutes,
-  "2° Turno": segundoTurnoRoutes,
-  "3° Turno": terceiroTurnoRoutes,
-  "Administrativo": administrativoRoutes,
-};
-
-// Function to add new routes to a specific shift
-export function addRoutesToShift(turno: string, routes: RouteData): void {
-  if (!allRouteData[turno]) {
-    allRouteData[turno] = {};
-  }
-  
-  Object.entries(routes).forEach(([routeId, stops]) => {
-    allRouteData[turno][routeId] = stops;
-  });
-}
-
-// Function to get available turnos
-export function getAvailableTurnos(): string[] {
-  return Object.keys(allRouteData);
-}
-
-// Function to get available routes for a specific turno
-export function getAvailableRoutes(turno: string): string[] {
-  if (!allRouteData[turno]) return [];
-  return Object.keys(allRouteData[turno]);
-}
