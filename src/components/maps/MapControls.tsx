@@ -124,7 +124,10 @@ const MapControls = ({
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="flex-1"
               />
-              <Button onClick={handleSearch}>
+              <Button 
+                onClick={handleSearch} 
+                data-search-button="true"
+              >
                 <Search className="h-4 w-4" />
               </Button>
             </div>

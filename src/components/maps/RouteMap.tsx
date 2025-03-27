@@ -21,6 +21,7 @@ const RouteMap = ({ selectedRota, selectedTurno, busStopsByRoute, searchQuery }:
   const flagMarkersRef = useRef<google.maps.Marker[]>([]);
   const [mapLoaded, setMapLoaded] = useState(false);
   const scriptLoadedRef = useRef<boolean>(false);
+  const searchBoxRef = useRef<google.maps.places.SearchBox | null>(null);
 
   const GOOGLE_MAPS_API_KEY = "AIzaSyDKsBrWnONeKqDwT4I6ooc42ogm57cqJbI";
 
@@ -93,67 +94,15 @@ const RouteMap = ({ selectedRota, selectedTurno, busStopsByRoute, searchQuery }:
       const input = document.getElementById("search-input") as HTMLInputElement;
       if (input) {
         const searchBox = new google.maps.places.SearchBox(input);
+        searchBoxRef.current = searchBox;
 
         map.addListener("bounds_changed", () => {
           searchBox.setBounds(map.getBounds() as google.maps.LatLngBounds);
         });
 
+        // Don't automatically search when places change - we'll handle this manually
         searchBox.addListener("places_changed", () => {
-          const places = searchBox.getPlaces();
-          if (places?.length === 0) return;
-
-          const place = places?.[0];
-          if (!place?.geometry?.location) return;
-
-          // Center map on the selected place
-          map.setCenter(place.geometry.location);
-          map.setZoom(15);
-
-          // Add or update home marker
-          if (homeMarkerRef.current) {
-            homeMarkerRef.current.setMap(null);
-          }
-
-          // Create house icon SVG
-          const houseIcon = {
-            url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(`
-              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="#4B5563" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 10.182V22h18V10.182L12 2z"/>
-                <rect x="9" y="14" width="6" height="8"/>
-              </svg>
-            `),
-            scaledSize: new google.maps.Size(40, 40),
-            origin: new google.maps.Point(0, 0),
-            anchor: new google.maps.Point(20, 40),
-          };
-
-          // Create marker for home location
-          homeMarkerRef.current = new google.maps.Marker({
-            map: map,
-            position: place.geometry.location,
-            icon: houseIcon,
-            title: "Seu endereço",
-            zIndex: 1000, // Higher zIndex to appear above bus stop markers
-            animation: google.maps.Animation.DROP
-          });
-
-          // Add info window for home marker
-          homeMarkerRef.current.addListener("click", () => {
-            if (infoWindowRef.current) {
-              const contentString = `
-                <div class="p-3">
-                  <h3 class="font-bold text-base mb-1">Seu endereço</h3>
-                  <p class="mb-1">${place.formatted_address || place.name}</p>
-                </div>
-              `;
-              
-              infoWindowRef.current.setContent(contentString);
-              infoWindowRef.current.open({
-                anchor: homeMarkerRef.current,
-                map: mapInstanceRef.current,
-              });
-            }
-          });
+          // This event will be handled by the search button click or selection
         });
       }
     };
@@ -408,54 +357,137 @@ const RouteMap = ({ selectedRota, selectedTurno, busStopsByRoute, searchQuery }:
     }
   }, [selectedRota, selectedTurno, mapLoaded, displayAllRouteMarkers]);
 
-  // Handle search query with debouncing
-  useEffect(() => {
-    if (!mapLoaded || !searchQuery.trim() || !mapInstanceRef.current) return;
-
-    // Debounce search
-    const searchTimeout = setTimeout(() => {
-      // Simple search through the stops
-      const allStops = Object.values(busStopsByRoute).flat();
-      const matchingStops = allStops.filter(stop => 
-        stop.nome.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-
-      if (matchingStops.length > 0) {
-        const firstMatch = matchingStops[0];
-        mapInstanceRef.current?.setCenter({ lat: firstMatch.lat, lng: firstMatch.lng });
-        mapInstanceRef.current?.setZoom(17);
-
-        // Find and activate the corresponding marker
-        const matchingMarker = markersRef.current.find(marker => 
-          marker.getTitle()?.includes(firstMatch.nome)
+  // Function to handle search button click
+  const handleSearchButtonClick = useCallback(() => {
+    if (!searchBoxRef.current || !mapInstanceRef.current) return;
+    
+    const places = searchBoxRef.current.getPlaces();
+    if (!places || places.length === 0) {
+      // If no places found through PlacesAPI, try searching through bus stops
+      if (searchQuery.trim()) {
+        const allStops = Object.values(busStopsByRoute).flat();
+        const matchingStops = allStops.filter(stop => 
+          stop.nome.toLowerCase().includes(searchQuery.toLowerCase())
         );
 
-        if (matchingMarker && infoWindowRef.current) {
-          const contentString = `
-            <div class="p-3">
-              <h3 class="font-bold text-base mb-1">${firstMatch.nome}</h3>
-              <p class="mb-1"><strong>Dias de semana:</strong> ${firstMatch.semana}</p>
-              <p class="mb-1"><strong>Sábado:</strong> ${firstMatch.sabado}</p>
-              <p class="mb-1"><strong>Bairro:</strong> ${firstMatch.bairro || ''}</p>
-              <div class="flex mt-2">
-                <a href="https://www.google.com/maps?q=${firstMatch.lat},${firstMatch.lng}" target="_blank" class="text-blue-500 underline">Abrir no Google Maps</a>
+        if (matchingStops.length > 0) {
+          const firstMatch = matchingStops[0];
+          mapInstanceRef.current.setCenter({ lat: firstMatch.lat, lng: firstMatch.lng });
+          mapInstanceRef.current.setZoom(17);
+
+          // Find and activate the corresponding marker
+          const matchingMarker = markersRef.current.find(marker => 
+            marker.getTitle()?.includes(firstMatch.nome)
+          );
+
+          if (matchingMarker && infoWindowRef.current) {
+            const contentString = `
+              <div class="p-3">
+                <h3 class="font-bold text-base mb-1">${firstMatch.nome}</h3>
+                <p class="mb-1"><strong>Dias de semana:</strong> ${firstMatch.semana}</p>
+                <p class="mb-1"><strong>Sábado:</strong> ${firstMatch.sabado}</p>
+                <p class="mb-1"><strong>Bairro:</strong> ${firstMatch.bairro || ''}</p>
+                <div class="flex mt-2">
+                  <a href="https://www.google.com/maps?q=${firstMatch.lat},${firstMatch.lng}" target="_blank" class="text-blue-500 underline">Abrir no Google Maps</a>
+                </div>
               </div>
-            </div>
-          `;
+            `;
 
-          infoWindowRef.current.setContent(contentString);
-          infoWindowRef.current.open({
-            anchor: matchingMarker,
-            map: mapInstanceRef.current,
-          });
+            infoWindowRef.current.setContent(contentString);
+            infoWindowRef.current.open({
+              anchor: matchingMarker,
+              map: mapInstanceRef.current,
+            });
+          }
+        } else {
+          toast.error("Nenhum ponto encontrado com esse termo");
         }
-      } else {
-        toast.error("Nenhum ponto encontrado com esse termo");
       }
-    }, 300); // 300ms debounce
+      return;
+    }
 
-    return () => clearTimeout(searchTimeout);
-  }, [searchQuery, mapLoaded, busStopsByRoute]);
+    const place = places[0];
+    if (!place.geometry?.location) return;
+
+    // Center map on the selected place
+    mapInstanceRef.current.setCenter(place.geometry.location);
+    mapInstanceRef.current.setZoom(15);
+
+    // Add or update home marker
+    if (homeMarkerRef.current) {
+      homeMarkerRef.current.setMap(null);
+    }
+
+    // Create house icon SVG
+    const houseIcon = {
+      url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(`
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="#4B5563" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 10.182V22h18V10.182L12 2z"/>
+          <rect x="9" y="14" width="6" height="8"/>
+        </svg>
+      `),
+      scaledSize: new google.maps.Size(40, 40),
+      origin: new google.maps.Point(0, 0),
+      anchor: new google.maps.Point(20, 40),
+    };
+
+    // Create marker for home location
+    homeMarkerRef.current = new google.maps.Marker({
+      map: mapInstanceRef.current,
+      position: place.geometry.location,
+      icon: houseIcon,
+      title: "Seu endereço",
+      zIndex: 1000, // Higher zIndex to appear above bus stop markers
+      animation: google.maps.Animation.DROP
+    });
+
+    // Add info window for home marker
+    homeMarkerRef.current.addListener("click", () => {
+      if (infoWindowRef.current) {
+        const contentString = `
+          <div class="p-3">
+            <h3 class="font-bold text-base mb-1">Seu endereço</h3>
+            <p class="mb-1">${place.formatted_address || place.name}</p>
+          </div>
+        `;
+        
+        infoWindowRef.current.setContent(contentString);
+        infoWindowRef.current.open({
+          anchor: homeMarkerRef.current,
+          map: mapInstanceRef.current,
+        });
+      }
+    });
+  }, [busStopsByRoute, searchQuery]);
+
+  // Modified search query effect to NOT automatically search as you type
+  useEffect(() => {
+    // This effect now only sets up the search button click handler in the MapControls
+    if (!mapLoaded) return;
+    
+    // Handle the search button click from the parent component
+    const searchButton = document.querySelector('[data-search-button="true"]');
+    if (searchButton) {
+      searchButton.addEventListener('click', handleSearchButtonClick);
+      return () => {
+        searchButton.removeEventListener('click', handleSearchButtonClick);
+      };
+    }
+  }, [mapLoaded, handleSearchButtonClick]);
+
+  // Set up listener for the places_changed event to handle address selection
+  useEffect(() => {
+    if (!mapLoaded || !searchBoxRef.current) return;
+    
+    const placesChangedListener = searchBoxRef.current.addListener('places_changed', handleSearchButtonClick);
+    
+    return () => {
+      // Clean up listener
+      if (placesChangedListener) {
+        placesChangedListener.remove();
+      }
+    };
+  }, [mapLoaded, handleSearchButtonClick]);
 
   return (
     <Card className="overflow-hidden">

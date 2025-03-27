@@ -23,9 +23,10 @@ const MapaRotas = () => {
     return getAvailableRoutes(selectedTurno);
   }, [selectedTurno]);
 
-  // Handle search - kept as is since it's simple
+  // Handle search button click
   const handleSearch = useCallback(() => {
-    // Actual search happens in RouteMap component through searchQuery prop
+    // The actual search implementation is now in the RouteMap component
+    // This function is called when the search button is clicked
   }, []);
 
   // Clear selected route when turno changes
