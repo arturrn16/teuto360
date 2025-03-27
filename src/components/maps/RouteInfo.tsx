@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -33,7 +32,6 @@ const RouteInfo = ({
   const [selectedRota, setSelectedRota] = useState<string>("");
   const [searchNeighborhood, setSearchNeighborhood] = useState("");
   
-  // Get unique neighborhoods from all bus stops
   const uniqueNeighborhoods = useMemo(() => {
     const neighborhoodSet = new Set<string>();
     
@@ -48,7 +46,6 @@ const RouteInfo = ({
     return Array.from(neighborhoodSet).sort();
   }, [busStopsByRoute]);
   
-  // Calculate route statistics
   const calculateRouteStats = useCallback((routeId: string) => {
     const stops = busStopsByRoute[routeId] || [];
     
@@ -59,24 +56,19 @@ const RouteInfo = ({
     const firstStop = stops[0];
     const lastStop = stops[stops.length - 1];
     
-    // Parse time from format HH:MM
     const parseTime = (timeStr: string) => {
       const [hours, minutes] = timeStr.split(":").map(Number);
-      return hours * 60 + minutes; // Convert to minutes
+      return hours * 60 + minutes;
     };
     
-    // Parse semana (weekday) time for first and last stops
     const firstTimeMinutes = parseTime(firstStop.semana);
     const lastTimeMinutes = parseTime(lastStop.semana);
     
-    // Calculate time difference in minutes
     let diffMinutes = lastTimeMinutes - firstTimeMinutes;
     if (diffMinutes < 0) {
-      // Handle if route goes past midnight
       diffMinutes += 24 * 60;
     }
     
-    // Format time difference as HH:MM
     const hours = Math.floor(diffMinutes / 60);
     const minutes = diffMinutes % 60;
     const formattedTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
@@ -87,7 +79,6 @@ const RouteInfo = ({
     };
   }, [busStopsByRoute]);
   
-  // Find routes that serve a specific neighborhood
   const findRoutesByNeighborhood = useCallback((neighborhood: string) => {
     const matchingRoutes = Object.entries(busStopsByRoute).filter(([_, stops]) => {
       return stops.some(stop => stop.bairro.toLowerCase() === neighborhood.toLowerCase());
@@ -96,7 +87,6 @@ const RouteInfo = ({
     return matchingRoutes.map(([routeId]) => routeId);
   }, [busStopsByRoute]);
   
-  // Handle neighborhood search
   const handleNeighborhoodSearch = () => {
     if (!searchNeighborhood) {
       toast.error("Selecione um bairro para buscar");
