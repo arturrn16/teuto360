@@ -67,7 +67,7 @@ const RouteMap = ({ selectedRota, selectedTurno, busStopsByRoute, searchQuery }:
     const map = new google.maps.Map(mapRef.current, {
       center: { lat: -16.328118, lng: -48.953529 },
       zoom: 12,
-      mapTypeId: google.maps.MapTypeId.SATELLITE, // Definir tipo de mapa como satélite
+      mapTypeId: "satellite", // Use string literal instead of MapTypeId enum
       mapTypeControl: true,
       streetViewControl: false,
       fullscreenControl: true,
