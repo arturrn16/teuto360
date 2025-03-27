@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { Container } from "@/components/ui/container";
 import MapControls from "@/components/maps/MapControls";
 import RouteMap from "@/components/maps/RouteMap";
@@ -10,20 +10,23 @@ const MapaRotas = () => {
   const [selectedRota, setSelectedRota] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Get bus stops for the selected shift
-  const getBusStopsForTurno = useCallback(() => {
+  // Memoize the available turnos to prevent recalculation
+  const availableTurnos = useMemo(() => getAvailableTurnos(), []);
+
+  // Get bus stops for the selected shift - memoized
+  const busStopsForTurno = useMemo(() => {
     return allRouteData[selectedTurno] || {};
   }, [selectedTurno]);
 
-  // Get available routes for the selected shift
-  const getRoutesForTurno = useCallback(() => {
+  // Get available routes for the selected shift - memoized
+  const routesForTurno = useMemo(() => {
     return getAvailableRoutes(selectedTurno);
   }, [selectedTurno]);
 
-  // Handle search
-  const handleSearch = () => {
+  // Handle search - kept as is since it's simple
+  const handleSearch = useCallback(() => {
     // Actual search happens in RouteMap component through searchQuery prop
-  };
+  }, []);
 
   // Clear selected route when turno changes
   useEffect(() => {
@@ -41,13 +44,13 @@ const MapaRotas = () => {
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
           handleSearch={handleSearch}
-          availableTurnos={getAvailableTurnos()}
-          getAvailableRoutes={getRoutesForTurno}
+          availableTurnos={availableTurnos}
+          getAvailableRoutes={() => routesForTurno}
         />
         <RouteMap
           selectedRota={selectedRota}
           selectedTurno={selectedTurno}
-          busStopsByRoute={getBusStopsForTurno()}
+          busStopsByRoute={busStopsForTurno}
           searchQuery={searchQuery}
         />
       </div>
