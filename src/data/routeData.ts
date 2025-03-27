@@ -1,3 +1,4 @@
+
 import { BusStop, RouteData, TurnoRouteData } from "@/types/mapTypes";
 
 // Define bus stops for each route
@@ -181,4 +182,53 @@ const s12Route: BusStop[] = [
   { lat: -16.343010, lng: -48.920710, nome: "S-12 32 - R. 15 / Esquina com a Av. Patriarca", bairro: "Lourdes", semana: "13:53", sabado: "10:33" },
   { lat: -16.346930, lng: -48.920590, nome: "S-12 33 - Av. Patriarca / Esquina com a Rua 17", bairro: "Lourdes", semana: "13:53", sabado: "10:33" },
   { lat: -16.348880, lng: -48.920720, nome: "S-12 34 - Av. Patriarca / Esquina com a R. 19", bairro: "Lourdes", semana: "13:54", sabado: "10:34" },
-  { lat: -16.348930, lng: -48.916420, nome: "S-12 35 - Av. Brasil / Esquina com a R. 23",
+  { lat: -16.348930, lng: -48.916420, nome: "S-12 35 - Av. Brasil / Esquina com a R. 23", bairro: "Chácaras Americanas", semana: "13:55", sabado: "10:35" },
+  { lat: -16.407150, lng: -48.919910, nome: "S-12 36 - Viela Vp / Laboratório Teuto", bairro: "Distrito Agroindustrial de Anápolis", semana: "14:09", sabado: "10:49" }
+];
+
+// Function to get available turnos
+export const getAvailableTurnos = () => {
+  return Object.keys(allRouteData);
+};
+
+// Function to get available routes for a given turno
+export const getAvailableRoutes = (turno: string) => {
+  return Object.keys(allRouteData[turno] || {});
+};
+
+// Combine all route data
+export const allRouteData: TurnoRouteData = {
+  "1° Turno": {
+    "P-01": p01Route,
+    "P-02": p02Route,
+    "P-03": p03Route,
+    "P-04": p04Route,
+    "P-05": p05Route,
+    "P-06": p06Route,
+    "P-07": p07Route,
+    "P-08": p08Route,
+    "P-09": p09Route,
+    "P-10": p10Route,
+    "P-11": p11Route,
+    "P-12": p12Route,
+    "P-13": p13Route,
+    "P-14": p14Route,
+    "P-15": p15Route,
+  },
+  "2° Turno": {
+    "S-01": s01Route,
+    "S-02": s02Route,
+    "S-03": s03Route,
+    "S-04": s04Route,
+    "S-05": s05Route,
+    "S-06": s06Route,
+    "S-07": s07Route,
+    "S-08": s08Route,
+    "S-09": s09Route,
+    "S-10": s10Route,
+    "S-11": s11Route,
+    "S-12": s12Route,
+  },
+  "3° Turno": {},
+  "Administrativo": {},
+};

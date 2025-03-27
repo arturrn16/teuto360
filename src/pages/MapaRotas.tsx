@@ -3,7 +3,7 @@ import { useState, useCallback } from "react";
 import { Container } from "@/components/ui/container";
 import MapControls from "@/components/maps/MapControls";
 import RouteMap from "@/components/maps/RouteMap";
-import { allRouteData, getAvailableTurnos, getAvailableRoutes } from "@/data/routeData";
+import { getAvailableTurnos, getAvailableRoutes, allRouteData } from "@/data/routeData";
 
 const MapaRotas = () => {
   const [selectedTurno, setSelectedTurno] = useState("1° Turno");
