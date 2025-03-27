@@ -1,16 +1,16 @@
 
 // Define route colors for visual differentiation on the map
 export const ROUTE_COLORS = {
-  // 1° Turno Routes
-  "P-01": "#E53E3E", // Red
-  "P-02": "#38A169", // Green
-  "P-03": "#3182CE", // Blue
-  "P-04": "#DD6B20", // Orange
-  "P-05": "#805AD5", // Purple
-  "P-06": "#D53F8C", // Pink
-  "P-07": "#2D3748", // Dark gray
-  "P-08": "#4299E1", // Light blue
-  "P-09": "#F6AD55", // Light orange
+  // 1° Turno Routes (P-01 to P-15)
+  "P-1": "#E53E3E", // Red
+  "P-2": "#38A169", // Green
+  "P-3": "#3182CE", // Blue
+  "P-4": "#DD6B20", // Orange
+  "P-5": "#805AD5", // Purple
+  "P-6": "#D53F8C", // Pink
+  "P-7": "#2D3748", // Dark gray
+  "P-8": "#4299E1", // Light blue
+  "P-9": "#F6AD55", // Light orange
   "P-10": "#68D391", // Light green
   "P-11": "#DC2626", // Red
   "P-12": "#059669", // Green
@@ -18,7 +18,7 @@ export const ROUTE_COLORS = {
   "P-14": "#D97706", // Orange
   "P-15": "#7C3AED", // Purple
   
-  // 2° Turno Routes
+  // 2° Turno Routes (S-01 to S-12)
   "S-01": "#B91C1C", // Red
   "S-02": "#15803D", // Green
   "S-03": "#1E40AF", // Blue
@@ -32,7 +32,7 @@ export const ROUTE_COLORS = {
   "S-11": "#BE123C", // Red
   "S-12": "#047857", // Green
   
-  // 3° Turno Routes
+  // 3° Turno Routes (T-01 to T-08)
   "T-01": "#991B1B", // Red
   "T-02": "#166534", // Green
   "T-03": "#1E3A8A", // Blue
@@ -42,13 +42,17 @@ export const ROUTE_COLORS = {
   "T-07": "#111827", // Dark gray
   "T-08": "#1D4ED8", // Light blue
   
-  // Administrativo Routes
-  "A-01": "#7F1D1D", // Red
-  "A-02": "#14532D", // Green
-  "A-03": "#1E3A8A", // Blue
-  "A-04": "#7C2D12", // Orange
-  "A-05": "#4C1D95", // Purple
-  "A-06": "#701A75", // Pink
-  "A-07": "#030712", // Dark gray
-  "A-08": "#1E40AF", // Light blue
+  // Administrativo Routes (ADM-01 to ADM-08)
+  "ADM-01": "#7F1D1D", // Red
+  "ADM-02": "#14532D", // Green
+  "ADM-03": "#1E3A8A", // Blue
+  "ADM-04": "#7C2D12", // Orange
+  "ADM-05": "#4C1D95", // Purple
+  "ADM-06": "#701A75", // Pink
+  "ADM-07": "#030712", // Dark gray
+  "ADM-08": "#1E40AF", // Light blue
+  
+  // Goiânia Routes (GYN ADM-01 and GYN ADM-02)
+  "GYN ADM-01": "#881337", // Deep purple
+  "GYN ADM-02": "#1F2937", // Dark blue
 };
