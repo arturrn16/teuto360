@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { FlagTriangleLeft, FlagTriangleRight } from "lucide-react";
@@ -27,15 +26,17 @@ const RouteMap = ({ selectedRota, selectedTurno, busStopsByRoute, searchQuery }:
   // Helper function to create custom route icons
   const createRouteIcon = (routeName: string, routeColor: string) => {
     // Extract route type (P, S, T, ADM) and number
-    const routeType = routeName.charAt(0);
-    const routeNum = routeName.slice(routeName.indexOf('-') + 1);
+    const routeType = routeName.includes("ADM") ? "ADM" : routeName.charAt(0);
+    const routeNum = routeName.includes("ADM") 
+      ? routeName.slice(routeName.indexOf('-') + 1) 
+      : routeName.slice(routeName.indexOf('-') + 1);
     
     // Create SVG with route label
     return {
       url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(`
         <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36">
           <circle cx="18" cy="18" r="16" fill="${routeColor}" stroke="white" stroke-width="2"/>
-          <text x="18" y="15" font-family="Arial" font-size="${routeNum.length > 2 ? '7' : '8'}" font-weight="bold" text-anchor="middle" fill="white">${routeType}</text>
+          <text x="18" y="15" font-family="Arial" font-size="${routeType.length > 1 ? '6' : '8'}" font-weight="bold" text-anchor="middle" fill="white">${routeType}</text>
           <text x="18" y="24" font-family="Arial" font-size="${routeNum.length > 2 ? '7' : '8'}" font-weight="bold" text-anchor="middle" fill="white">${routeNum}</text>
         </svg>
       `),
@@ -63,11 +64,11 @@ const RouteMap = ({ selectedRota, selectedTurno, busStopsByRoute, searchQuery }:
   const initMap = () => {
     if (!mapRef.current) return;
 
-    // Initialize Google Map
+    // Initialize Google Map with satellite view
     const map = new google.maps.Map(mapRef.current, {
       center: { lat: -16.328118, lng: -48.953529 },
       zoom: 12,
-      mapTypeId: "satellite", // Use string literal instead of MapTypeId enum
+      mapTypeId: "satellite", // Set to satellite view by default
       mapTypeControl: true,
       streetViewControl: false,
       fullscreenControl: true,

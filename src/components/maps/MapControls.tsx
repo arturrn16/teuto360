@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -42,14 +41,15 @@ const MapControls = ({
 
   // Function to filter route colors by the selected shift
   const getRouteColorsForTurno = () => {
-    const prefixMap = {
+    const prefixMap: Record<string, string> = {
       "1° Turno": "P-",
       "2° Turno": "S-",
       "3° Turno": "T-",
-      "Administrativo": "A-"
+      "Administrativo": "ADM-",
+      "Goiânia": "GYN ADM-"
     };
     
-    const prefix = prefixMap[selectedTurno as keyof typeof prefixMap];
+    const prefix = prefixMap[selectedTurno];
     
     if (!prefix) return {};
     

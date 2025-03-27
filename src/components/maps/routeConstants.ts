@@ -43,16 +43,16 @@ export const ROUTE_COLORS = {
   "T-08": "#1D4ED8", // Light blue
   
   // Administrativo Routes (ADM-01 to ADM-08)
-  "ADM-01": "#7F1D1D", // Red
-  "ADM-02": "#14532D", // Green
-  "ADM-03": "#1E3A8A", // Blue
-  "ADM-04": "#7C2D12", // Orange
-  "ADM-05": "#4C1D95", // Purple
-  "ADM-06": "#701A75", // Pink
-  "ADM-07": "#030712", // Dark gray
-  "ADM-08": "#1E40AF", // Light blue
+  "ADM-01": "#7F1D1D", // Dark red
+  "ADM-02": "#14532D", // Dark green
+  "ADM-03": "#1E3A8A", // Dark blue
+  "ADM-04": "#7C2D12", // Dark orange
+  "ADM-05": "#4C1D95", // Dark purple
+  "ADM-06": "#701A75", // Dark pink
+  "ADM-07": "#030712", // Very dark gray
+  "ADM-08": "#1E40AF", // Medium blue
   
   // Goiânia Routes (GYN ADM-01 and GYN ADM-02)
-  "GYN ADM-01": "#881337", // Deep purple
-  "GYN ADM-02": "#1F2937", // Dark blue
+  "GYN ADM-01": "#881337", // Deep red
+  "GYN ADM-02": "#1F2937", // Dark blue-gray
 };
