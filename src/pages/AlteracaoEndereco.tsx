@@ -22,9 +22,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { FormLayout } from "@/components/FormLayout";
-import { Upload, X } from "lucide-react";
+import { Upload, X, Check, ChevronDown } from "lucide-react";
 
 interface FormValues {
   telefone: string;
@@ -45,6 +51,8 @@ const AlteracaoEndereco = () => {
   const [isLoadingCep, setIsLoadingCep] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [fileUploading, setFileUploading] = useState(false);
+  const [showRotaDropdown, setShowRotaDropdown] = useState(false);
+  const [showNovaRotaDropdown, setShowNovaRotaDropdown] = useState(false);
   
   const form = useForm<FormValues>({
     defaultValues: {
@@ -193,6 +201,56 @@ const AlteracaoEndereco = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+  
+  // Custom dropdown selector for mobile
+  const MobileDropdownSelector = ({ 
+    options, 
+    value, 
+    onChange, 
+    placeholder, 
+    isOpen, 
+    setIsOpen 
+  }: { 
+    options: string[]; 
+    value: string; 
+    onChange: (value: string) => void; 
+    placeholder: string; 
+    isOpen: boolean; 
+    setIsOpen: (isOpen: boolean) => void;
+  }) => {
+    return (
+      <div className="relative w-full">
+        <button
+          type="button"
+          className="form-select-input flex items-center justify-between w-full"
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          <span className={value ? "" : "text-gray-400"}>
+            {value || placeholder}
+          </span>
+          <ChevronDown className="h-4 w-4" />
+        </button>
+        
+        {isOpen && (
+          <div className="absolute z-50 w-full mt-1 bg-gray-800 text-white border border-gray-700 rounded-md shadow-lg max-h-60 overflow-auto">
+            {options.map((option) => (
+              <div 
+                key={option}
+                className="flex items-center justify-between px-4 py-3 border-b border-gray-700 last:border-0"
+                onClick={() => {
+                  onChange(option);
+                  setIsOpen(false);
+                }}
+              >
+                <span>{option}</span>
+                {value === option && <Check className="h-4 w-4" />}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
   };
   
   return (
@@ -374,21 +432,32 @@ const AlteracaoEndereco = () => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="form-field-label">Rota Atual</FormLabel>
-                <Select 
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger className="form-select-input">
-                      <SelectValue placeholder="Selecione sua rota atual" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {rotaOptions.map((rota) => (
-                      <SelectItem key={rota} value={rota}>{rota}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {window.innerWidth < 640 ? (
+                  <MobileDropdownSelector
+                    options={rotaOptions}
+                    value={field.value}
+                    onChange={(value) => form.setValue("rotaAtual", value)}
+                    placeholder="Selecione sua rota atual"
+                    isOpen={showRotaDropdown}
+                    setIsOpen={setShowRotaDropdown}
+                  />
+                ) : (
+                  <Select 
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="form-select-input">
+                        <SelectValue placeholder="Selecione sua rota atual" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {rotaOptions.map((rota) => (
+                        <SelectItem key={rota} value={rota}>{rota}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
                 <FormMessage />
               </FormItem>
             )}
@@ -434,21 +503,32 @@ const AlteracaoEndereco = () => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="form-field-label">Nova Rota</FormLabel>
-                  <Select 
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger className="form-select-input">
-                        <SelectValue placeholder="Selecione a nova rota" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {rotaOptions.map((rota) => (
-                        <SelectItem key={rota} value={rota}>{rota}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  {window.innerWidth < 640 ? (
+                    <MobileDropdownSelector
+                      options={rotaOptions}
+                      value={field.value || ""}
+                      onChange={(value) => form.setValue("novaRota", value)}
+                      placeholder="Selecione a nova rota"
+                      isOpen={showNovaRotaDropdown}
+                      setIsOpen={setShowNovaRotaDropdown}
+                    />
+                  ) : (
+                    <Select 
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="form-select-input">
+                          <SelectValue placeholder="Selecione a nova rota" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {rotaOptions.map((rota) => (
+                          <SelectItem key={rota} value={rota}>{rota}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}
