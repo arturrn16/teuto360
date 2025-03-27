@@ -20,6 +20,106 @@ const Dashboard = () => {
 
   console.log("Dashboard - User type:", user?.tipo_usuario);
 
+  // Cards para usuários comuns
+  const commonUserCards = [
+    {
+      title: "Uso de Rota",
+      description: "Solicite transporte para rotas regulares",
+      icon: <MapPinned className="h-8 w-8 text-blue-500" />,
+      to: "/transporte-rota",
+      color: "from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20",
+      textColor: "text-blue-600 dark:text-blue-400"
+    },
+    {
+      title: "Minhas Solicitações",
+      description: "Visualize todas as suas solicitações",
+      icon: <FileText className="h-8 w-8 text-violet-500" />,
+      to: "/minhas-solicitacoes",
+      color: "from-violet-50 to-violet-100 dark:from-violet-900/20 dark:to-violet-800/20",
+      textColor: "text-violet-600 dark:text-violet-400"
+    },
+    {
+      title: "Comunicados",
+      description: "Visualize os comunicados importantes",
+      icon: <FileText className="h-8 w-8 text-amber-500" />,
+      to: "/comunicados",
+      color: "from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20",
+      textColor: "text-amber-600 dark:text-amber-400"
+    },
+    {
+      title: "Adesão/Cancelamento de Rota",
+      description: "Solicite adesão ou cancelamento do transporte fretado",
+      icon: <ClipboardCheck className="h-8 w-8 text-teal-500" />,
+      to: "/adesao-cancelamento",
+      color: "from-teal-50 to-teal-100 dark:from-teal-900/20 dark:to-teal-800/20",
+      textColor: "text-teal-600 dark:text-teal-400"
+    },
+    {
+      title: "Alteração de Endereço",
+      description: "Atualize seu endereço cadastrado",
+      icon: <Home className="h-8 w-8 text-fuchsia-500" />,
+      to: "/alteracao-endereco",
+      color: "from-fuchsia-50 to-fuchsia-100 dark:from-fuchsia-900/20 dark:to-fuchsia-800/20",
+      textColor: "text-fuchsia-600 dark:text-fuchsia-400"
+    },
+    {
+      title: "Abono de Ponto",
+      description: "Solicite abono por problemas no transporte",
+      icon: <UserCheck className="h-8 w-8 text-pink-500" />,
+      to: "/abono-ponto",
+      color: "from-pink-50 to-pink-100 dark:from-pink-900/20 dark:to-pink-800/20",
+      textColor: "text-pink-600 dark:text-pink-400"
+    },
+    {
+      title: "Avaliação",
+      description: "Avalie o serviço de transporte fretado",
+      icon: <Star className="h-8 w-8 text-yellow-500" />,
+      to: "/avaliacao",
+      color: "from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/20",
+      textColor: "text-yellow-600 dark:text-yellow-400"
+    },
+    {
+      title: "Plantão 24hs",
+      description: "Contate o plantão do transporte fretado",
+      icon: <Phone className="h-8 w-8 text-green-500" />,
+      to: "/plantao",
+      color: "from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20",
+      textColor: "text-green-600 dark:text-green-400"
+    },
+    {
+      title: "Mapa de Rotas",
+      description: "Visualize os mapas das rotas disponíveis",
+      icon: <MapPin className="h-8 w-8 text-red-500" />,
+      to: "/mapa-rotas",
+      color: "from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20",
+      textColor: "text-red-600 dark:text-red-400"
+    },
+    {
+      title: "Oferta de Caronas",
+      description: "Compartilhe ou encontre caronas disponíveis",
+      icon: <Car className="h-8 w-8 text-purple-500" />,
+      to: "/oferta-caronas",
+      color: "from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20",
+      textColor: "text-purple-600 dark:text-purple-400"
+    },
+    {
+      title: "Consulta de Cartão",
+      description: "Verifique se seu cartão está disponível para retirada",
+      icon: <CreditCard className="h-8 w-8 text-lime-500" />,
+      to: "/consulta-cartao",
+      color: "from-lime-50 to-lime-100 dark:from-lime-900/20 dark:to-lime-800/20",
+      textColor: "text-lime-600 dark:text-lime-400"
+    },
+    {
+      title: "Cardápio da Semana",
+      description: "Confira o cardápio do refeitório para a semana",
+      icon: <CalendarDays className="h-8 w-8 text-green-500" />,
+      to: "/cardapio-semana",
+      color: "from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20",
+      textColor: "text-green-600 dark:text-green-400"
+    },
+  ];
+
   // Definimos os cards específicos para o tipo de usuário "gestor"
   const gestorCards = [
     {
@@ -286,14 +386,20 @@ const Dashboard = () => {
       return gestorCards;
     }
     
-    // Para outros tipos de usuário, utilizamos o código de filtro existente
-    return [];  // Não utilizado aqui pois a lógica existente cuida disso
+    if (user.tipo_usuario === 'comum') {
+      return commonUserCards;
+    }
+    
+    return []; // Para outros tipos de usuário
   };
 
   // Para usuários do tipo gestor, mostramos apenas os cards específicos
+  // Para usuários comuns, mostramos os cards de usuário comum
   const filteredCards = user?.tipo_usuario === 'gestor' 
     ? gestorCards 
-    : getCardsForUserType();
+    : (user?.tipo_usuario === 'comum' 
+        ? commonUserCards 
+        : getCardsForUserType());
 
   // Determine the greeting based on time of day
   const getGreeting = () => {
