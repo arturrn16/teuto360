@@ -1,7 +1,7 @@
 
 import { RouteData } from "@/types/mapTypes";
 
-// Routes for second shift (S-09, S-10, S-11)
+// Second Shift (2° Turno) routes - S-09 to S-11
 export const secondTurnoRoutesS9toS11: RouteData = {
   "S-09": [
     {
@@ -111,7 +111,7 @@ export const secondTurnoRoutesS9toS11: RouteData = {
     {
       lat: -16.359320,
       lng: -48.980080,
-      nome: "Av. Pedro Ludovico / Esquina com a R. Paraguaçú",
+      nome: "Av. Pedro Ludovico /  Esquina com a R. Paraguaçú",
       bairro: "Paraíso",
       semana: "13:40:00",
       sabado: "10:20:00"
@@ -127,7 +127,7 @@ export const secondTurnoRoutesS9toS11: RouteData = {
     {
       lat: -16.369750,
       lng: -48.982630,
-      nome: "Acampament Pedro Ludovico / Esquina com a Av. dos Burtitis",
+      nome: "Acampament Pedro Ludovico /  Esquina com a Av. dos Burtitis",
       bairro: "Jibran El Hadj",
       semana: "13:43:00",
       sabado: "10:23:00"
@@ -167,7 +167,7 @@ export const secondTurnoRoutesS9toS11: RouteData = {
     {
       lat: -16.390830,
       lng: -48.978960,
-      nome: "Acampament Pedro Ludovico / Com a Rua Associação Imobiliaria",
+      nome: "Acampament Pedro Ludovico /  Com a Rua Associação Imobiliaria",
       bairro: "Viviam Parque",
       semana: "13:49:00",
       sabado: "10:29:00"

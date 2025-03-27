@@ -1,3 +1,4 @@
+
 import { TurnoRouteData, RouteData } from "@/types/mapTypes";
 import { firstTurnoRoutesP1toP4 } from "./routeData-p1-p4";
 import { firstTurnoRoutesP5toP10 } from "./routeData-p5-p10";
@@ -659,6 +660,25 @@ const secondTurnoRoutes: RouteData = {
       bairro: "Vila Brasil",
       semana: "13:31:00",
       sabado: "10:11:00"
-    },
-    {
-      lat: -1
+    }
+  ],
+  ...secondTurnoRoutesS9toS11
+};
+
+// All route data by turno
+export const allRouteData: TurnoRouteData = {
+  "1° Turno": firstTurnoRoutes,
+  "2° Turno": secondTurnoRoutes,
+  "3° Turno": {},
+  "Administrativo": {}
+};
+
+// Helper function to get available turnos
+export const getAvailableTurnos = () => {
+  return Object.keys(allRouteData);
+};
+
+// Helper function to get available routes
+export const getAvailableRoutes = (turno: string) => {
+  return Object.keys(allRouteData[turno] || {});
+};
