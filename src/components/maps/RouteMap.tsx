@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { FlagTriangleLeft, FlagTriangleRight } from "lucide-react";
@@ -165,12 +166,28 @@ const RouteMap = ({ selectedRota, selectedTurno, busStopsByRoute, searchQuery }:
     flagMarkersRef.current = [];
 
     const bounds = new google.maps.LatLngBounds();
+
+    // Set center based on the selected turno
+    if (selectedTurno === "Goiânia") {
+      // Center the map on Goiânia
+      mapInstanceRef.current.setCenter({ lat: -16.6868, lng: -49.2648 });
+      mapInstanceRef.current.setZoom(10);
+    }
     
     // If a specific route is selected, only show markers for that route
     if (selectedRota) {
       const stops = busStopsByRoute[selectedRota] || [];
       if (stops.length === 0) return;
       
+      // For GYN ADM routes, center on the first point specifically
+      if (selectedRota === "GYN ADM-01" || selectedRota === "GYN ADM-02") {
+        if (stops.length > 0) {
+          const firstStop = stops[0];
+          mapInstanceRef.current.setCenter({ lat: firstStop.lat, lng: firstStop.lng });
+          mapInstanceRef.current.setZoom(13);
+        }
+      }
+
       stops.forEach((stop, index) => {
         const position = { lat: stop.lat, lng: stop.lng };
         bounds.extend(position);
@@ -202,6 +219,11 @@ const RouteMap = ({ selectedRota, selectedTurno, busStopsByRoute, searchQuery }:
         );
         flagMarkersRef.current.push(endFlag);
       }
+
+      // For routes other than GYN ADM, fit bounds to all markers
+      if (selectedRota !== "GYN ADM-01" && selectedRota !== "GYN ADM-02" && !bounds.isEmpty()) {
+        mapInstanceRef.current.fitBounds(bounds);
+      }
     } 
     // If no specific route is selected but a shift is selected, show all stops color-coded by route
     else {
@@ -215,13 +237,13 @@ const RouteMap = ({ selectedRota, selectedTurno, busStopsByRoute, searchQuery }:
           markersRef.current.push(marker);
         });
       });
-    }
 
-    // Fit map to the bounds of all markers
-    if (!bounds.isEmpty()) {
-      mapInstanceRef.current.fitBounds(bounds);
+      // For turno other than Goiânia, fit bounds to all markers
+      if (selectedTurno !== "Goiânia" && !bounds.isEmpty()) {
+        mapInstanceRef.current.fitBounds(bounds);
+      }
     }
-  }, [busStopsByRoute, selectedRota]);
+  }, [busStopsByRoute, selectedRota, selectedTurno]);
 
   // Helper function to create a flag marker
   const createFlagMarker = (position: google.maps.LatLngLiteral, flagColor: 'green' | 'red', title: string, stop: BusStop) => {
@@ -325,11 +347,11 @@ const RouteMap = ({ selectedRota, selectedTurno, busStopsByRoute, searchQuery }:
     if (mapLoaded) {
       displayAllRouteMarkers();
     }
-  }, [selectedRota, mapLoaded, displayAllRouteMarkers]);
+  }, [selectedRota, selectedTurno, mapLoaded, displayAllRouteMarkers]);
 
-  // Handle search button click to search for stops by name
-  const handleSearch = () => {
-    if (!searchQuery.trim() || !mapInstanceRef.current) return;
+  // Handle search query
+  useEffect(() => {
+    if (!mapLoaded || !searchQuery.trim() || !mapInstanceRef.current) return;
 
     // Simple search through the stops
     const allStops = Object.values(busStopsByRoute).flat();
@@ -369,7 +391,7 @@ const RouteMap = ({ selectedRota, selectedTurno, busStopsByRoute, searchQuery }:
     } else {
       toast.error("Nenhum ponto encontrado com esse termo");
     }
-  };
+  }, [searchQuery, mapLoaded, busStopsByRoute]);
 
   return (
     <Card className="overflow-hidden">

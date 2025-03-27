@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Container } from "@/components/ui/container";
 import MapControls from "@/components/maps/MapControls";
 import RouteMap from "@/components/maps/RouteMap";
@@ -22,7 +22,7 @@ const MapaRotas = () => {
 
   // Handle search
   const handleSearch = () => {
-    // This is just a proxy function - actual search happens in RouteMap component
+    // Actual search happens in RouteMap component through searchQuery prop
   };
 
   return (

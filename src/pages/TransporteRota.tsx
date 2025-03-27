@@ -40,7 +40,6 @@ interface FormValues {
   colaboradorNome: string;
   cidade: "Anápolis" | "Goiânia";
   turno: string;
-  rota: string;
   periodoInicio: Date;
   periodoFim: Date;
   motivo: string;
@@ -59,7 +58,6 @@ const TransporteRota = () => {
       colaboradorNome: user?.nome || "",
       cidade: "Anápolis",
       turno: "",
-      rota: "",
       periodoInicio: new Date(),
       periodoFim: new Date(),
       motivo: "",
@@ -74,38 +72,10 @@ const TransporteRota = () => {
   }, [user, form]);
   
   const cidade = form.watch("cidade");
-  const turno = form.watch("turno");
   
   const turnoOptions = cidade === "Anápolis" 
-    ? ["Administrativo", "1° Turno", "2° Turno", "3° Turno", "Faculdade"]
+    ? ["Administrativo", "1° Turno", "2° Turno", "3° Turno"]
     : ["Gyn Adm 1", "Gyn Adm 2", "Gyn 1° Turno", "Gyn 2° Turno"];
-    
-  const getRotaOptions = () => {
-    if (cidade === "Goiânia") {
-      return [turno].filter(Boolean);
-    } else if (cidade === "Anápolis") {
-      if (turno === "Administrativo") {
-        return Array.from({ length: 8 }, (_, i) => `ADM-${String(i + 1).padStart(2, '0')}`);
-      } else if (turno === "1° Turno") {
-        return Array.from({ length: 15 }, (_, i) => `P-${String(i + 1).padStart(2, '0')}`);
-      } else if (turno === "2° Turno") {
-        return Array.from({ length: 12 }, (_, i) => `S-${String(i + 1).padStart(2, '0')}`);
-      } else if (turno === "3° Turno") {
-        return Array.from({ length: 8 }, (_, i) => `T-${String(i + 1).padStart(2, '0')}`);
-      } else if (turno === "Faculdade") {
-        return ["FACULDADE"];
-      }
-    }
-    return [];
-  };
-  
-  const rotaOptions = getRotaOptions();
-  
-  useEffect(() => {
-    if (cidade === "Goiânia" && turno) {
-      form.setValue("rota", turno);
-    }
-  }, [cidade, turno, form]);
   
   const formatDate = (date: Date) => {
     return format(date, "yyyy-MM-dd");
@@ -126,7 +96,6 @@ const TransporteRota = () => {
         colaborador_nome: data.colaboradorNome,
         cidade: data.cidade,
         turno: data.turno,
-        rota: data.rota,
         periodo_inicio: formatDate(data.periodoInicio),
         periodo_fim: formatDate(data.periodoFim),
         motivo: data.motivo,
@@ -204,7 +173,6 @@ const TransporteRota = () => {
                       onValueChange={(value) => {
                         field.onChange(value);
                         form.setValue("turno", "");
-                        form.setValue("rota", "");
                       }}
                       defaultValue={field.value}
                     >
@@ -231,15 +199,7 @@ const TransporteRota = () => {
                   <FormItem>
                     <FormLabel>Turno</FormLabel>
                     <Select 
-                      onValueChange={(value) => {
-                        field.onChange(value);
-                        
-                        if (cidade === "Goiânia" && value) {
-                          form.setValue("rota", value);
-                        } else {
-                          form.setValue("rota", "");
-                        }
-                      }}
+                      onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
                       <FormControl>
@@ -253,40 +213,6 @@ const TransporteRota = () => {
                             {option}
                           </SelectItem>
                         ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="rota"
-                rules={{ required: "Rota é obrigatória" }}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Rota</FormLabel>
-                    <Select 
-                      onValueChange={field.onChange}
-                      value={field.value}
-                      disabled={!turno || (cidade === "Goiânia")}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione a rota" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {rotaOptions.length > 0 ? (
-                          rotaOptions.map((option) => (
-                            <SelectItem key={option} value={option}>
-                              {option}
-                            </SelectItem>
-                          ))
-                        ) : (
-                          <SelectItem value="sem-opcoes" disabled>Sem opções disponíveis</SelectItem>
-                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage />
