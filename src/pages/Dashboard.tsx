@@ -1,8 +1,9 @@
+
 import { useAuth } from "@/context/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui-components/Card";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
-import { Clock, FileText, Map, Utensils, Replace, Shield, Home, UserCheck, Phone, Star, MapPin, ClipboardCheck, Car, CalendarDays, CreditCard, Users } from "lucide-react";
+import { Clock, FileText, Map, Utensils, Replace, Shield, Home, UserCheck, Phone, Star, MapPin, ClipboardCheck, Car, CalendarDays, CreditCard, Users, MapPinned } from "lucide-react";
 import { useEffect, useState } from "react";
 import { UserType } from "@/components/sidebar/navigationConfig";
 
@@ -126,7 +127,7 @@ const Dashboard = () => {
         {
           title: "Transporte Rota",
           description: "Solicite transporte para rotas regulares",
-          icon: <Route className="h-8 w-8 text-blue-500" />,
+          icon: <MapPinned className="h-8 w-8 text-blue-500" />,
           to: "/transporte-rota",
           allowedTypes: ["selecao"] as const,
           color: "from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20",
@@ -144,7 +145,7 @@ const Dashboard = () => {
         {
           title: "Uso de Rota",
           description: "Solicite transporte para rotas regulares",
-          icon: <Route className="h-8 w-8 text-blue-500" />,
+          icon: <MapPinned className="h-8 w-8 text-blue-500" />,
           to: "/transporte-rota",
           allowedTypes: ["comum"] as const,
           color: "from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20",
