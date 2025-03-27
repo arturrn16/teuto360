@@ -1,6 +1,6 @@
+
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { checkPermission } from "@/services/permissionService";
 
 // Define user types
 export interface User {
@@ -72,39 +72,23 @@ export const storeUser = (user: User): void => {
   localStorage.setItem("hrToken", "mock-jwt-token");
 };
 
-export const checkUserPermission = async (
+export const checkUserPermission = (
   user: User | null,
-  requiredTypes: ReadonlyArray<'admin' | 'selecao' | 'gestor' | 'colaborador' | 'comum'>,
-  resource?: string,
-  resourceType: string = 'pagina'
-): Promise<boolean> => {
+  requiredTypes: ReadonlyArray<'admin' | 'selecao' | 'gestor' | 'colaborador' | 'comum'>
+): boolean => {
   if (!user) return false;
   
   // Admin pode acessar tudo
   if (user.admin) return true;
   
   // Verifica se o tipo de usuário está nos tipos requeridos
-  const typeAllowed = requiredTypes.includes(user.tipo_usuario);
-  
-  // Se resource for fornecido, verificar permissão específica
-  if (resource && typeAllowed) {
-    try {
-      return await checkPermission(user.id, resource, resourceType);
-    } catch (error) {
-      console.error("Error checking permission:", error);
-      return false;
-    }
-  }
-  
-  // Caso contrário, apenas verificar o tipo de usuário
-  return typeAllowed;
+  return requiredTypes.includes(user.tipo_usuario);
 };
 
-// Modified: Fix the return type to be boolean synchronously instead of a Promise
+// Update function to accept readonly arrays
 export const shouldShowRoute = (
   user: User | null,
-  allowedTypes: ReadonlyArray<'admin' | 'selecao' | 'gestor' | 'colaborador' | 'comum'>,
-  resource?: string
+  allowedTypes: ReadonlyArray<'admin' | 'selecao' | 'gestor' | 'colaborador' | 'comum'>
 ): boolean => {
   if (!user) return false;
   
@@ -114,9 +98,6 @@ export const shouldShowRoute = (
     allowedTypes
   });
   
-  // Admin can access everything
   if (user.admin) return true;
-  
-  // Otherwise, check if user type is in the allowed types
   return allowedTypes.includes(user.tipo_usuario);
 };
