@@ -6,11 +6,13 @@ import { Comunicado } from "@/models/comunicado";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Comunicados = () => {
   const [comunicados, setComunicados] = useState<Comunicado[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const fetchComunicados = async () => {
@@ -64,6 +66,20 @@ const Comunicados = () => {
                   {format(new Date(comunicado.data_publicacao), "dd/MM/yyyy 'às' HH:mm")} - Por: {comunicado.autor_nome}
                 </CardDescription>
               </CardHeader>
+              
+              {comunicado.imagem_url && (
+                <div className={`px-6 ${isMobile ? 'pb-2' : 'pb-4'}`}>
+                  <div className={`rounded-md overflow-hidden ${isMobile ? 'max-h-[200px]' : 'max-h-[400px]'}`}>
+                    <img 
+                      src={comunicado.imagem_url} 
+                      alt={comunicado.titulo}
+                      className="w-full h-full object-contain bg-gray-50"
+                      loading="lazy"
+                    />
+                  </div>
+                </div>
+              )}
+              
               <CardContent>
                 <div className="whitespace-pre-line">{comunicado.conteudo}</div>
               </CardContent>

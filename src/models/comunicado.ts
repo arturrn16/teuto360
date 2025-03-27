@@ -10,10 +10,12 @@ export interface Comunicado {
   arquivado: boolean;
   created_at: string;
   updated_at: string;
+  imagem_url?: string;
 }
 
 export interface ComunicadoInput {
   titulo: string;
   conteudo: string;
   importante: boolean;
+  imagem_url?: string;
 }

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useAuth } from "@/context/AuthContext";
@@ -7,6 +8,7 @@ import { toast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Form,
   FormControl,
@@ -45,7 +47,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import { Megaphone, Pencil, Archive, Trash2 } from "lucide-react";
+import { Megaphone, Pencil, Archive, Trash2, Image, X } from "lucide-react";
 
 interface FormValues extends ComunicadoInput {}
 
@@ -57,13 +59,18 @@ const GerenciarComunicados = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const { user } = useAuth();
+  const isMobile = useIsMobile();
 
   const form = useForm<FormValues>({
     defaultValues: {
       titulo: "",
       conteudo: "",
       importante: false,
+      imagem_url: "",
     },
   });
 
@@ -93,6 +100,94 @@ const GerenciarComunicados = () => {
     }
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      
+      // Verificar tipo do arquivo
+      if (!file.type.includes('image/')) {
+        toast({
+          title: "Erro",
+          description: "Por favor, selecione apenas arquivos de imagem.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // Verificar tamanho (limitar a 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "Erro",
+          description: "A imagem deve ter no máximo 5MB.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      setSelectedImage(file);
+      
+      // Criar preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+    
+    // Se estivermos editando, atualizar o formulário para remover a URL da imagem
+    if (isEditing) {
+      form.setValue('imagem_url', '');
+    }
+  };
+
+  const uploadImage = async (file: File): Promise<string | null> => {
+    setIsUploading(true);
+    
+    try {
+      // Criar nome único para o arquivo
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2, 15)}-${Date.now()}.${fileExt}`;
+      const filePath = `${fileName}`;
+      
+      // Upload do arquivo para o bucket 'comunicados'
+      const { error: uploadError } = await supabase.storage
+        .from('comunicados')
+        .upload(filePath, file);
+      
+      if (uploadError) {
+        console.error("Erro ao fazer upload da imagem:", uploadError);
+        toast({
+          title: "Erro",
+          description: "Erro ao fazer upload da imagem.",
+          variant: "destructive"
+        });
+        return null;
+      }
+      
+      // Obter URL pública da imagem
+      const { data: urlData } = supabase.storage
+        .from('comunicados')
+        .getPublicUrl(filePath);
+      
+      return urlData.publicUrl;
+    } catch (error) {
+      console.error("Erro ao processar imagem:", error);
+      toast({
+        title: "Erro",
+        description: "Erro ao processar imagem.",
+        variant: "destructive"
+      });
+      return null;
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const onSubmit = async (data: FormValues) => {
     if (!user) {
       toast({
@@ -106,6 +201,16 @@ const GerenciarComunicados = () => {
     setIsSubmitting(true);
     
     try {
+      // Processar upload da imagem, se houver
+      let imageUrl = data.imagem_url || null;
+      
+      if (selectedImage) {
+        const uploadedUrl = await uploadImage(selectedImage);
+        if (uploadedUrl) {
+          imageUrl = uploadedUrl;
+        }
+      }
+      
       if (isEditing && selectedComunicado) {
         // Atualizar comunicado existente
         const { error } = await supabase
@@ -114,6 +219,7 @@ const GerenciarComunicados = () => {
             titulo: data.titulo,
             conteudo: data.conteudo,
             importante: data.importante,
+            imagem_url: imageUrl,
             updated_at: new Date().toISOString(),
           })
           .eq('id', selectedComunicado.id);
@@ -144,6 +250,7 @@ const GerenciarComunicados = () => {
             autor_nome: user.nome,
             importante: data.importante,
             arquivado: false,
+            imagem_url: imageUrl,
           });
         
         if (error) {
@@ -167,6 +274,8 @@ const GerenciarComunicados = () => {
       setIsDialogOpen(false);
       setIsEditing(false);
       setSelectedComunicado(null);
+      setSelectedImage(null);
+      setImagePreview(null);
       fetchComunicados();
     } catch (error) {
       console.error("Erro ao processar comunicado:", error);
@@ -188,7 +297,15 @@ const GerenciarComunicados = () => {
       titulo: comunicado.titulo,
       conteudo: comunicado.conteudo,
       importante: comunicado.importante,
+      imagem_url: comunicado.imagem_url || "",
     });
+    
+    // Se o comunicado tem uma imagem, mostrar preview
+    if (comunicado.imagem_url) {
+      setImagePreview(comunicado.imagem_url);
+    } else {
+      setImagePreview(null);
+    }
     
     setIsDialogOpen(true);
   };
@@ -240,6 +357,24 @@ const GerenciarComunicados = () => {
     if (!selectedComunicado) return;
     
     try {
+      // Se o comunicado tem imagem, deletar do storage
+      if (selectedComunicado.imagem_url) {
+        // Extrair path da URL
+        const urlParts = selectedComunicado.imagem_url.split('/');
+        const fileName = urlParts[urlParts.length - 1];
+        
+        // Deletar a imagem
+        const { error: storageError } = await supabase.storage
+          .from('comunicados')
+          .remove([fileName]);
+        
+        if (storageError) {
+          console.error("Erro ao deletar imagem:", storageError);
+          // Continuar mesmo se falhar a deleção da imagem
+        }
+      }
+      
+      // Deletar o comunicado
       const { error } = await supabase
         .from('comunicados')
         .delete()
@@ -276,6 +411,8 @@ const GerenciarComunicados = () => {
     form.reset();
     setIsEditing(false);
     setSelectedComunicado(null);
+    setSelectedImage(null);
+    setImagePreview(null);
   };
 
   return (
@@ -290,7 +427,7 @@ const GerenciarComunicados = () => {
               Novo Comunicado
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[550px]">
+          <DialogContent className={isMobile ? "w-[95vw] max-w-[95vw]" : "sm:max-w-[650px]"}>
             <DialogHeader>
               <DialogTitle>
                 {isEditing ? "Editar Comunicado" : "Publicar Novo Comunicado"}
@@ -338,6 +475,55 @@ const GerenciarComunicados = () => {
                   )}
                 />
                 
+                {/* Upload de imagem */}
+                <FormItem>
+                  <FormLabel>Imagem (opcional)</FormLabel>
+                  <FormDescription>
+                    Adicione uma imagem para o comunicado. Limite de 5MB.
+                  </FormDescription>
+                  
+                  {/* Preview da imagem */}
+                  {imagePreview && (
+                    <div className="relative w-full mb-4">
+                      <div className="aspect-video w-full rounded-md overflow-hidden bg-gray-100 mb-2">
+                        <img
+                          src={imagePreview}
+                          alt="Preview"
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={removeImage}
+                        className="absolute top-2 right-2 h-8 w-8 p-0 rounded-full bg-white/80"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                  
+                  {!imagePreview && (
+                    <div className="flex items-center gap-4">
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="hidden"
+                        id="image-upload"
+                      />
+                      <label
+                        htmlFor="image-upload"
+                        className="cursor-pointer inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
+                      >
+                        <Image className="mr-2 h-4 w-4" />
+                        Escolher Imagem
+                      </label>
+                    </div>
+                  )}
+                </FormItem>
+                
                 <FormField
                   control={form.control}
                   name="importante"
@@ -359,14 +545,14 @@ const GerenciarComunicados = () => {
                   )}
                 />
                 
-                <DialogFooter>
+                <DialogFooter className={isMobile ? "flex-col gap-2" : ""}>
                   <DialogClose asChild>
                     <Button variant="outline" type="button">
                       Cancelar
                     </Button>
                   </DialogClose>
-                  <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting
+                  <Button type="submit" disabled={isSubmitting || isUploading}>
+                    {isSubmitting || isUploading
                       ? "Processando..."
                       : isEditing
                       ? "Salvar Alterações"
@@ -379,14 +565,14 @@ const GerenciarComunicados = () => {
         </Dialog>
         
         <Dialog open={isDeleting} onOpenChange={setIsDeleting}>
-          <DialogContent className="sm:max-w-[450px]">
+          <DialogContent className={isMobile ? "w-[95vw] max-w-[95vw]" : "sm:max-w-[450px]"}>
             <DialogHeader>
               <DialogTitle>Confirmar Exclusão</DialogTitle>
               <DialogDescription>
                 Tem certeza que deseja excluir este comunicado? Esta ação não pode ser desfeita.
               </DialogDescription>
             </DialogHeader>
-            <DialogFooter>
+            <DialogFooter className={isMobile ? "flex-col gap-2" : ""}>
               <DialogClose asChild>
                 <Button variant="outline">Cancelar</Button>
               </DialogClose>
@@ -413,7 +599,7 @@ const GerenciarComunicados = () => {
                   Criar Primeiro Comunicado
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[550px]">
+              <DialogContent className={isMobile ? "w-[95vw] max-w-[95vw]" : "sm:max-w-[650px]"}>
                 <DialogHeader>
                   <DialogTitle>Publicar Novo Comunicado</DialogTitle>
                   <DialogDescription>
@@ -457,6 +643,55 @@ const GerenciarComunicados = () => {
                       )}
                     />
                     
+                    {/* Upload de imagem */}
+                    <FormItem>
+                      <FormLabel>Imagem (opcional)</FormLabel>
+                      <FormDescription>
+                        Adicione uma imagem para o comunicado. Limite de 5MB.
+                      </FormDescription>
+                      
+                      {/* Preview da imagem */}
+                      {imagePreview && (
+                        <div className="relative w-full mb-4">
+                          <div className="aspect-video w-full rounded-md overflow-hidden bg-gray-100 mb-2">
+                            <img
+                              src={imagePreview}
+                              alt="Preview"
+                              className="w-full h-full object-contain"
+                            />
+                          </div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={removeImage}
+                            className="absolute top-2 right-2 h-8 w-8 p-0 rounded-full bg-white/80"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
+                      
+                      {!imagePreview && (
+                        <div className="flex items-center gap-4">
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageChange}
+                            className="hidden"
+                            id="image-upload-empty"
+                          />
+                          <label
+                            htmlFor="image-upload-empty"
+                            className="cursor-pointer inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
+                          >
+                            <Image className="mr-2 h-4 w-4" />
+                            Escolher Imagem
+                          </label>
+                        </div>
+                      )}
+                    </FormItem>
+                    
                     <FormField
                       control={form.control}
                       name="importante"
@@ -478,14 +713,14 @@ const GerenciarComunicados = () => {
                       )}
                     />
                     
-                    <DialogFooter>
+                    <DialogFooter className={isMobile ? "flex-col gap-2" : ""}>
                       <DialogClose asChild>
                         <Button variant="outline" type="button">
                           Cancelar
                         </Button>
                       </DialogClose>
-                      <Button type="submit" disabled={isSubmitting}>
-                        {isSubmitting ? "Processando..." : "Publicar Comunicado"}
+                      <Button type="submit" disabled={isSubmitting || isUploading}>
+                        {isSubmitting || isUploading ? "Processando..." : "Publicar Comunicado"}
                       </Button>
                     </DialogFooter>
                   </form>
@@ -503,6 +738,7 @@ const GerenciarComunicados = () => {
                   <TableHead>Título</TableHead>
                   <TableHead>Data de Publicação</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Imagem</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
@@ -525,6 +761,16 @@ const GerenciarComunicados = () => {
                         <Badge variant="outline">Arquivado</Badge>
                       ) : (
                         <Badge variant="secondary">Ativo</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {comunicado.imagem_url ? (
+                        <Badge variant="outline" className="flex items-center">
+                          <Image className="h-3 w-3 mr-1" />
+                          Sim
+                        </Badge>
+                      ) : (
+                        <span className="text-gray-500 text-sm">Não</span>
                       )}
                     </TableCell>
                     <TableCell className="text-right">
