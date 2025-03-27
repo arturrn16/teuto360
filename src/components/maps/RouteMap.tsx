@@ -24,6 +24,27 @@ const RouteMap = ({ selectedRota, selectedTurno, busStopsByRoute, searchQuery }:
 
   const GOOGLE_MAPS_API_KEY = "AIzaSyDKsBrWnONeKqDwT4I6ooc42ogm57cqJbI";
 
+  // Helper function to create custom route icons
+  const createRouteIcon = (routeName: string, routeColor: string) => {
+    // Extract route type (P, S, T, ADM) and number
+    const routeType = routeName.charAt(0);
+    const routeNum = routeName.slice(routeName.indexOf('-') + 1);
+    
+    // Create SVG with route label
+    return {
+      url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(`
+        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36">
+          <circle cx="18" cy="18" r="16" fill="${routeColor}" stroke="white" stroke-width="2"/>
+          <text x="18" y="15" font-family="Arial" font-size="${routeNum.length > 2 ? '7' : '8'}" font-weight="bold" text-anchor="middle" fill="white">${routeType}</text>
+          <text x="18" y="24" font-family="Arial" font-size="${routeNum.length > 2 ? '7' : '8'}" font-weight="bold" text-anchor="middle" fill="white">${routeNum}</text>
+        </svg>
+      `),
+      scaledSize: new google.maps.Size(36, 36),
+      origin: new google.maps.Point(0, 0),
+      anchor: new google.maps.Point(18, 18),
+    };
+  };
+
   useEffect(() => {
     // Load Google Maps API script
     const script = document.createElement("script");
@@ -195,7 +216,9 @@ const RouteMap = ({ selectedRota, selectedTurno, busStopsByRoute, searchQuery }:
     }
 
     // Fit map to the bounds of all markers
-    mapInstanceRef.current.fitBounds(bounds);
+    if (!bounds.isEmpty()) {
+      mapInstanceRef.current.fitBounds(bounds);
+    }
   }, [busStopsByRoute, selectedRota]);
 
   // Helper function to create a flag marker
@@ -258,20 +281,8 @@ const RouteMap = ({ selectedRota, selectedTurno, busStopsByRoute, searchQuery }:
     const position = { lat: stop.lat, lng: stop.lng };
     const routeColor = ROUTE_COLORS[routeName as keyof typeof ROUTE_COLORS] || "#333333";
     
-    // Create SVG icon with route color
-    const busStopIcon = {
-      url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(`
-        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="${routeColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10" fill="#FFFFFF" stroke="${routeColor}" stroke-width="2"/>
-          <rect x="9" y="7" width="6" height="10" rx="1" fill="${routeColor}"/>
-          <line x1="9" y1="10" x2="15" y2="10" stroke="#FFFFFF" stroke-width="1"/>
-          <line x1="12" y1="7" x2="12" y2="17" stroke="#FFFFFF" stroke-width="1"/>
-        </svg>
-      `),
-      scaledSize: new google.maps.Size(32, 32),
-      origin: new google.maps.Point(0, 0),
-      anchor: new google.maps.Point(16, 16),
-    };
+    // Use custom route icon
+    const busStopIcon = createRouteIcon(routeName, routeColor);
     
     const marker = new google.maps.Marker({
       position,
