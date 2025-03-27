@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { 
@@ -177,28 +176,16 @@ const Admin = () => {
 
       try {
         console.log("Fetching abono_ponto solicitations...");
-        const { data: dataAbonoPonto, error: errorAbonoPonto } = await queryCustomTable<any>(
-          "solicitacoes_abono_ponto",
-          {
-            order: { column: "created_at", ascending: false }
-          }
-        );
+        const { data: dataAbonoPonto, error: errorAbonoPonto } = await supabase
+          .from("solicitacoes_abono_ponto")
+          .select("*")
+          .order("created_at", { ascending: false });
             
         if (errorAbonoPonto) {
           console.error("Erro ao buscar solicitações de abono de ponto:", errorAbonoPonto);
         } else if (dataAbonoPonto) {
           console.log("Received abono_ponto data:", dataAbonoPonto.length, "records");
-          const formattedData: SolicitacaoAbonosPonto[] = dataAbonoPonto.map((item: any) => ({
-            id: item.id,
-            solicitante_id: item.solicitante_id,
-            status: item.status,
-            created_at: item.created_at,
-            updated_at: item.updated_at,
-            data_ocorrencia: item.data_ocorrencia || '',
-            turno: item.turno || '',
-            motivo: item.motivo || ''
-          }));
-          setSolicitacoesAbonoPonto(formattedData);
+          setSolicitacoesAbonoPonto(dataAbonoPonto);
         }
       } catch (err) {
         console.error("Erro ao processar solicitações de abono de ponto:", err);
@@ -206,27 +193,16 @@ const Admin = () => {
 
       try {
         console.log("Fetching adesao_cancelamento solicitations...");
-        const { data: dataAdesaoCancelamento, error: errorAdesaoCancelamento } = await queryCustomTable<any>(
-          "solicitacoes_adesao_cancelamento",
-          {
-            order: { column: "created_at", ascending: false }
-          }
-        );
+        const { data: dataAdesaoCancelamento, error: errorAdesaoCancelamento } = await supabase
+          .from("solicitacoes_adesao_cancelamento")
+          .select("*")
+          .order("created_at", { ascending: false });
             
         if (errorAdesaoCancelamento) {
           console.error("Erro ao buscar solicitações de adesão/cancelamento:", errorAdesaoCancelamento);
         } else if (dataAdesaoCancelamento) {
           console.log("Received adesao_cancelamento data:", dataAdesaoCancelamento.length, "records");
-          const formattedData: SolicitacaoAdesaoCancelamento[] = dataAdesaoCancelamento.map((item: any) => ({
-            id: item.id,
-            solicitante_id: item.solicitante_id,
-            status: item.status,
-            created_at: item.created_at,
-            updated_at: item.updated_at,
-            tipo_solicitacao: item.tipo_solicitacao || '',
-            motivo: item.motivo || ''
-          }));
-          setSolicitacoesAdesaoCancelamento(formattedData);
+          setSolicitacoesAdesaoCancelamento(dataAdesaoCancelamento);
         }
       } catch (err) {
         console.error("Erro ao processar solicitações de adesão/cancelamento:", err);
@@ -234,29 +210,16 @@ const Admin = () => {
 
       try {
         console.log("Fetching alteracao_endereco solicitations...");
-        const { data: dataAlteracaoEndereco, error: errorAlteracaoEndereco } = await queryCustomTable<any>(
-          "solicitacoes_alteracao_endereco",
-          {
-            order: { column: "created_at", ascending: false }
-          }
-        );
+        const { data: dataAlteracaoEndereco, error: errorAlteracaoEndereco } = await supabase
+          .from("solicitacoes_alteracao_endereco")
+          .select("*")
+          .order("created_at", { ascending: false });
             
         if (errorAlteracaoEndereco) {
           console.error("Erro ao buscar solicitações de alteração de endereço:", errorAlteracaoEndereco);
         } else if (dataAlteracaoEndereco) {
           console.log("Received alteracao_endereco data:", dataAlteracaoEndereco.length, "records");
-          const formattedData: SolicitacaoAlteracaoEndereco[] = dataAlteracaoEndereco.map((item: any) => ({
-            id: item.id,
-            solicitante_id: item.solicitante_id,
-            status: item.status,
-            created_at: item.created_at,
-            updated_at: item.updated_at,
-            endereco_atual: item.endereco || '',
-            endereco_novo: item.nova_rota ? `${item.endereco} (nova rota: ${item.nova_rota})` : (item.endereco || ''),
-            data_alteracao: item.data_alteracao || item.created_at,
-            comprovante_url: item.comprovante_url
-          }));
-          setSolicitacoesAlteracaoEndereco(formattedData);
+          setSolicitacoesAlteracaoEndereco(dataAlteracaoEndereco);
         }
       } catch (err) {
         console.error("Erro ao processar solicitações de alteração de endereço:", err);
@@ -264,29 +227,16 @@ const Admin = () => {
 
       try {
         console.log("Fetching mudanca_turno solicitations...");
-        const { data: dataMudancaTurno, error: errorMudancaTurno } = await queryCustomTable<any>(
-          "solicitacoes_mudanca_turno",
-          {
-            order: { column: "created_at", ascending: false }
-          }
-        );
+        const { data: dataMudancaTurno, error: errorMudancaTurno } = await supabase
+          .from("solicitacoes_mudanca_turno")
+          .select("*")
+          .order("created_at", { ascending: false });
             
         if (errorMudancaTurno) {
           console.error("Erro ao buscar solicitações de mudança de turno:", errorMudancaTurno);
         } else if (dataMudancaTurno) {
           console.log("Received mudanca_turno data:", dataMudancaTurno.length, "records");
-          const formattedData: SolicitacaoMudancaTurno[] = dataMudancaTurno.map((item: any) => ({
-            id: item.id,
-            solicitante_id: item.solicitante_id,
-            status: item.status,
-            created_at: item.created_at,
-            updated_at: item.updated_at,
-            turno_atual: item.turno_atual || '',
-            turno_novo: item.novo_turno || '',
-            data_alteracao: item.data_alteracao || item.created_at,
-            motivo: item.motivo || ''
-          }));
-          setSolicitacoesMudancaTurno(formattedData);
+          setSolicitacoesMudancaTurno(dataMudancaTurno);
         }
       } catch (err) {
         console.error("Erro ao processar solicitações de mudança de turno:", err);
@@ -485,11 +435,10 @@ const Admin = () => {
 
   const atualizarStatusGenerico = async (tabela: string, id: number, status: 'aprovada' | 'rejeitada', atualizarEstado: Function) => {
     try {
-      const { error } = await updateCustomTable(
-        tabela,
-        { status },
-        { column: 'id', value: id }
-      );
+      const { error } = await supabase
+        .from(tabela)
+        .update({ status })
+        .eq('id', id);
         
       if (error) {
         console.error(`Erro ao atualizar status em ${tabela}:`, error);
@@ -826,13 +775,37 @@ const Admin = () => {
                     </p>
                   )}
                 </TabsContent>
-              </Tabs>
-            </>
-          )}
-        </CardContent>
-      </Card>
-    </div>
-  );
-};
-
-export default Admin;
+                
+                <TabsContent value="refeicao" className="mt-4">
+                  {filtrarSolicitacoesRefeicao().length > 0 ? (
+                    <div className="rounded-md border overflow-hidden">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Solicitante</TableHead>
+                            <TableHead>Colaboradores</TableHead>
+                            <TableHead>Tipo</TableHead>
+                            <TableHead>Data</TableHead>
+                            <TableHead>Data de Solicitação</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead className="w-[180px]">Ações</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filtrarSolicitacoesRefeicao().map((solicitacao) => (
+                            <TableRow key={solicitacao.id}>
+                              <TableCell>
+                                <SolicitanteInfo id={solicitacao.solicitante_id} />
+                              </TableCell>
+                              <TableCell className="font-medium">{solicitacao.colaboradores.join(", ")}</TableCell>
+                              <TableCell>{solicitacao.tipo_refeicao}</TableCell>
+                              <TableCell>{formatarData(solicitacao.data_refeicao)}</TableCell>
+                              <TableCell>{formatarTimestamp(solicitacao.created_at)}</TableCell>
+                              <TableCell>
+                                <StatusBadge status={solicitacao.status} />
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex space-x-2">
+                                  {solicitacao.status === "pendente" && (
+                                    <>
+                                      <Button
