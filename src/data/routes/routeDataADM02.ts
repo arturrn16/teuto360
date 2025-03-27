@@ -2,5 +2,46 @@
 import { RouteData } from "@/types/mapTypes";
 
 export const routeDataADM02: RouteData = {
-  "ADM-02": []
+  "ADM-02": [
+    { lat: -16.312685, lng: -48.937561, nome: "ADM02 01 - Av. Pres. Jânio Quadros / Esquina com a Av. Archimedes Rosa Q", bairro: "São Carlos", semana: "05:56", sabado: "06:10" },
+    { lat: -16.312050, lng: -48.939110, nome: "ADM02 02 - Av. Pres. Jânio Quadros / Esquina com a Rua Bartolomeu Bueno", bairro: "São Carlos", semana: "05:58", sabado: "06:12" },
+    { lat: -16.310060, lng: -48.943140, nome: "ADM02 03 - Av. Nova Capital / Com a Av. Brasil Norte", bairro: "São Carlos", semana: "06:00", sabado: "06:14" },
+    { lat: -16.305812, lng: -48.930307, nome: "ADM02 04 - R. Sen. Nereu Ramos / Esquina com a Rua 25", bairro: "Boa Vista", semana: "06:04", sabado: "06:18" },
+    { lat: -16.306495, lng: -48.936301, nome: "ADM02 05 - R. Argentina / Esquina com a Av. Das Rosas", bairro: "Boa Vista", semana: "06:06", sabado: "06:20" },
+    { lat: -16.301889, lng: -48.937659, nome: "ADM02 06 - R. Paraguai / Esquina com a R. Profa. Belisaria Faria", bairro: "St. Bougainville", semana: "06:09", sabado: "06:23" },
+    { lat: -16.296120, lng: -48.942144, nome: "ADM02 07 - Av. Brasil Norte / Esquina com a R. Dr. Bernardo Sayão", bairro: "Jardim das Americas 2A Etapa", semana: "06:11", sabado: "06:25" },
+    { lat: -16.289650, lng: -48.943090, nome: "ADM02 08 - Av. Brasil Norte / Rede Brasil Distribuição e Logística", bairro: "Jardim das Americas 2A Etapa", semana: "06:13", sabado: "06:27" },
+    { lat: -16.285998, lng: -48.938784, nome: "ADM02 09 - Av. João Florentino / Esquina com a Rua 3", bairro: "Res. Araguaia", semana: "06:15", sabado: "06:29" },
+    { lat: -16.286970, lng: -48.933230, nome: "ADM02 10 - Avenida João Florentino / Com a Rua RA 10", bairro: "Residencial Portal do Cerrado", semana: "06:17", sabado: "06:31" },
+    { lat: -16.287930, lng: -48.927680, nome: "ADM02 11 - R. João Florentino / Esquina com a Rua 2", bairro: "Parque Res. das Flores", semana: "06:19", sabado: "06:33" },
+    { lat: -16.288487, lng: -48.924549, nome: "ADM02 12 - R. João Florentino / Com a Rua 6", bairro: "Parque Res. das Flores", semana: "06:20", sabado: "06:34" },
+    { lat: -16.293354, lng: -48.922870, nome: "ADM02 13 - Av. Fábio de Araújo / Esquina com a R Fc 8", bairro: "Res. FLOR DO CERRADO I ETAPA", semana: "06:22", sabado: "06:36" },
+    { lat: -16.294123, lng: -48.919959, nome: "ADM02 14 - Av. Fabio De Araujo / Esquina com a R. FC-11", bairro: "Parque Res. das Flores", semana: "06:24", sabado: "06:38" },
+    { lat: -16.286590, lng: -48.920220, nome: "ADM02 15 - R. 11 / Esquina com a Av. 25", bairro: "Parque Res. das Flores", semana: "06:26", sabado: "06:40" },
+    { lat: -16.283746, lng: -48.921541, nome: "ADM02 16 - R. 58 / Esquina com a R. SW 2", bairro: "Vila Norte", semana: "06:28", sabado: "06:42" },
+    { lat: -16.282070, lng: -48.930230, nome: "ADM02 17 - Av. do Estado / Com a Rua 27", bairro: "Recanto do Sol", semana: "06:32", sabado: "06:46" },
+    { lat: -16.279700, lng: -48.933072, nome: "ADM02 18 - Av. do Estado / Esquina com a R. 10", bairro: "Jardim dos Ipes", semana: "06:34", sabado: "06:48" },
+    { lat: -16.278179, lng: -48.935158, nome: "ADM02 19 - Av. do Estado / Esquina com a R. Oscár Soares Azevedo", bairro: "Jardim dos Ipes", semana: "06:34", sabado: "06:48" },
+    { lat: -16.275649, lng: -48.935936, nome: "ADM02 20 - Av. Raimundo Carlos Costa e Silva / Esquina com a R. Mogno", bairro: "Jardim das Americas 3a Etapa", semana: "06:36", sabado: "06:50" },
+    { lat: -16.273940, lng: -48.934710, nome: "ADM02 21 - Av. Raimundo Carlos Costa e Silva / Esquina com a R. Araucária", bairro: "Jardim das Americas 3a Etapa", semana: "06:37", sabado: "06:51" },
+    { lat: -16.273380, lng: -48.934290, nome: "ADM02 22 - Av. Raimundo Carlos Costa e Silva / Esquina com a R. Buriti", bairro: "Jardim das Americas 3a Etapa", semana: "06:38", sabado: "06:52" },
+    { lat: -16.273450, lng: -48.935610, nome: "ADM02 23 - R. Ra 26 / Esquina com a R. Ra - 018", bairro: "Lot. Res. America", semana: "06:39", sabado: "06:53" },
+    { lat: -16.280862, lng: -48.939230, nome: "ADM02 24 - Av. Raimundo Carlos Costa e Silva / Esquina com a R. Prof. Clementino de Alencar Lima", bairro: "Jardim das Americas 3a Etapa", semana: "06:42", sabado: "06:56" },
+    { lat: -16.273220, lng: -48.950570, nome: "ADM02 25 - Av. Colorado / Esquina com a Rua 4", bairro: "Eldorado", semana: "06:49", sabado: "07:03" },
+    { lat: -16.275500, lng: -48.955220, nome: "ADM02 26 - Av. dos Pirineus / Com a Rua PP 13", bairro: "Parque dos Pirineus", semana: "06:52", sabado: "07:06" },
+    { lat: -16.285320, lng: -48.947235, nome: "ADM02 27 - R. Gustavo Leyser / Goias Madeiras", bairro: "Chácaras Colorado", semana: "06:56", sabado: "07:10" },
+    { lat: -16.289545, lng: -48.944592, nome: "ADM02 28 - Av. Universitária / Esquina cm a Av. Santos Dumont", bairro: "Maracanã", semana: "06:57", sabado: "07:11" },
+    { lat: -16.298020, lng: -48.946680, nome: "ADM02 29 - Av. Universitária / Esquina com a R. Bolívia", bairro: "Maracanã", semana: "07:00", sabado: "07:14" },
+    { lat: -16.300890, lng: -48.947350, nome: "ADM02 30 - Av. Universitária / Com a Rua Chile", bairro: "Maracanã", semana: "07:01", sabado: "07:15" },
+    { lat: -16.305220, lng: -48.948400, nome: "ADM02 31 - Av. Universitária / Com a Rua Albertino de Pina", bairro: "Maracanã", semana: "07:02", sabado: "07:16" },
+    { lat: -16.308689, lng: -48.949220, nome: "ADM02 32 - Av. Universitária / Com a Rua 3", bairro: "Maracanã", semana: "07:04", sabado: "07:18" },
+    { lat: -16.313780, lng: -48.950480, nome: "ADM02 33 - Av. Universitária / Com a Av. Das Naçoes", bairro: "Jardim Bandeirante", semana: "07:05", sabado: "07:19" },
+    { lat: -16.315833, lng: -48.951646, nome: "ADM02 34 - Av. Universitária / Com a Rua Arnaldo de Farias", bairro: "Maracanã", semana: "07:06", sabado: "07:20" },
+    { lat: -16.327905, lng: -48.949612, nome: "ADM02 35 - Av. Brasil Sul / Com a Rua Barão do Rio Branco", bairro: "Cidade Jardim", semana: "07:11", sabado: "07:25" },
+    { lat: -16.335526, lng: -48.952196, nome: "ADM02 36 - Av. Brasil Sul / Hotel Arco Íris", bairro: "Cidade Jardim", semana: "07:13", sabado: "07:27" },
+    { lat: -16.338710, lng: -48.953200, nome: "ADM02 37 - Av. Brasil Sul / Localiza", bairro: "Vila Jussara", semana: "07:14", sabado: "07:28" },
+    { lat: -16.344731, lng: -48.956023, nome: "ADM02 38 - Av. Brasil Sul / Esquina com a Rua 4", bairro: "Vila Miguel Jorge", semana: "07:15", sabado: "07:29" },
+    { lat: -16.361910, lng: -48.962460, nome: "ADM02 39 - Av. Brasil Sul / Com a Rua Pecuaria", bairro: "Cidade Jardim", semana: "07:19", sabado: "07:33" },
+    { lat: -16.407210, lng: -48.921280, nome: "ADM02 40 - Distrito Agroindustrial de Anápolis / Laboratório Teuto", bairro: "", semana: "07:30", sabado: "07:44" }
+  ]
 };
