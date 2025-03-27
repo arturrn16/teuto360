@@ -362,10 +362,11 @@ const Admin = () => {
   
   const atualizarStatusRota = async (id: number, status: 'aprovada' | 'rejeitada') => {
     try {
-      const { error } = await supabase
-        .from('solicitacoes_transporte_rota')
-        .update({ status })
-        .eq('id', id);
+      const { error } = await updateCustomTable(
+        "solicitacoes_transporte_rota",
+        { status },
+        { column: 'id', value: id }
+      );
         
       if (error) {
         console.error("Erro ao atualizar status:", error);
@@ -386,10 +387,11 @@ const Admin = () => {
   
   const atualizarStatus12x36 = async (id: number, status: 'aprovada' | 'rejeitada') => {
     try {
-      const { error } = await supabase
-        .from('solicitacoes_transporte_12x36')
-        .update({ status })
-        .eq('id', id);
+      const { error } = await updateCustomTable(
+        "solicitacoes_transporte_12x36",
+        { status },
+        { column: 'id', value: id }
+      );
         
       if (error) {
         console.error("Erro ao atualizar status:", error);
@@ -410,10 +412,11 @@ const Admin = () => {
   
   const atualizarStatusRefeicao = async (id: number, status: 'aprovada' | 'rejeitada') => {
     try {
-      const { error } = await supabase
-        .from('solicitacoes_refeicao')
-        .update({ status })
-        .eq('id', id);
+      const { error } = await updateCustomTable(
+        "solicitacoes_refeicao",
+        { status },
+        { column: 'id', value: id }
+      );
         
       if (error) {
         console.error("Erro ao atualizar status:", error);
@@ -434,10 +437,11 @@ const Admin = () => {
 
   const atualizarStatusGenerico = async (tabela: string, id: number, status: 'aprovada' | 'rejeitada', atualizarEstado: Function) => {
     try {
-      const { error } = await supabase
-        .from(tabela)
-        .update({ status })
-        .eq('id', id);
+      const { error } = await updateCustomTable(
+        tabela,
+        { status },
+        { column: 'id', value: id }
+      );
         
       if (error) {
         console.error(`Erro ao atualizar status em ${tabela}:`, error);
