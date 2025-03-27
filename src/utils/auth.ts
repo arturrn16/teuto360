@@ -1,4 +1,3 @@
-
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { checkPermission } from "@/services/permissionService";
@@ -101,12 +100,12 @@ export const checkUserPermission = async (
   return typeAllowed;
 };
 
-// Update function to accept readonly arrays
-export const shouldShowRoute = async (
+// Modified: Fix the return type to be boolean synchronously instead of a Promise
+export const shouldShowRoute = (
   user: User | null,
   allowedTypes: ReadonlyArray<'admin' | 'selecao' | 'gestor' | 'colaborador' | 'comum'>,
   resource?: string
-): Promise<boolean> => {
+): boolean => {
   if (!user) return false;
   
   console.log("shouldShowRoute check:", { 
@@ -115,5 +114,9 @@ export const shouldShowRoute = async (
     allowedTypes
   });
   
-  return checkUserPermission(user, allowedTypes, resource);
+  // Admin can access everything
+  if (user.admin) return true;
+  
+  // Otherwise, check if user type is in the allowed types
+  return allowedTypes.includes(user.tipo_usuario);
 };

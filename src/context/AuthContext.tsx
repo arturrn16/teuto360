@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { User, getStoredUser, loginUser, logoutUser, storeUser, shouldShowRoute } from "@/utils/auth";
+import { User, getStoredUser, loginUser, logoutUser, storeUser, shouldShowRoute as checkShouldShowRoute } from "@/utils/auth";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -60,8 +60,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     navigate("/login");
   };
 
-  const checkShouldShowRoute = (allowedTypes: ReadonlyArray<'admin' | 'selecao' | 'gestor' | 'colaborador' | 'comum'>) => {
-    return shouldShowRoute(user, allowedTypes);
+  const checkShouldShowRouteSync = (allowedTypes: ReadonlyArray<'admin' | 'selecao' | 'gestor' | 'colaborador' | 'comum'>) => {
+    return checkShouldShowRoute(user, allowedTypes);
   };
 
   return (
@@ -72,7 +72,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         login,
         logout,
         isAuthenticated: !!user,
-        shouldShowRoute: checkShouldShowRoute,
+        shouldShowRoute: checkShouldShowRouteSync,
       }}
     >
       {children}

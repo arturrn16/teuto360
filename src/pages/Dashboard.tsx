@@ -1,4 +1,3 @@
-
 import { useAuth } from "@/context/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui-components/Card";
 import { cn } from "@/lib/utils";
@@ -21,7 +20,7 @@ const Dashboard = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // Load user permissions for dashboard cards
+  // Updated: Properly type the resource parameter for checkPermission
   useEffect(() => {
     const loadPermissions = async () => {
       if (!user || user.admin) return; // Admins have all permissions by default
@@ -35,7 +34,8 @@ const Dashboard = () => {
       // Check permissions for each card
       for (const card of dashboardCards) {
         try {
-          const hasPermission = await checkPermission(user.id, card.title, 'dashboard');
+          // Fixed: Make sure card.title is properly typed
+          const hasPermission = await checkPermission(user.id, card.title as string, 'dashboard');
           permissions[card.title] = hasPermission;
         } catch (error) {
           console.error(`Error checking permission for ${card.title}:`, error);
@@ -403,6 +403,19 @@ const Dashboard = () => {
     return cards;
   };
 
+  // Check if a menu item should be visible based on permissions
+  const shouldShowMenuItem = (itemName: string): boolean => {
+    if (user?.admin) return true; // Admins can see everything
+    if (isLoadingPermissions) return true; // While loading, show all items
+    
+    // If we have permission data, use it to determine visibility
+    if (Object.keys(userPermissions).length > 0) {
+      return userPermissions[itemName] ?? true; // Default to visible if not found
+    }
+    
+    return true; // Default to visible if no permission data
+  };
+
   // Filtro de cards baseado no tipo de usuário
   const getCardsForUserType = () => {
     if (!user) return [];
@@ -449,6 +462,11 @@ const Dashboard = () => {
     if (hour < 12) return "Bom dia";
     if (hour < 18) return "Boa tarde";
     return "Boa noite";
+  };
+
+  // Fixed: Properly cast the title for checkPermission
+  const checkPermissionForCard = async (userId: number, title: any) => {
+    return await checkPermission(userId, title as string, 'dashboard');
   };
 
   return (
