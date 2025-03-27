@@ -55,7 +55,7 @@ const AbonoPonto = () => {
   
   // Opções dinâmicas de turno com base na cidade
   const turnoOptions = cidade === "Anápolis" 
-    ? ["Administrativo", "1° Turno", "2° Turno", "3° Turno"]
+    ? ["Administrativo", "1° Turno", "2° Turno", "3° Turno", "Faculdade"]
     : ["Gyn Adm 1", "Gyn Adm 2", "Gyn 1° Turno", "Gyn 2° Turno"];
     
   // Opções dinâmicas de rota com base na cidade e turno
@@ -71,6 +71,8 @@ const AbonoPonto = () => {
         return Array.from({ length: 12 }, (_, i) => `S-${String(i + 1).padStart(2, '0')}`);
       } else if (turno === "3° Turno") {
         return Array.from({ length: 8 }, (_, i) => `T-${String(i + 1).padStart(2, '0')}`);
+      } else if (turno === "Faculdade") {
+        return ["FACULDADE"];
       }
     }
     return [];

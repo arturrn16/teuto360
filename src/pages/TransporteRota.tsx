@@ -77,7 +77,7 @@ const TransporteRota = () => {
   const turno = form.watch("turno");
   
   const turnoOptions = cidade === "Anápolis" 
-    ? ["Administrativo", "1° Turno", "2° Turno", "3° Turno"]
+    ? ["Administrativo", "1° Turno", "2° Turno", "3° Turno", "Faculdade"]
     : ["Gyn Adm 1", "Gyn Adm 2", "Gyn 1° Turno", "Gyn 2° Turno"];
     
   const getRotaOptions = () => {
@@ -92,6 +92,8 @@ const TransporteRota = () => {
         return Array.from({ length: 12 }, (_, i) => `S-${String(i + 1).padStart(2, '0')}`);
       } else if (turno === "3° Turno") {
         return Array.from({ length: 8 }, (_, i) => `T-${String(i + 1).padStart(2, '0')}`);
+      } else if (turno === "Faculdade") {
+        return ["FACULDADE"];
       }
     }
     return [];

@@ -56,6 +56,9 @@ import { routeDataADM08 } from "./routeDataADM08";
 import { routeDataGYNADM01 } from "./routeDataGYNADM01";
 import { routeDataGYNADM02 } from "./routeDataGYNADM02";
 
+// Importando rota de Faculdade
+import { routeDataFaculdade } from "./routeDataFaculdade";
+
 // Combinando rotas do 1° Turno
 export const routeData1Turno = {
   ...routeDataP1,
@@ -128,6 +131,7 @@ export const allRouteData: TurnoRouteData = {
   "3° Turno": routeData3Turno,
   "Administrativo": routeDataAdm,
   "Goiânia": routeDataGyn,
+  "Faculdade": routeDataFaculdade,
 };
 
 // Função para obter todos os turnos disponíveis

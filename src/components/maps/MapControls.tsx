@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -46,7 +47,8 @@ const MapControls = ({
       "2° Turno": "S-",
       "3° Turno": "T-",
       "Administrativo": "ADM-",
-      "Goiânia": "GYN ADM-"
+      "Goiânia": "GYN ADM-",
+      "Faculdade": "FACULDADE"
     };
     
     const prefix = prefixMap[selectedTurno];

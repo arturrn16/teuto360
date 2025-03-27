@@ -55,4 +55,7 @@ export const ROUTE_COLORS = {
   // Goiânia Routes (GYN ADM-01 and GYN ADM-02)
   "GYN ADM-01": "#881337", // Deep red
   "GYN ADM-02": "#1F2937", // Dark blue-gray
+  
+  // Faculdade Route
+  "FACULDADE": "#0EA5E9", // Sky blue
 };
