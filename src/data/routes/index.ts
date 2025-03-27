@@ -124,6 +124,21 @@ export const routeDataGyn = {
   ...routeDataGYNADM02,
 };
 
+// Criar rotas para os turnos adicionais de Goiânia
+export const routeDataGyn1Turno = {
+  "GYN 1° TURNO": { 
+    name: "GYN 1° TURNO",
+    busStops: []
+  }
+};
+
+export const routeDataGyn2Turno = {
+  "GYN 2° TURNO": { 
+    name: "GYN 2° TURNO",
+    busStops: []
+  }
+};
+
 // Combinando todos os dados por turno
 export const allRouteData: TurnoRouteData = {
   "1° Turno": routeData1Turno,
@@ -131,6 +146,8 @@ export const allRouteData: TurnoRouteData = {
   "3° Turno": routeData3Turno,
   "Administrativo": routeDataAdm,
   "Goiânia": routeDataGyn,
+  "GYN 1° TURNO": routeDataGyn1Turno,
+  "GYN 2° TURNO": routeDataGyn2Turno,
   "Faculdade": routeDataFaculdade,
 };
 
