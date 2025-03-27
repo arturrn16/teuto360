@@ -166,6 +166,41 @@ export type Database = {
           },
         ]
       }
+      permissoes: {
+        Row: {
+          created_at: string | null
+          id: number
+          recurso: string
+          tipo_recurso: string
+          updated_at: string | null
+          usuario_id: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: number
+          recurso: string
+          tipo_recurso: string
+          updated_at?: string | null
+          usuario_id?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: number
+          recurso?: string
+          tipo_recurso?: string
+          updated_at?: string | null
+          usuario_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "permissoes_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       solicitacoes_abono_ponto: {
         Row: {
           cidade: string
@@ -632,6 +667,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_permissao: {
+        Args: {
+          p_usuario_id: number
+          p_recurso: string
+          p_tipo_recurso?: string
+        }
+        Returns: undefined
+      }
+      check_permissao: {
+        Args: {
+          p_usuario_id: number
+          p_recurso: string
+          p_tipo_recurso?: string
+        }
+        Returns: boolean
+      }
       create_user: {
         Args: {
           p_nome: string
@@ -681,6 +732,14 @@ export type Database = {
           p_assinatura_url?: string
           p_declaracao_url?: string
           p_status?: string
+        }
+        Returns: undefined
+      }
+      remove_permissao: {
+        Args: {
+          p_usuario_id: number
+          p_recurso: string
+          p_tipo_recurso?: string
         }
         Returns: undefined
       }

@@ -1,6 +1,7 @@
 
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { checkPermission } from "@/services/permissionService";
 
 // Define user types
 export interface User {
@@ -72,24 +73,40 @@ export const storeUser = (user: User): void => {
   localStorage.setItem("hrToken", "mock-jwt-token");
 };
 
-export const checkUserPermission = (
+export const checkUserPermission = async (
   user: User | null,
-  requiredTypes: ReadonlyArray<'admin' | 'selecao' | 'gestor' | 'colaborador' | 'comum'>
-): boolean => {
+  requiredTypes: ReadonlyArray<'admin' | 'selecao' | 'gestor' | 'colaborador' | 'comum'>,
+  resource?: string,
+  resourceType: string = 'pagina'
+): Promise<boolean> => {
   if (!user) return false;
   
   // Admin pode acessar tudo
   if (user.admin) return true;
   
   // Verifica se o tipo de usuário está nos tipos requeridos
-  return requiredTypes.includes(user.tipo_usuario);
+  const typeAllowed = requiredTypes.includes(user.tipo_usuario);
+  
+  // Se resource for fornecido, verificar permissão específica
+  if (resource && typeAllowed) {
+    try {
+      return await checkPermission(user.id, resource, resourceType);
+    } catch (error) {
+      console.error("Error checking permission:", error);
+      return false;
+    }
+  }
+  
+  // Caso contrário, apenas verificar o tipo de usuário
+  return typeAllowed;
 };
 
 // Update function to accept readonly arrays
-export const shouldShowRoute = (
+export const shouldShowRoute = async (
   user: User | null,
-  allowedTypes: ReadonlyArray<'admin' | 'selecao' | 'gestor' | 'colaborador' | 'comum'>
-): boolean => {
+  allowedTypes: ReadonlyArray<'admin' | 'selecao' | 'gestor' | 'colaborador' | 'comum'>,
+  resource?: string
+): Promise<boolean> => {
   if (!user) return false;
   
   console.log("shouldShowRoute check:", { 
@@ -98,6 +115,5 @@ export const shouldShowRoute = (
     allowedTypes
   });
   
-  if (user.admin) return true;
-  return allowedTypes.includes(user.tipo_usuario);
+  return checkUserPermission(user, allowedTypes, resource);
 };

@@ -6,6 +6,8 @@ import { SidebarMenu, SidebarMenuSub, useSidebar } from "@/components/ui/sidebar
 import { SidebarNavItem } from "./SidebarNavItem";
 import { NavItem, UserType } from "./navigationConfig";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { checkPermission } from "@/services/permissionService";
+import { useAuth } from "@/context/AuthContext";
 
 interface SidebarNavigationProps {
   items: NavItem[];
@@ -17,7 +19,10 @@ interface SidebarNavigationProps {
 export const SidebarNavigation = memo(({ items, userType, admin = false }: SidebarNavigationProps) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({});
+  const [menuPermissions, setMenuPermissions] = useState<Record<string, boolean>>({});
+  const [isLoadingPermissions, setIsLoadingPermissions] = useState(false);
   const isMobile = useIsMobile();
   const { setOpenMobile } = useSidebar();
 
@@ -31,6 +36,40 @@ export const SidebarNavigation = memo(({ items, userType, admin = false }: Sideb
     // Otherwise, check if user type is in the allowed types
     return link.allowedTypes.includes(userType);
   }), [items, userType, admin]);
+
+  // Load menu permissions when component mounts
+  useEffect(() => {
+    const loadMenuPermissions = async () => {
+      if (!user || user.admin) return; // Admins have all permissions by default
+      
+      setIsLoadingPermissions(true);
+      const permissions: Record<string, boolean> = {};
+      
+      // Check permissions for each menu item
+      for (const item of filteredLinks) {
+        try {
+          const hasPermission = await checkPermission(user.id, item.name, 'menu');
+          permissions[item.name] = hasPermission;
+          
+          // Also check for submenu items if present
+          if (item.children) {
+            for (const child of item.children) {
+              const hasChildPermission = await checkPermission(user.id, child.name, 'menu');
+              permissions[child.name] = hasChildPermission;
+            }
+          }
+        } catch (error) {
+          console.error(`Error checking permission for ${item.name}:`, error);
+          permissions[item.name] = false;
+        }
+      }
+      
+      setMenuPermissions(permissions);
+      setIsLoadingPermissions(false);
+    };
+    
+    loadMenuPermissions();
+  }, [user, filteredLinks]);
 
   // Verifica a rota atual e expande automaticamente o menu pai
   useEffect(() => {
@@ -83,8 +122,26 @@ export const SidebarNavigation = memo(({ items, userType, admin = false }: Sideb
     return React.isValidElement(icon) && React.Children.count(icon.props.children) === 0;
   };
 
+  // Check if a menu item should be visible based on permissions
+  const shouldShowMenuItem = (itemName: string): boolean => {
+    if (user?.admin) return true; // Admins can see everything
+    if (isLoadingPermissions) return true; // While loading, show all items
+    
+    // If we have permission data, use it to determine visibility
+    if (Object.keys(menuPermissions).length > 0) {
+      return menuPermissions[itemName] ?? true; // Default to visible if not found
+    }
+    
+    return true; // Default to visible if no permission data
+  };
+
   // Render menu item recursively to handle submenus
   const renderMenuItem = (item: NavItem, index: number) => {
+    // Skip items that should be hidden based on permissions
+    if (!shouldShowMenuItem(item.name)) {
+      return null;
+    }
+    
     const hasChildren = item.children && item.children.length > 0;
     const isActive = location.pathname === item.href;
     const isExpanded = expandedMenus[item.name] || false;
@@ -94,11 +151,16 @@ export const SidebarNavigation = memo(({ items, userType, admin = false }: Sideb
       location.pathname === child.href
     );
 
-    // Filter children based on user type before rendering
+    // Filter children based on user type and permissions before rendering
     const filteredChildren = hasChildren 
       ? item.children?.filter(child => {
           if (admin) return true;
-          return child.allowedTypes.includes(userType);
+          
+          // Check type first
+          const typeAllowed = child.allowedTypes.includes(userType);
+          
+          // Then check permissions if needed
+          return typeAllowed && shouldShowMenuItem(child.name);
         })
       : [];
 

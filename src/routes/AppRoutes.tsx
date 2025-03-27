@@ -18,6 +18,7 @@ const GerenciarComunicados = lazy(() => import('@/pages/GerenciarComunicados'));
 const GerenciarCardapio = lazy(() => import('@/pages/GerenciarCardapio'));
 const GerenciarCartoes = lazy(() => import('@/pages/GerenciarCartoes'));
 const GerenciarUsuarios = lazy(() => import('@/pages/GerenciarUsuarios'));
+const GerenciarPermissoes = lazy(() => import('@/pages/GerenciarPermissoes'));
 
 // Regular pages
 const TransporteRota = lazy(() => import('@/pages/TransporteRota'));
@@ -64,6 +65,7 @@ const routeGroups = {
     { path: '/gerenciar-cardapio', component: GerenciarCardapio },
     { path: '/gerenciar-cartoes', component: GerenciarCartoes },
     { path: '/gerenciar-usuarios', component: GerenciarUsuarios },
+    { path: '/gerenciar-permissoes', component: GerenciarPermissoes },
   ],
   
   adminSelecaoComum: [
