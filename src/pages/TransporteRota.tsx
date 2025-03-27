@@ -34,9 +34,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { toast } from "sonner";
-import { getAvailableFormRoutes, goyaniaTurnosOptions } from "@/data/routes";
+import { getAvailableFormRoutes, goianiaTurnosOptions } from "@/data/routes";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface FormValues {
   matricula: string;
@@ -87,21 +86,28 @@ const TransporteRota = () => {
   const cidade = form.watch("cidade");
   const turno = form.watch("turno");
   
+  // Opções de turno baseadas na cidade selecionada
   const turnoOptions = cidade === "Anápolis" 
     ? ["Administrativo", "1° Turno", "2° Turno", "3° Turno", "Faculdade"]
-    : goyaniaTurnosOptions;
+    : goianiaTurnosOptions;
 
   // Update available routes when turno changes
   useEffect(() => {
     if (turno) {
-      const routes = getAvailableFormRoutes(turno, cidade);
-      setAvailableRoutes(routes);
-      
-      // Se apenas uma rota estiver disponível, selecioná-la automaticamente
-      if (routes.length === 1) {
-        form.setValue("rota", routes[0]);
+      if (cidade === "Goiânia") {
+        // Para Goiânia, a rota é sempre igual ao turno
+        setAvailableRoutes([turno]);
+        form.setValue("rota", turno);
       } else {
-        form.setValue("rota", ""); // Reset route when turno changes with multiple options
+        const routes = getAvailableFormRoutes(turno, cidade);
+        setAvailableRoutes(routes);
+        
+        // Se apenas uma rota estiver disponível, selecioná-la automaticamente
+        if (routes.length === 1) {
+          form.setValue("rota", routes[0]);
+        } else {
+          form.setValue("rota", ""); // Reset route when turno changes with multiple options
+        }
       }
     } else {
       setAvailableRoutes([]);
@@ -209,6 +215,9 @@ const TransporteRota = () => {
               value={turno}
               onChange={(e) => {
                 form.setValue("turno", e.target.value);
+                if (cidade === "Goiânia") {
+                  form.setValue("rota", e.target.value);
+                }
               }}
             >
               <option value="" disabled>Selecione o turno</option>
@@ -222,7 +231,7 @@ const TransporteRota = () => {
               className="form-select-input"
               value={form.watch("rota")}
               onChange={(e) => form.setValue("rota", e.target.value)}
-              disabled={!turno}
+              disabled={!turno || cidade === "Goiânia"}
             >
               <option value="" disabled>Selecione a rota</option>
               {availableRoutes.map((option) => (
@@ -380,6 +389,9 @@ const TransporteRota = () => {
                 <Select 
                   onValueChange={(value) => {
                     field.onChange(value);
+                    if (cidade === "Goiânia") {
+                      form.setValue("rota", value);
+                    }
                   }}
                   defaultValue={field.value}
                 >
@@ -411,7 +423,7 @@ const TransporteRota = () => {
                 <Select 
                   onValueChange={field.onChange}
                   defaultValue={field.value}
-                  disabled={!turno}
+                  disabled={!turno || cidade === "Goiânia"}
                 >
                   <FormControl>
                     <SelectTrigger>

@@ -32,6 +32,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { FormLayout } from "@/components/FormLayout";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { goianiaTurnosOptions } from "@/data/routes";
 
 interface FormValues {
   telefone: string;
@@ -71,19 +72,16 @@ const MudancaTurno = () => {
   const turnoAtual = form.watch("turnoAtual");
   const novoTurno = form.watch("novoTurno");
   
-  const turnoOptions = [
+  const turnoOptionsAnapoles = [
     "Administrativo", 
     "1° Turno", 
     "2° Turno", 
     "3° Turno", 
-    "Gyn Adm 1", 
-    "Gyn Adm 2", 
-    "Gyn 1° Turno", 
-    "Gyn 2° Turno"
+    "Faculdade"
   ];
   
   const getRotaOptions = () => {
-    if (["Gyn Adm 1", "Gyn Adm 2", "Gyn 1° Turno", "Gyn 2° Turno"].includes(novoTurno)) {
+    if (goianiaTurnosOptions.includes(novoTurno)) {
       return [novoTurno];
     } else if (novoTurno === "Administrativo") {
       return Array.from({ length: 8 }, (_, i) => `ADM-${String(i + 1).padStart(2, '0')}`);
@@ -93,6 +91,8 @@ const MudancaTurno = () => {
       return Array.from({ length: 12 }, (_, i) => `S-${String(i + 1).padStart(2, '0')}`);
     } else if (novoTurno === "3° Turno") {
       return Array.from({ length: 8 }, (_, i) => `T-${String(i + 1).padStart(2, '0')}`);
+    } else if (novoTurno === "Faculdade") {
+      return ["FACULDADE"];
     }
     return [];
   };
@@ -100,7 +100,7 @@ const MudancaTurno = () => {
   const rotaOptions = getRotaOptions();
   
   useEffect(() => {
-    if (["Gyn Adm 1", "Gyn Adm 2", "Gyn 1° Turno", "Gyn 2° Turno"].includes(novoTurno)) {
+    if (goianiaTurnosOptions.includes(novoTurno)) {
       form.setValue("novaRota", novoTurno);
     }
   }, [novoTurno, form]);
@@ -168,6 +168,11 @@ const MudancaTurno = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+  
+  // Obter todas as opções de turnos disponíveis
+  const getAllTurnoOptions = () => {
+    return [...turnoOptionsAnapoles, ...goianiaTurnosOptions];
   };
   
   const renderFormContent = () => {
@@ -296,7 +301,7 @@ const MudancaTurno = () => {
               onChange={(e) => form.setValue("turnoAtual", e.target.value)}
             >
               <option value="" disabled>Selecione o turno atual</option>
-              {turnoOptions.map((option) => (
+              {getAllTurnoOptions().map((option) => (
                 <option key={option} value={option}>{option}</option>
               ))}
             </select>
@@ -310,7 +315,7 @@ const MudancaTurno = () => {
               value={novoTurno}
               onChange={(e) => {
                 form.setValue("novoTurno", e.target.value);
-                if (["Gyn Adm 1", "Gyn Adm 2", "Gyn 1° Turno", "Gyn 2° Turno"].includes(e.target.value)) {
+                if (goianiaTurnosOptions.includes(e.target.value)) {
                   form.setValue("novaRota", e.target.value);
                 } else {
                   form.setValue("novaRota", "");
@@ -318,7 +323,7 @@ const MudancaTurno = () => {
               }}
             >
               <option value="" disabled>Selecione o novo turno</option>
-              {turnoOptions.map((option) => (
+              {getAllTurnoOptions().map((option) => (
                 <option key={option} value={option}>{option}</option>
               ))}
             </select>
@@ -331,7 +336,7 @@ const MudancaTurno = () => {
               className="form-select-input"
               value={form.watch("novaRota")}
               onChange={(e) => form.setValue("novaRota", e.target.value)}
-              disabled={!novoTurno || ["Gyn Adm 1", "Gyn Adm 2", "Gyn 1° Turno", "Gyn 2° Turno"].includes(novoTurno)}
+              disabled={!novoTurno || goianiaTurnosOptions.includes(novoTurno)}
             >
               <option value="" disabled>Selecione a nova rota</option>
               {rotaOptions.map((option) => (
@@ -538,7 +543,7 @@ const MudancaTurno = () => {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {turnoOptions.map((turno) => (
+                      {getAllTurnoOptions().map((turno) => (
                         <SelectItem key={turno} value={turno}>{turno}</SelectItem>
                       ))}
                     </SelectContent>
@@ -558,7 +563,7 @@ const MudancaTurno = () => {
                   <Select 
                     onValueChange={(value) => {
                       field.onChange(value);
-                      if (["Gyn Adm 1", "Gyn Adm 2", "Gyn 1° Turno", "Gyn 2° Turno"].includes(value)) {
+                      if (goianiaTurnosOptions.includes(value)) {
                         form.setValue("novaRota", value);
                       } else {
                         form.setValue("novaRota", "");
@@ -572,7 +577,7 @@ const MudancaTurno = () => {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {turnoOptions.map((turno) => (
+                      {getAllTurnoOptions().map((turno) => (
                         <SelectItem key={turno} value={turno}>{turno}</SelectItem>
                       ))}
                     </SelectContent>
@@ -593,7 +598,7 @@ const MudancaTurno = () => {
                 <Select 
                   onValueChange={field.onChange}
                   defaultValue={field.value}
-                  disabled={!novoTurno || ["Gyn Adm 1", "Gyn Adm 2", "Gyn 1° Turno", "Gyn 2° Turno"].includes(novoTurno)}
+                  disabled={!novoTurno || goianiaTurnosOptions.includes(novoTurno)}
                 >
                   <FormControl>
                     <SelectTrigger className="form-select-input">

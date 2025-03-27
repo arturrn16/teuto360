@@ -134,12 +134,13 @@ export const allRouteData: TurnoRouteData = {
   "Faculdade": routeDataFaculdade,
 };
 
-// Definindo opções de Goiânia específicas para formulários
-export const goyaniaTurnosOptions = ["Goiânia", "GYN 1° TURNO", "GYN 2° TURNO"];
+// Definindo opções de turnos para Goiânia específicas para formulários
+export const goianiaTurnosOptions = ["GYN ADM1", "GYN ADM2", "GYN 1° TURNO", "GYN 2° TURNO"];
 
 // Definindo rotas disponíveis para o formulário de transporte
 export const formGoianiaRoutes = {
-  "Goiânia": ["GYN ADM1", "GYN ADM2"],
+  "GYN ADM1": ["GYN ADM1"],
+  "GYN ADM2": ["GYN ADM2"],
   "GYN 1° TURNO": ["GYN 1° TURNO"],
   "GYN 2° TURNO": ["GYN 2° TURNO"]
 };

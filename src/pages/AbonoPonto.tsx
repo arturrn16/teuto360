@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { goianiaTurnosOptions } from "@/data/routes";
 
 interface FormValues {
   cidade: "Anápolis" | "Goiânia";
@@ -56,7 +57,7 @@ const AbonoPonto = () => {
   // Opções dinâmicas de turno com base na cidade
   const turnoOptions = cidade === "Anápolis" 
     ? ["Administrativo", "1° Turno", "2° Turno", "3° Turno", "Faculdade"]
-    : ["Gyn Adm 1", "Gyn Adm 2", "Gyn 1° Turno", "Gyn 2° Turno"];
+    : goianiaTurnosOptions;
     
   // Opções dinâmicas de rota com base na cidade e turno
   const getRotaOptions = () => {
