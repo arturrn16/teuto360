@@ -45,6 +45,10 @@ interface FormValues {
   novaRota: string;
   nomeGestor: string;
   motivo: string;
+  matricula: string; // Adicionado para permitir edição
+  colaboradorNome: string; // Adicionado para permitir edição
+  cargo: string; // Adicionado para permitir edição
+  setor: string; // Adicionado para permitir edição
 }
 
 const MudancaTurno = () => {
@@ -54,8 +58,15 @@ const MudancaTurno = () => {
   const [isLoadingCep, setIsLoadingCep] = useState(false);
   const isMobile = useIsMobile();
   
+  // Check if the current user is a "gestor" type user
+  const isGestorUser = user?.tipo_usuario === 'gestor';
+  
   const form = useForm<FormValues>({
     defaultValues: {
+      matricula: user?.matricula || "",
+      colaboradorNome: user?.nome || "",
+      cargo: user?.cargo || "",
+      setor: user?.setor || "",
       telefone: "",
       cep: "",
       endereco: "",
@@ -140,6 +151,10 @@ const MudancaTurno = () => {
     try {
       const { error } = await supabase.from('solicitacoes_mudanca_turno').insert({
         solicitante_id: user.id,
+        matricula: data.matricula,
+        colaborador_nome: data.colaboradorNome,
+        cargo: data.cargo,
+        setor: data.setor,
         telefone: data.telefone,
         cep: data.cep,
         endereco: data.endereco,
@@ -183,33 +198,37 @@ const MudancaTurno = () => {
             <label className="form-field-label">Matrícula</label>
             <input 
               type="text" 
-              className="form-field-input bg-gray-100" 
-              value={user?.matricula || ""} 
-              disabled 
+              className={`form-field-input ${isGestorUser ? "" : "bg-gray-100"}`}
+              value={form.watch("matricula")}
+              onChange={(e) => form.setValue("matricula", e.target.value)}
+              disabled={!isGestorUser}
             />
             
             <label className="form-field-label">Nome</label>
             <input 
               type="text" 
-              className="form-field-input bg-gray-100" 
-              value={user?.nome || ""} 
-              disabled 
+              className={`form-field-input ${isGestorUser ? "" : "bg-gray-100"}`}
+              value={form.watch("colaboradorNome")}
+              onChange={(e) => form.setValue("colaboradorNome", e.target.value)}
+              disabled={!isGestorUser}
             />
             
             <label className="form-field-label">Cargo</label>
             <input 
               type="text" 
-              className="form-field-input bg-gray-100" 
-              value={user?.cargo || ""} 
-              disabled 
+              className={`form-field-input ${isGestorUser ? "" : "bg-gray-100"}`}
+              value={form.watch("cargo")}
+              onChange={(e) => form.setValue("cargo", e.target.value)}
+              disabled={!isGestorUser}
             />
             
             <label className="form-field-label">Setor</label>
             <input 
               type="text" 
-              className="form-field-input bg-gray-100" 
-              value={user?.setor || ""} 
-              disabled 
+              className={`form-field-input ${isGestorUser ? "" : "bg-gray-100"}`}
+              value={form.watch("setor")}
+              onChange={(e) => form.setValue("setor", e.target.value)}
+              disabled={!isGestorUser}
             />
           </div>
           
@@ -381,35 +400,65 @@ const MudancaTurno = () => {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <FormItem>
-              <FormLabel className="form-field-label">Matrícula</FormLabel>
-              <FormControl>
-                <Input value={user?.matricula || ""} disabled className="form-field-input" />
-              </FormControl>
-            </FormItem>
+            <FormField
+              control={form.control}
+              name="matricula"
+              rules={{ required: "Matrícula é obrigatória" }}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="form-field-label">Matrícula</FormLabel>
+                  <FormControl>
+                    <Input {...field} readOnly={!isGestorUser} className={isGestorUser ? "form-field-input" : "form-field-input bg-gray-100"} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             
-            <FormItem>
-              <FormLabel className="form-field-label">Nome</FormLabel>
-              <FormControl>
-                <Input value={user?.nome || ""} disabled className="form-field-input" />
-              </FormControl>
-            </FormItem>
+            <FormField
+              control={form.control}
+              name="colaboradorNome"
+              rules={{ required: "Nome é obrigatório" }}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="form-field-label">Nome</FormLabel>
+                  <FormControl>
+                    <Input {...field} readOnly={!isGestorUser} className={isGestorUser ? "form-field-input" : "form-field-input bg-gray-100"} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <FormItem>
-              <FormLabel className="form-field-label">Cargo</FormLabel>
-              <FormControl>
-                <Input value={user?.cargo || ""} disabled className="form-field-input" />
-              </FormControl>
-            </FormItem>
+            <FormField
+              control={form.control}
+              name="cargo"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="form-field-label">Cargo</FormLabel>
+                  <FormControl>
+                    <Input {...field} readOnly={!isGestorUser} className={isGestorUser ? "form-field-input" : "form-field-input bg-gray-100"} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             
-            <FormItem>
-              <FormLabel className="form-field-label">Setor</FormLabel>
-              <FormControl>
-                <Input value={user?.setor || ""} disabled className="form-field-input" />
-              </FormControl>
-            </FormItem>
+            <FormField
+              control={form.control}
+              name="setor"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="form-field-label">Setor</FormLabel>
+                  <FormControl>
+                    <Input {...field} readOnly={!isGestorUser} className={isGestorUser ? "form-field-input" : "form-field-input bg-gray-100"} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
           
           <FormField

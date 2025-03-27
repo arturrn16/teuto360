@@ -29,13 +29,13 @@ export const navItems: NavItem[] = [
     name: "Transporte", 
     href: "#", // No direct link
     icon: <span className="text-blue-600 text-xl">🚌</span>,
-    allowedTypes: ["comum"] as const, 
+    allowedTypes: ["comum", "gestor"] as const, 
     children: [
       { 
         name: "Mapa de Rotas", 
         href: "/mapa-rotas", 
         icon: <></>,
-        allowedTypes: ["comum"] as const 
+        allowedTypes: ["comum", "gestor"] as const 
       },
       { 
         name: "Uso de Rota", 
@@ -53,31 +53,31 @@ export const navItems: NavItem[] = [
         name: "Alteração de Endereço", 
         href: "/alteracao-endereco", 
         icon: <></>,
-        allowedTypes: ["comum"] as const 
+        allowedTypes: ["comum", "gestor"] as const 
       },
       { 
         name: "Adesão/Cancelamento", 
         href: "/adesao-cancelamento", 
         icon: <></>,
-        allowedTypes: ["comum"] as const 
+        allowedTypes: ["comum", "gestor"] as const 
       },
       { 
         name: "Abono de Ponto", 
         href: "/abono-ponto", 
         icon: <></>,
-        allowedTypes: ["comum"] as const 
+        allowedTypes: ["comum", "gestor"] as const 
       },
       { 
         name: "Plantão 24hs", 
         href: "/plantao", 
         icon: <></>,
-        allowedTypes: ["comum"] as const 
+        allowedTypes: ["comum", "gestor"] as const 
       },
       { 
         name: "Avaliação", 
         href: "/avaliacao", 
         icon: <></>,
-        allowedTypes: ["comum"] as const 
+        allowedTypes: ["comum", "gestor"] as const 
       },
     ]
   },
@@ -105,13 +105,13 @@ export const navItems: NavItem[] = [
     name: "Ofertas de Carona", 
     href: "/oferta-caronas", 
     icon: <span className="text-red-600 text-xl">🚗</span>,
-    allowedTypes: ["comum"] as const 
+    allowedTypes: ["comum", "gestor"] as const 
   },
   { 
     name: "Consulta de Cartão", 
     href: "/consulta-cartao", 
     icon: <span className="text-blue-600 text-xl">💳</span>,
-    allowedTypes: ["comum"] as const 
+    allowedTypes: ["comum", "gestor"] as const 
   },
   // Admin sections - keep these for admin users
   { 
