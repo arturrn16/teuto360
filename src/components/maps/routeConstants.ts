@@ -1,31 +1,54 @@
 
-// Route colors
+// Define route colors for visual differentiation on the map
 export const ROUTE_COLORS = {
-  "P-01": "#4285F4", // Blue
-  "P-02": "#EA4335", // Red
-  "P-03": "#FBBC05", // Yellow
-  "P-04": "#34A853", // Green
-  "P-05": "#FF9900", // Orange
-  "P-06": "#8E44AD", // Purple
-  "P-07": "#16A085", // Teal
-  "P-08": "#D35400", // Deep Orange
-  "P-09": "#2E86C1", // Bright Blue
-  "P-10": "#28B463", // Light Green
-  "P-11": "#EC7063", // Light Red
-  "P-12": "#7D3C98", // Dark Purple
-  "P-13": "#E67E22", // Light Orange
-  "P-14": "#5D6D7E", // Slate
-  "P-15": "#117A65", // Dark Teal
-  "S-01": "#AED6F1", // Light Blue
-  "S-02": "#F5B7B1", // Light Red/Pink
-  "S-03": "#F9E79F", // Light Yellow
-  "S-04": "#A9DFBF", // Light Green
-  "S-05": "#EDBB99", // Light Orange
-  "S-06": "#D2B4DE", // Light Purple
-  "S-07": "#A3E4D7", // Light Teal
-  "S-08": "#F5CBA7", // Light Orange
-  "S-09": "#85C1E9", // Powder Blue
-  "S-10": "#76D7C4", // Light Sea Green
-  "S-11": "#F7DC6F", // Light Gold
-  "S-12": "#BB8FCE"  // Medium Purple
+  // 1° Turno Routes
+  "P-01": "#E53E3E", // Red
+  "P-02": "#38A169", // Green
+  "P-03": "#3182CE", // Blue
+  "P-04": "#DD6B20", // Orange
+  "P-05": "#805AD5", // Purple
+  "P-06": "#D53F8C", // Pink
+  "P-07": "#2D3748", // Dark gray
+  "P-08": "#4299E1", // Light blue
+  "P-09": "#F6AD55", // Light orange
+  "P-10": "#68D391", // Light green
+  "P-11": "#DC2626", // Red
+  "P-12": "#059669", // Green
+  "P-13": "#2563EB", // Blue
+  "P-14": "#D97706", // Orange
+  "P-15": "#7C3AED", // Purple
+  
+  // 2° Turno Routes
+  "S-01": "#B91C1C", // Red
+  "S-02": "#15803D", // Green
+  "S-03": "#1E40AF", // Blue
+  "S-04": "#B45309", // Orange
+  "S-05": "#6B21A8", // Purple
+  "S-06": "#9D174D", // Pink
+  "S-07": "#1F2937", // Dark gray
+  "S-08": "#2563EB", // Light blue
+  "S-09": "#EA580C", // Orange
+  "S-10": "#10B981", // Green
+  "S-11": "#BE123C", // Red
+  "S-12": "#047857", // Green
+  
+  // 3° Turno Routes
+  "T-01": "#991B1B", // Red
+  "T-02": "#166534", // Green
+  "T-03": "#1E3A8A", // Blue
+  "T-04": "#9A3412", // Orange
+  "T-05": "#5B21B6", // Purple
+  "T-06": "#831843", // Pink
+  "T-07": "#111827", // Dark gray
+  "T-08": "#1D4ED8", // Light blue
+  
+  // Administrativo Routes
+  "A-01": "#7F1D1D", // Red
+  "A-02": "#14532D", // Green
+  "A-03": "#1E3A8A", // Blue
+  "A-04": "#7C2D12", // Orange
+  "A-05": "#4C1D95", // Purple
+  "A-06": "#701A75", // Pink
+  "A-07": "#030712", // Dark gray
+  "A-08": "#1E40AF", // Light blue
 };
