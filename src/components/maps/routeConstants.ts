@@ -31,6 +31,7 @@ export const ROUTE_COLORS = {
   "S-10": "#10B981", // Green
   "S-11": "#BE123C", // Red
   "S-12": "#047857", // Green
+  "S-13": "#0D9488", // Teal
   
   // 3° Turno Routes
   "T-01": "#991B1B", // Red
@@ -41,6 +42,14 @@ export const ROUTE_COLORS = {
   "T-06": "#831843", // Pink
   "T-07": "#111827", // Dark gray
   "T-08": "#1D4ED8", // Light blue
+  "T-09": "#8B5CF6", // Violet
+  "T-10": "#D946EF", // Magenta
+  "T-11": "#F97316", // Orange
+  "T-12": "#0EA5E9", // Sky Blue
+  "T-13": "#14B8A6", // Teal
+  "T-14": "#F59E0B", // Amber
+  "T-15": "#84CC16", // Lime
+  "T-16": "#EC4899", // Pink
   
   // Administrativo Routes
   "A-01": "#7F1D1D", // Red
@@ -51,4 +60,12 @@ export const ROUTE_COLORS = {
   "A-06": "#701A75", // Pink
   "A-07": "#030712", // Dark gray
   "A-08": "#1E40AF", // Light blue
+  "A-09": "#6D28D9", // Violet
+  "A-10": "#BE185D", // Pink
+  "A-11": "#B91C1C", // Red
+  "A-12": "#15803D", // Green
+  "A-13": "#0369A1", // Blue
+  "A-14": "#A16207", // Amber
+  "A-15": "#4D7C0F", // Lime
+  "A-16": "#9F1239", // Rose
 };
