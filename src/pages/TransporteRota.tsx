@@ -29,7 +29,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -89,7 +89,7 @@ const TransporteRota = () => {
   // Opções de turno baseadas na cidade selecionada
   const turnoOptions = cidade === "Anápolis" 
     ? ["Administrativo", "1° Turno", "2° Turno", "3° Turno", "Faculdade"]
-    : goianiaTurnosOptions;
+    : ["GYN ADM1", "GYN ADM2", "GYN 1° TURNO", "GYN 2° TURNO"];
 
   // Update available routes when turno changes
   useEffect(() => {
@@ -114,6 +114,7 @@ const TransporteRota = () => {
     }
   }, [turno, cidade, form]);
   
+  // FIXED: Format date directly without timezone conversion
   const formatDate = (date: Date) => {
     return format(date, "yyyy-MM-dd");
   };
@@ -239,6 +240,7 @@ const TransporteRota = () => {
               ))}
             </select>
             
+            {/* FIXED: Updated date input handling to preserve selected dates */}
             <label className="form-field-label">Data de Início</label>
             <input 
               type="date" 
@@ -246,7 +248,8 @@ const TransporteRota = () => {
               value={format(form.watch("periodoInicio"), "yyyy-MM-dd")}
               onChange={(e) => {
                 if (e.target.value) {
-                  form.setValue("periodoInicio", new Date(e.target.value));
+                  const selectedDate = new Date(e.target.value + "T00:00:00");
+                  form.setValue("periodoInicio", selectedDate);
                 }
               }}
               min={format(new Date(), "yyyy-MM-dd")}
@@ -259,7 +262,8 @@ const TransporteRota = () => {
               value={format(form.watch("periodoFim"), "yyyy-MM-dd")}
               onChange={(e) => {
                 if (e.target.value) {
-                  form.setValue("periodoFim", new Date(e.target.value));
+                  const selectedDate = new Date(e.target.value + "T00:00:00");
+                  form.setValue("periodoFim", selectedDate);
                 }
               }}
               min={format(form.watch("periodoInicio"), "yyyy-MM-dd")}
@@ -472,7 +476,12 @@ const TransporteRota = () => {
                         mode="single"
                         selected={field.value}
                         onSelect={(date) => {
-                          field.onChange(date);
+                          if (date) {
+                            // FIXED: Set to noon to avoid timezone issues
+                            const selectedDate = new Date(date);
+                            selectedDate.setHours(12, 0, 0, 0);
+                            field.onChange(selectedDate);
+                          }
                           setOpenStartDate(false);
                         }}
                         disabled={(date) => date < new Date()}
@@ -520,10 +529,18 @@ const TransporteRota = () => {
                         mode="single"
                         selected={field.value}
                         onSelect={(date) => {
-                          field.onChange(date);
+                          if (date) {
+                            // FIXED: Set to noon to avoid timezone issues
+                            const selectedDate = new Date(date);
+                            selectedDate.setHours(12, 0, 0, 0);
+                            field.onChange(selectedDate);
+                          }
                           setOpenEndDate(false);
                         }}
-                        disabled={(date) => date < form.getValues("periodoInicio")}
+                        disabled={(date) => {
+                          const inicio = form.getValues("periodoInicio");
+                          return date < inicio;
+                        }}
                         initialFocus
                         className="pointer-events-auto"
                       />
