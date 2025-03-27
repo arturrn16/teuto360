@@ -124,34 +124,45 @@ export const routeDataGyn = {
   ...routeDataGYNADM02,
 };
 
-// Criar rotas para os turnos adicionais de Goiânia
+// Definir rotas para os turnos adicionais de Goiânia (apenas para o formulário)
 export const routeDataGyn1Turno = {
-  "GYN 1° TURNO": []  // Corrigido para ser um array vazio (BusStop[])
+  "GYN 1° TURNO": []  // Array vazio de BusStop
 };
 
 export const routeDataGyn2Turno = {
-  "GYN 2° TURNO": []  // Corrigido para ser um array vazio (BusStop[])
+  "GYN 2° TURNO": []  // Array vazio de BusStop
 };
 
-// Combinando todos os dados por turno
+// Combinando todos os dados por turno para exibição no mapa
 export const allRouteData: TurnoRouteData = {
   "1° Turno": routeData1Turno,
   "2° Turno": routeData2Turno,
   "3° Turno": routeData3Turno,
   "Administrativo": routeDataAdm,
   "Goiânia": routeDataGyn,
-  "GYN 1° TURNO": routeDataGyn1Turno,
-  "GYN 2° TURNO": routeDataGyn2Turno,
   "Faculdade": routeDataFaculdade,
 };
 
-// Função para obter todos os turnos disponíveis
+// Definindo dados completos (incluindo rotas de Goiânia específicas para formulários)
+export const allFormRouteData: TurnoRouteData = {
+  ...allRouteData,
+  "GYN 1° TURNO": routeDataGyn1Turno,
+  "GYN 2° TURNO": routeDataGyn2Turno,
+};
+
+// Função para obter todos os turnos disponíveis (apenas para o mapa)
 export const getAvailableTurnos = (): string[] => {
   return Object.keys(allRouteData);
 };
 
-// Função para obter todas as rotas disponíveis para um turno específico
+// Função para obter todas as rotas disponíveis para um turno específico (apenas para o mapa)
 export const getAvailableRoutes = (turno: string): string[] => {
   if (!allRouteData[turno]) return [];
   return Object.keys(allRouteData[turno]);
+};
+
+// Função para obter todas as rotas disponíveis para formulários
+export const getAvailableFormRoutes = (turno: string): string[] => {
+  if (!allFormRouteData[turno]) return [];
+  return Object.keys(allFormRouteData[turno]);
 };

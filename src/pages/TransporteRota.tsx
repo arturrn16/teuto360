@@ -34,7 +34,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { toast } from "sonner";
-import { getAvailableRoutes } from "@/data/routeData";
+import { getAvailableFormRoutes } from "@/data/routes";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
@@ -88,18 +88,19 @@ const TransporteRota = () => {
   // Update available routes when turno changes
   useEffect(() => {
     if (turno) {
-      if (cidade === "Goiânia") {
-        setAvailableRoutes([turno]);
-        form.setValue("rota", turno);
+      const routes = getAvailableFormRoutes(turno);
+      setAvailableRoutes(routes);
+      
+      // Se apenas uma rota estiver disponível, selecioná-la automaticamente
+      if (routes.length === 1) {
+        form.setValue("rota", routes[0]);
       } else {
-        const routes = getAvailableRoutes(turno);
-        setAvailableRoutes(routes);
-        form.setValue("rota", ""); // Reset route when turno changes
+        form.setValue("rota", ""); // Reset route when turno changes with multiple options
       }
     } else {
       setAvailableRoutes([]);
     }
-  }, [turno, cidade, form]);
+  }, [turno, form]);
   
   const formatDate = (date: Date) => {
     return format(date, "yyyy-MM-dd");
