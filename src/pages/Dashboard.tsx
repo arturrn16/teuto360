@@ -7,6 +7,16 @@ import { useEffect, useState } from "react";
 import { UserType } from "@/components/sidebar/navigationConfig";
 import { checkPermission } from "@/services/permissionService";
 
+interface DashboardCard {
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  to: string;
+  color: string;
+  textColor: string;
+  allowedTypes?: ReadonlyArray<'admin' | 'selecao' | 'gestor' | 'colaborador' | 'comum'>;
+}
+
 const Dashboard = () => {
   const { user } = useAuth();
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -20,7 +30,6 @@ const Dashboard = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // Updated: Properly type the resource parameter for checkPermission
   useEffect(() => {
     const loadPermissions = async () => {
       if (!user || user.admin) return; // Admins have all permissions by default
@@ -28,14 +37,11 @@ const Dashboard = () => {
       setIsLoadingPermissions(true);
       const permissions: Record<string, boolean> = {};
       
-      // Get all dashboard cards
       const dashboardCards = getAllCardsForUserType();
       
-      // Check permissions for each card
       for (const card of dashboardCards) {
         try {
-          // Fixed: Make sure card.title is properly typed
-          const hasPermission = await checkPermission(user.id, card.title as string, 'dashboard');
+          const hasPermission = await checkPermission(user.id, card.title, 'dashboard');
           permissions[card.title] = hasPermission;
         } catch (error) {
           console.error(`Error checking permission for ${card.title}:`, error);
@@ -52,8 +58,7 @@ const Dashboard = () => {
 
   console.log("Dashboard - User type:", user?.tipo_usuario);
 
-  // Cards para usuários comuns
-  const commonUserCards = [
+  const commonUserCards: DashboardCard[] = [
     {
       title: "Uso de Rota",
       description: "Solicite transporte para rotas regulares",
@@ -152,8 +157,7 @@ const Dashboard = () => {
     },
   ];
 
-  // Definimos os cards específicos para o tipo de usuário "gestor"
-  const gestorCards = [
+  const gestorCards: DashboardCard[] = [
     {
       title: "Transporte 12x36",
       description: "Solicite transporte para turnos 12x36",
@@ -188,9 +192,8 @@ const Dashboard = () => {
     }
   ];
 
-  // Get all possible cards for user types
-  const getAllCardsForUserType = () => {
-    const cards = [
+  const getAllCardsForUserType = (): DashboardCard[] => {
+    const cards: DashboardCard[] = [
       {
         title: "Administração",
         description: "Gerencie todas as solicitações",
@@ -403,12 +406,10 @@ const Dashboard = () => {
     return cards;
   };
 
-  // Check if a menu item should be visible based on permissions
   const shouldShowMenuItem = (itemName: string): boolean => {
     if (user?.admin) return true; // Admins can see everything
     if (isLoadingPermissions) return true; // While loading, show all items
     
-    // If we have permission data, use it to determine visibility
     if (Object.keys(userPermissions).length > 0) {
       return userPermissions[itemName] ?? true; // Default to visible if not found
     }
@@ -416,47 +417,37 @@ const Dashboard = () => {
     return true; // Default to visible if no permission data
   };
 
-  // Filtro de cards baseado no tipo de usuário
   const getCardsForUserType = () => {
     if (!user) return [];
     
     if (user.admin) {
       const adminCards = getAllCardsForUserType().filter(card => 
-        card.allowedTypes.includes('admin')
+        card.allowedTypes?.includes('admin')
       );
       return adminCards;
     }
     
-    // For non-admin users, apply permission filtering if permissions are loaded
     const typeCards = getAllCardsForUserType().filter(card => {
       if (!user) return false;
       
-      // First filter by user type
-      const typeAllowed = card.allowedTypes.includes(user.tipo_usuario as UserType);
+      const typeAllowed = card.allowedTypes?.includes(user.tipo_usuario as UserType);
       
-      // Then, if user has specific permissions set and not loading, filter by permissions
       if (!isLoadingPermissions && Object.keys(userPermissions).length > 0) {
-        // Default to type-based filtering if no specific permission record exists
         return userPermissions[card.title] ?? typeAllowed;
       }
       
-      // Just use type-based filtering if permissions are still loading
       return typeAllowed;
     });
     
     return typeCards;
   };
 
-  // Para usuários do tipo gestor, mostramos apenas os cards específicos
-  // Para usuários comuns, mostramos os cards de usuário comum
-  // For other users, use the dynamic permission system
   const filteredCards = user?.tipo_usuario === 'gestor' 
     ? gestorCards 
     : (user?.tipo_usuario === 'comum' 
         ? commonUserCards 
         : getCardsForUserType());
 
-  // Determine the greeting based on time of day
   const getGreeting = () => {
     const hour = currentTime.getHours();
     if (hour < 12) return "Bom dia";
@@ -464,9 +455,8 @@ const Dashboard = () => {
     return "Boa noite";
   };
 
-  // Fixed: Properly cast the title for checkPermission
-  const checkPermissionForCard = async (userId: number, title: any) => {
-    return await checkPermission(userId, title as string, 'dashboard');
+  const checkPermissionForCard = async (userId: number, title: string) => {
+    return await checkPermission(userId, title, 'dashboard');
   };
 
   return (
