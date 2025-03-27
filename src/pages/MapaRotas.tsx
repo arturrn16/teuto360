@@ -25,6 +25,11 @@ const MapaRotas = () => {
     // Actual search happens in RouteMap component through searchQuery prop
   };
 
+  // Clear selected route when turno changes
+  useEffect(() => {
+    setSelectedRota(null);
+  }, [selectedTurno]);
+
   return (
     <Container>
       <div className="space-y-4 py-4">

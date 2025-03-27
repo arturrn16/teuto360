@@ -34,12 +34,14 @@ import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { toast } from "sonner";
+import { getAvailableRoutes } from "@/data/routeData";
 
 interface FormValues {
   matricula: string;
   colaboradorNome: string;
   cidade: "Anápolis" | "Goiânia";
   turno: string;
+  rota: string;
   periodoInicio: Date;
   periodoFim: Date;
   motivo: string;
@@ -51,6 +53,7 @@ const TransporteRota = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [openStartDate, setOpenStartDate] = useState(false);
   const [openEndDate, setOpenEndDate] = useState(false);
+  const [availableRoutes, setAvailableRoutes] = useState<string[]>([]);
   
   const form = useForm<FormValues>({
     defaultValues: {
@@ -58,6 +61,7 @@ const TransporteRota = () => {
       colaboradorNome: user?.nome || "",
       cidade: "Anápolis",
       turno: "",
+      rota: "",
       periodoInicio: new Date(),
       periodoFim: new Date(),
       motivo: "",
@@ -72,10 +76,22 @@ const TransporteRota = () => {
   }, [user, form]);
   
   const cidade = form.watch("cidade");
+  const turno = form.watch("turno");
   
   const turnoOptions = cidade === "Anápolis" 
-    ? ["Administrativo", "1° Turno", "2° Turno", "3° Turno"]
-    : ["Gyn Adm 1", "Gyn Adm 2", "Gyn 1° Turno", "Gyn 2° Turno"];
+    ? ["Administrativo", "1° Turno", "2° Turno", "3° Turno", "Faculdade"]
+    : ["Goiânia"];
+
+  // Update available routes when turno changes
+  useEffect(() => {
+    if (turno) {
+      const routes = getAvailableRoutes(turno);
+      setAvailableRoutes(routes);
+      form.setValue("rota", ""); // Reset route when turno changes
+    } else {
+      setAvailableRoutes([]);
+    }
+  }, [turno, form]);
   
   const formatDate = (date: Date) => {
     return format(date, "yyyy-MM-dd");
@@ -96,6 +112,7 @@ const TransporteRota = () => {
         colaborador_nome: data.colaboradorNome,
         cidade: data.cidade,
         turno: data.turno,
+        rota: data.rota,
         periodo_inicio: formatDate(data.periodoInicio),
         periodo_fim: formatDate(data.periodoFim),
         motivo: data.motivo,
@@ -173,6 +190,7 @@ const TransporteRota = () => {
                       onValueChange={(value) => {
                         field.onChange(value);
                         form.setValue("turno", "");
+                        form.setValue("rota", "");
                       }}
                       defaultValue={field.value}
                     >
@@ -199,7 +217,10 @@ const TransporteRota = () => {
                   <FormItem>
                     <FormLabel>Turno</FormLabel>
                     <Select 
-                      onValueChange={field.onChange}
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        form.setValue("rota", "");
+                      }}
                       defaultValue={field.value}
                     >
                       <FormControl>
@@ -211,6 +232,36 @@ const TransporteRota = () => {
                         {turnoOptions.map((option) => (
                           <SelectItem key={option} value={option}>
                             {option}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="rota"
+                rules={{ required: "Rota é obrigatória" }}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Rota</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      disabled={!turno}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione a rota" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {availableRoutes.map((route) => (
+                          <SelectItem key={route} value={route}>
+                            {route}
                           </SelectItem>
                         ))}
                       </SelectContent>
