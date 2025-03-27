@@ -1,14 +1,45 @@
+
 import { BusStop, RouteData, TurnoRouteData } from "@/types/mapTypes";
-import { firstTurnoRoutesP1toP5 } from "./routeData-p1-p4";
-import { firstTurnoRoutesP5toP10 } from "./routeData-p5-p10"; 
-import { firstTurnoRoutesP11toP15 } from "./routeData-p11-p15";
 import { secondTurnoRoutes } from "./routeData-s9-s11";
 
 // 1° Turno Routes
 export const firstTurnoRoutes: RouteData = {
-  ...firstTurnoRoutesP1toP5,
-  ...firstTurnoRoutesP5toP10,
-  ...firstTurnoRoutesP11toP15
+  "P-01": [
+    {
+      lat: -16.328118,
+      lng: -48.953529,
+      nome: "P-01 01 - Av. Brasil Sul / Praça Dom Emanuel",
+      bairro: "Centro",
+      semana: "05:00",
+      sabado: "06:05"
+    },
+    {
+      lat: -16.330830,
+      lng: -48.956740,
+      nome: "P-01 02 - Av. Brasil Sul / Esquina com a Rua Barão do Rio Branco",
+      bairro: "Centro",
+      semana: "05:02",
+      sabado: "06:07"
+    }
+  ],
+  "P-02": [
+    {
+      lat: -16.335118,
+      lng: -48.943529,
+      nome: "P-02 01 - Av. Pedro Ludovico / Praça Americano do Brasil",
+      bairro: "Jundiaí",
+      semana: "05:00",
+      sabado: "06:05"
+    },
+    {
+      lat: -16.337830,
+      lng: -48.946740,
+      nome: "P-02 02 - Av. Pedro Ludovico / Esquina com a Rua 14",
+      bairro: "Jundiaí",
+      semana: "05:02",
+      sabado: "06:07"
+    }
+  ]
 };
 
 // 2° Turno Routes (existing routes S-01 to S-08)
@@ -224,7 +255,7 @@ export const turno2RoutesS1toS8: RouteData = {
 };
 
 // Combine all 2° Turno routes
-export const secondTurnoRoutes: RouteData = {
+export const allSecondTurnoRoutes: RouteData = {
   ...turno2RoutesS1toS8,
   ...secondTurnoRoutes
 };
@@ -279,162 +310,6 @@ export const thirdTurnoRoutes: RouteData = {
       lng: -48.869950,
       nome: "Av. Tocantins / Esquina com a Rua 14",
       bairro: "Setor Oeste",
-      semana: "22:04:00",
-      sabado: "22:04:00"
-    }
-  ],
-  "T-03": [
-    {
-      lat: -16.398118,
-      lng: -48.853529,
-      nome: "Av. Mato Grosso / Esquina com a Rua 1",
-      bairro: "Setor Sul",
-      semana: "22:00:00",
-      sabado: "22:00:00"
-    },
-    {
-      lat: -16.400830,
-      lng: -48.856740,
-      nome: "Av. Mato Grosso / Esquina com a Rua 7",
-      bairro: "Setor Sul",
-      semana: "22:02:00",
-      sabado: "22:02:00"
-    },
-    {
-      lat: -16.403540,
-      lng: -48.859950,
-      nome: "Av. Mato Grosso / Esquina com a Rua 14",
-      bairro: "Setor Sul",
-      semana: "22:04:00",
-      sabado: "22:04:00"
-    }
-  ],
-  "T-04": [
-    {
-      lat: -16.405118,
-      lng: -48.843529,
-      nome: "Av. Pará / Esquina com a Rua 1",
-      bairro: "Setor Leste",
-      semana: "22:00:00",
-      sabado: "22:00:00"
-    },
-    {
-      lat: -16.407830,
-      lng: -48.846740,
-      nome: "Av. Pará / Esquina com a Rua 7",
-      bairro: "Setor Leste",
-      semana: "22:02:00",
-      sabado: "22:02:00"
-    },
-    {
-      lat: -16.410540,
-      lng: -48.849950,
-      nome: "Av. Pará / Esquina com a Rua 14",
-      bairro: "Setor Leste",
-      semana: "22:04:00",
-      sabado: "22:04:00"
-    }
-  ],
-  "T-05": [
-    {
-      lat: -16.412118,
-      lng: -48.833529,
-      nome: "Av. Amazonas / Esquina com a Rua 1",
-      bairro: "Setor Norte",
-      semana: "22:00:00",
-      sabado: "22:00:00"
-    },
-    {
-      lat: -16.414830,
-      lng: -48.836740,
-      nome: "Av. Amazonas / Esquina com a Rua 7",
-      bairro: "Setor Norte",
-      semana: "22:02:00",
-      sabado: "22:02:00"
-    },
-    {
-      lat: -16.417540,
-      lng: -48.839950,
-      nome: "Av. Amazonas / Esquina com a Rua 14",
-      bairro: "Setor Norte",
-      semana: "22:04:00",
-      sabado: "22:04:00"
-    }
-  ],
-  "T-06": [
-    {
-      lat: -16.419118,
-      lng: -48.823529,
-      nome: "Av. Rondônia / Esquina com a Rua 1",
-      bairro: "Setor Nordeste",
-      semana: "22:00:00",
-      sabado: "22:00:00"
-    },
-    {
-      lat: -16.421830,
-      lng: -48.826740,
-      nome: "Av. Rondônia / Esquina com a Rua 7",
-      bairro: "Setor Nordeste",
-      semana: "22:02:00",
-      sabado: "22:02:00"
-    },
-    {
-      lat: -16.424540,
-      lng: -48.829950,
-      nome: "Av. Rondônia / Esquina com a Rua 14",
-      bairro: "Setor Nordeste",
-      semana: "22:04:00",
-      sabado: "22:04:00"
-    }
-  ],
-  "T-07": [
-    {
-      lat: -16.426118,
-      lng: -48.813529,
-      nome: "Av. Acre / Esquina com a Rua 1",
-      bairro: "Setor Noroeste",
-      semana: "22:00:00",
-      sabado: "22:00:00"
-    },
-    {
-      lat: -16.428830,
-      lng: -48.816740,
-      nome: "Av. Acre / Esquina com a Rua 7",
-      bairro: "Setor Noroeste",
-      semana: "22:02:00",
-      sabado: "22:02:00"
-    },
-    {
-      lat: -16.431540,
-      lng: -48.819950,
-      nome: "Av. Acre / Esquina com a Rua 14",
-      bairro: "Setor Noroeste",
-      semana: "22:04:00",
-      sabado: "22:04:00"
-    }
-  ],
-  "T-08": [
-    {
-      lat: -16.433118,
-      lng: -48.803529,
-      nome: "Av. Amapá / Esquina com a Rua 1",
-      bairro: "Setor Sudoeste",
-      semana: "22:00:00",
-      sabado: "22:00:00"
-    },
-    {
-      lat: -16.435830,
-      lng: -48.806740,
-      nome: "Av. Amapá / Esquina com a Rua 7",
-      bairro: "Setor Sudoeste",
-      semana: "22:02:00",
-      sabado: "22:02:00"
-    },
-    {
-      lat: -16.438540,
-      lng: -48.809950,
-      nome: "Av. Amapá / Esquina com a Rua 14",
-      bairro: "Setor Sudoeste",
       semana: "22:04:00",
       sabado: "22:04:00"
     }
@@ -494,169 +369,13 @@ export const adminRoutes: RouteData = {
       semana: "08:04:00",
       sabado: "08:04:00"
     }
-  ],
-  "A-03": [
-    {
-      lat: -16.454118,
-      lng: -48.773529,
-      nome: "Av. Piauí / Esquina com a Rua 1",
-      bairro: "Setor Oeste Vila Nova",
-      semana: "08:00:00",
-      sabado: "08:00:00"
-    },
-    {
-      lat: -16.456830,
-      lng: -48.776740,
-      nome: "Av. Piauí / Esquina com a Rua 7",
-      bairro: "Setor Oeste Vila Nova",
-      semana: "08:02:00",
-      sabado: "08:02:00"
-    },
-    {
-      lat: -16.459540,
-      lng: -48.779950,
-      nome: "Av. Piauí / Esquina com a Rua 14",
-      bairro: "Setor Oeste Vila Nova",
-      semana: "08:04:00",
-      sabado: "08:04:00"
-    }
-  ],
-  "A-04": [
-    {
-      lat: -16.461118,
-      lng: -48.763529,
-      nome: "Av. Ceará / Esquina com a Rua 1",
-      bairro: "Setor Norte Vila Nova",
-      semana: "08:00:00",
-      sabado: "08:00:00"
-    },
-    {
-      lat: -16.463830,
-      lng: -48.766740,
-      nome: "Av. Ceará / Esquina com a Rua 7",
-      bairro: "Setor Norte Vila Nova",
-      semana: "08:02:00",
-      sabado: "08:02:00"
-    },
-    {
-      lat: -16.466540,
-      lng: -48.769950,
-      nome: "Av. Ceará / Esquina com a Rua 14",
-      bairro: "Setor Norte Vila Nova",
-      semana: "08:04:00",
-      sabado: "08:04:00"
-    }
-  ],
-  "A-05": [
-    {
-      lat: -16.468118,
-      lng: -48.753529,
-      nome: "Av. Rio Grande do Norte / Esquina com a Rua 1",
-      bairro: "Setor Sul Vila Nova",
-      semana: "08:00:00",
-      sabado: "08:00:00"
-    },
-    {
-      lat: -16.470830,
-      lng: -48.756740,
-      nome: "Av. Rio Grande do Norte / Esquina com a Rua 7",
-      bairro: "Setor Sul Vila Nova",
-      semana: "08:02:00",
-      sabado: "08:02:00"
-    },
-    {
-      lat: -16.473540,
-      lng: -48.759950,
-      nome: "Av. Rio Grande do Norte / Esquina com a Rua 14",
-      bairro: "Setor Sul Vila Nova",
-      semana: "08:04:00",
-      sabado: "08:04:00"
-    }
-  ],
-  "A-06": [
-    {
-      lat: -16.475118,
-      lng: -48.743529,
-      nome: "Av. Paraíba / Esquina com a Rua 1",
-      bairro: "Setor Central Vila Nova",
-      semana: "08:00:00",
-      sabado: "08:00:00"
-    },
-    {
-      lat: -16.477830,
-      lng: -48.746740,
-      nome: "Av. Paraíba / Esquina com a Rua 7",
-      bairro: "Setor Central Vila Nova",
-      semana: "08:02:00",
-      sabado: "08:02:00"
-    },
-    {
-      lat: -16.480540,
-      lng: -48.749950,
-      nome: "Av. Paraíba / Esquina com a Rua 14",
-      bairro: "Setor Central Vila Nova",
-      semana: "08:04:00",
-      sabado: "08:04:00"
-    }
-  ],
-  "A-07": [
-    {
-      lat: -16.482118,
-      lng: -48.733529,
-      nome: "Av. Pernambuco / Esquina com a Rua 1",
-      bairro: "Setor Leste Universitário",
-      semana: "08:00:00",
-      sabado: "08:00:00"
-    },
-    {
-      lat: -16.484830,
-      lng: -48.736740,
-      nome: "Av. Pernambuco / Esquina com a Rua 7",
-      bairro: "Setor Leste Universitário",
-      semana: "08:02:00",
-      sabado: "08:02:00"
-    },
-    {
-      lat: -16.487540,
-      lng: -48.739950,
-      nome: "Av. Pernambuco / Esquina com a Rua 14",
-      bairro: "Setor Leste Universitário",
-      semana: "08:04:00",
-      sabado: "08:04:00"
-    }
-  ],
-  "A-08": [
-    {
-      lat: -16.489118,
-      lng: -48.723529,
-      nome: "Av. Alagoas / Esquina com a Rua 1",
-      bairro: "Setor Oeste Universitário",
-      semana: "08:00:00",
-      sabado: "08:00:00"
-    },
-    {
-      lat: -16.491830,
-      lng: -48.726740,
-      nome: "Av. Alagoas / Esquina com a Rua 7",
-      bairro: "Setor Oeste Universitário",
-      semana: "08:02:00",
-      sabado: "08:02:00"
-    },
-    {
-      lat: -16.494540,
-      lng: -48.729950,
-      nome: "Av. Alagoas / Esquina com a Rua 14",
-      bairro: "Setor Oeste Universitário",
-      semana: "08:04:00",
-      sabado: "08:04:00"
-    }
   ]
 };
 
 // Combine all routes by shift
 export const allRouteData: TurnoRouteData = {
   "1° Turno": firstTurnoRoutes,
-  "2° Turno": secondTurnoRoutes,
+  "2° Turno": allSecondTurnoRoutes,
   "3° Turno": thirdTurnoRoutes,
   "Administrativo": adminRoutes
 };
