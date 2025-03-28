@@ -1,6 +1,5 @@
 declare interface Window {
   google: typeof google;
-  initGoogleMaps: () => void; // Define the callback function
 }
 
 declare namespace google {
@@ -40,7 +39,7 @@ declare namespace google {
       toString(): string;
       toUrlValue(precision?: number): string;
       union(other: LatLngBounds | LatLngBoundsLiteral): LatLngBounds;
-      isEmpty(): boolean;
+      isEmpty(): boolean; // Added this method to fix the TypeScript error
     }
 
     class Marker {
