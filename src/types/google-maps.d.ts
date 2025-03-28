@@ -1,5 +1,6 @@
 declare interface Window {
   google: typeof google;
+  initGoogleMaps?: () => void; // Add this to support the callback function
 }
 
 declare namespace google {

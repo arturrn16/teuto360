@@ -9,6 +9,7 @@ const MapaRotas = () => {
   const [selectedTurno, setSelectedTurno] = useState("1° Turno");
   const [selectedRota, setSelectedRota] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [key, setKey] = useState(Date.now()); // Key to force remount if needed
 
   // Memoize the available turnos to prevent recalculation
   const availableTurnos = useMemo(() => getAvailableTurnos(), []);
@@ -34,6 +35,12 @@ const MapaRotas = () => {
     setSelectedRota(null);
   }, [selectedTurno]);
 
+  // Error recovery function
+  const handleMapError = useCallback(() => {
+    // Force remount of the component
+    setKey(Date.now());
+  }, []);
+
   return (
     <Container>
       <div className="space-y-4 py-4">
@@ -49,6 +56,7 @@ const MapaRotas = () => {
           getAvailableRoutes={() => routesForTurno}
         />
         <RouteMap
+          key={key} // Use key to force remount if needed
           selectedRota={selectedRota}
           selectedTurno={selectedTurno}
           busStopsByRoute={busStopsForTurno}

@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ROUTE_COLORS } from "./routeConstants";
 import { BusStop } from "@/types/mapTypes";
 import { toast } from "sonner";
+import { LoaderSpinner } from "../ui/loader-spinner";
 
 interface RouteMapProps {
   selectedRota: string | null;
@@ -20,6 +21,8 @@ const RouteMap = ({ selectedRota, selectedTurno, busStopsByRoute, searchQuery }:
   const homeMarkerRef = useRef<google.maps.Marker | null>(null);
   const flagMarkersRef = useRef<google.maps.Marker[]>([]);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [mapError, setMapError] = useState<string | null>(null);
   const scriptLoadedRef = useRef<boolean>(false);
   const searchBoxRef = useRef<google.maps.places.SearchBox | null>(null);
 
@@ -48,20 +51,51 @@ const RouteMap = ({ selectedRota, selectedTurno, busStopsByRoute, searchQuery }:
     };
   }, []);
 
+  // Improved script loading with error handling
   useEffect(() => {
     // Only load the script once
     if (scriptLoadedRef.current) return;
-    scriptLoadedRef.current = true;
     
-    // Load Google Maps API script with performance optimization
-    const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places`;
-    script.async = true;
-    script.defer = true;
-    script.onload = initMap;
-    document.head.appendChild(script);
-
+    const loadGoogleMapsScript = () => {
+      setIsLoading(true);
+      
+      // First check if the script is already loaded
+      const existingScript = document.getElementById("google-maps-script");
+      if (existingScript) {
+        scriptLoadedRef.current = true;
+        initMap();
+        return;
+      }
+      
+      // Load Google Maps API script with performance optimization
+      const script = document.createElement("script");
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places&callback=initGoogleMaps`;
+      script.id = "google-maps-script";
+      script.async = true;
+      script.defer = true;
+      
+      // Define global callback function
+      window.initGoogleMaps = () => {
+        scriptLoadedRef.current = true;
+        initMap();
+      };
+      
+      // Add error handling
+      script.onerror = () => {
+        setMapError("Falha ao carregar o Google Maps. Por favor, tente novamente.");
+        setIsLoading(false);
+        console.error("Google Maps API script failed to load");
+      };
+      
+      document.head.appendChild(script);
+    };
+    
+    loadGoogleMapsScript();
+    
+    // Clean up global callback on unmount
     return () => {
+      delete window.initGoogleMaps;
+      
       // Cleanup on component unmount
       if (mapInstanceRef.current) {
         // Clear all markers to free up memory
@@ -72,48 +106,55 @@ const RouteMap = ({ selectedRota, selectedTurno, busStopsByRoute, searchQuery }:
     };
   }, []);
 
+  // Improved map initialization
   const initMap = useCallback(() => {
     if (!mapRef.current) return;
-
-    // Initialize Google Map with satellite view
-    const map = new google.maps.Map(mapRef.current, {
-      center: { lat: -16.328118, lng: -48.953529 },
-      zoom: 12,
-      mapTypeId: "satellite", // Set to satellite view by default
-      mapTypeControl: true,
-      streetViewControl: false,
-      fullscreenControl: true,
-      zoomControl: true,
-    });
-
-    mapInstanceRef.current = map;
-    infoWindowRef.current = new google.maps.InfoWindow();
-
-    // Initialize search box - optimized with lazy execution
-    const initSearchBox = () => {
-      const input = document.getElementById("search-input") as HTMLInputElement;
-      if (input) {
-        const searchBox = new google.maps.places.SearchBox(input);
-        searchBoxRef.current = searchBox;
-
-        map.addListener("bounds_changed", () => {
-          searchBox.setBounds(map.getBounds() as google.maps.LatLngBounds);
-        });
-
-        // Don't automatically search when places change - we'll handle this manually
-        searchBox.addListener("places_changed", () => {
-          // This event will be handled by the search button click or selection
-        });
-      }
-    };
-
-    // Defer search box initialization to improve initial load time
-    setTimeout(initSearchBox, 100);
-
-    setMapLoaded(true);
     
-    // Display initial route markers based on selected turno
-    displayAllRouteMarkers();
+    try {
+      // Only initialize the map if it hasn't been initialized yet
+      if (!mapInstanceRef.current) {
+        // Initialize Google Map with satellite view
+        const map = new google.maps.Map(mapRef.current, {
+          center: { lat: -16.328118, lng: -48.953529 },
+          zoom: 12,
+          mapTypeId: "satellite", // Set to satellite view by default
+          mapTypeControl: true,
+          streetViewControl: false,
+          fullscreenControl: true,
+          zoomControl: true,
+        });
+        
+        mapInstanceRef.current = map;
+        infoWindowRef.current = new google.maps.InfoWindow();
+        
+        // Initialize search box - optimized with lazy execution
+        const initSearchBox = () => {
+          const input = document.getElementById("search-input") as HTMLInputElement;
+          if (input) {
+            const searchBox = new google.maps.places.SearchBox(input);
+            searchBoxRef.current = searchBox;
+            
+            map.addListener("bounds_changed", () => {
+              searchBox.setBounds(map.getBounds() as google.maps.LatLngBounds);
+            });
+          }
+        };
+        
+        // Defer search box initialization to improve initial load time
+        setTimeout(initSearchBox, 100);
+      }
+      
+      setMapLoaded(true);
+      setIsLoading(false);
+      setMapError(null);
+      
+      // Display initial route markers based on selected turno
+      displayAllRouteMarkers();
+    } catch (error) {
+      console.error("Error initializing map:", error);
+      setMapError("Erro ao inicializar o mapa. Por favor, recarregue a página.");
+      setIsLoading(false);
+    }
   }, []);
 
   // Helper function to create a flag marker - memoized
@@ -216,144 +257,109 @@ const RouteMap = ({ selectedRota, selectedTurno, busStopsByRoute, searchQuery }:
 
   // Function to display all route markers - optimized and memoized
   const displayAllRouteMarkers = useCallback(() => {
-    if (!mapInstanceRef.current) return;
+    if (!mapInstanceRef.current || !mapLoaded) return;
 
-    // Clear existing markers
-    markersRef.current.forEach((marker) => marker.setMap(null));
-    markersRef.current = [];
+    try {
+      // Clear existing markers
+      markersRef.current.forEach((marker) => marker.setMap(null));
+      markersRef.current = [];
 
-    // Clear flag markers
-    flagMarkersRef.current.forEach((marker) => marker.setMap(null));
-    flagMarkersRef.current = [];
+      // Clear flag markers
+      flagMarkersRef.current.forEach((marker) => marker.setMap(null));
+      flagMarkersRef.current = [];
 
-    const bounds = new google.maps.LatLngBounds();
+      const bounds = new google.maps.LatLngBounds();
 
-    // Set center based on the selected turno
-    if (selectedTurno === "Goiânia") {
-      // Center the map on Goiânia
-      mapInstanceRef.current.setCenter({ lat: -16.6868, lng: -49.2648 });
-      mapInstanceRef.current.setZoom(10);
-    }
-    
-    // If a specific route is selected, only show markers for that route
-    if (selectedRota) {
-      const stops = busStopsByRoute[selectedRota] || [];
-      if (stops.length === 0) return;
-      
-      // For GYN ADM routes, center on the first point specifically
-      if (selectedRota === "GYN ADM-01" || selectedRota === "GYN ADM-02") {
-        if (stops.length > 0) {
-          const firstStop = stops[0];
-          mapInstanceRef.current.setCenter({ lat: firstStop.lat, lng: firstStop.lng });
-          mapInstanceRef.current.setZoom(13);
-        }
+      // Set center based on the selected turno
+      if (selectedTurno === "Goiânia") {
+        // Center the map on Goiânia
+        mapInstanceRef.current.setCenter({ lat: -16.6868, lng: -49.2648 });
+        mapInstanceRef.current.setZoom(10);
       }
+      
+      // If a specific route is selected, only show markers for that route
+      if (selectedRota) {
+        const stops = busStopsByRoute[selectedRota] || [];
+        if (stops.length === 0) return;
+        
+        // For GYN ADM routes, center on the first point specifically
+        if (selectedRota === "GYN ADM-01" || selectedRota === "GYN ADM-02") {
+          if (stops.length > 0) {
+            const firstStop = stops[0];
+            mapInstanceRef.current.setCenter({ lat: firstStop.lat, lng: firstStop.lng });
+            mapInstanceRef.current.setZoom(13);
+          }
+        }
 
-      // Batch marker creation for performance
-      const batchSize = 5;
-      const createMarkersBatch = (startIdx: number) => {
-        const endIdx = Math.min(startIdx + batchSize, stops.length);
-        for (let i = startIdx; i < endIdx; i++) {
-          const stop = stops[i];
+        // Simplified batch marker creation for better performance
+        stops.forEach((stop, i) => {
           const position = { lat: stop.lat, lng: stop.lng };
           bounds.extend(position);
           
           // Create a marker for this stop
           const marker = createMarker(stop, selectedRota, i);
           if (marker) markersRef.current.push(marker);
-        }
-        
-        // Process next batch if needed
-        if (endIdx < stops.length) {
-          setTimeout(() => createMarkersBatch(endIdx), 10);
-        } else {
-          // Add flag markers for the first and last stops when all markers are created
-          if (stops.length > 0) {
+          
+          // Add flag markers for the first and last stops
+          if (i === 0) {
             // First stop - green flag
-            const firstStop = stops[0];
             const startFlag = createFlagMarker(
-              { lat: firstStop.lat, lng: firstStop.lng },
+              position,
               'green',
               'Primeiro ponto da rota ' + selectedRota,
-              firstStop
+              stop
             );
             if (startFlag) flagMarkersRef.current.push(startFlag);
-
+          } else if (i === stops.length - 1) {
             // Last stop - red flag
-            const lastStop = stops[stops.length - 1];
             const endFlag = createFlagMarker(
-              { lat: lastStop.lat, lng: lastStop.lng },
+              position,
               'red',
               'Último ponto da rota ' + selectedRota,
-              lastStop
+              stop
             );
             if (endFlag) flagMarkersRef.current.push(endFlag);
           }
+        });
 
-          // For routes other than GYN ADM, fit bounds to all markers
-          if (selectedRota !== "GYN ADM-01" && selectedRota !== "GYN ADM-02" && !bounds.isEmpty()) {
-            mapInstanceRef.current?.fitBounds(bounds);
-          }
+        // For routes other than GYN ADM, fit bounds to all markers
+        if (selectedRota !== "GYN ADM-01" && selectedRota !== "GYN ADM-02" && !bounds.isEmpty()) {
+          mapInstanceRef.current?.fitBounds(bounds);
         }
-      };
-      
-      // Start batch processing
-      createMarkersBatch(0);
-    } 
-    // If no specific route is selected but a shift is selected, show all stops color-coded by route
-    else {
-      // Batch processing for routes
-      const routes = Object.entries(busStopsByRoute);
-      let routeIdx = 0;
-      
-      const processNextRoute = () => {
-        if (routeIdx >= routes.length) {
-          // For turno other than Goiânia, fit bounds to all markers
-          if (selectedTurno !== "Goiânia" && !bounds.isEmpty() && mapInstanceRef.current) {
-            mapInstanceRef.current.fitBounds(bounds);
-          }
-          return;
-        }
+      } 
+      // If no specific route is selected but a shift is selected, show all stops color-coded by route
+      else {
+        // Get all routes for the selected shift
+        const routes = Object.entries(busStopsByRoute);
         
-        const [routeName, stops] = routes[routeIdx++];
-        
-        // Process markers for this route in batches
-        let stopIdx = 0;
-        const processStopsBatch = () => {
-          const batchEndIdx = Math.min(stopIdx + 5, stops.length);
-          
-          for (let i = stopIdx; i < batchEndIdx; i++) {
-            const stop = stops[i];
+        // Process all routes
+        routes.forEach(([routeName, stops]) => {
+          // Process stops for this route
+          stops.forEach((stop, index) => {
             const position = { lat: stop.lat, lng: stop.lng };
             bounds.extend(position);
             
             // Create a marker for this stop
-            const marker = createMarker(stop, routeName, i);
+            const marker = createMarker(stop, routeName, index);
             if (marker) markersRef.current.push(marker);
-          }
-          
-          stopIdx = batchEndIdx;
-          if (stopIdx < stops.length) {
-            setTimeout(processStopsBatch, 10);
-          } else {
-            setTimeout(processNextRoute, 10);
-          }
-        };
+          });
+        });
         
-        processStopsBatch();
-      };
-      
-      processNextRoute();
+        // For turno other than Goiânia, fit bounds to all markers
+        if (selectedTurno !== "Goiânia" && !bounds.isEmpty() && mapInstanceRef.current) {
+          mapInstanceRef.current.fitBounds(bounds);
+        }
+      }
+    } catch (error) {
+      console.error("Error displaying route markers:", error);
+      toast.error("Erro ao exibir os pontos de parada no mapa");
     }
-  }, [busStopsByRoute, selectedRota, selectedTurno, createMarker, createFlagMarker]);
+  }, [busStopsByRoute, selectedRota, selectedTurno, mapLoaded, createMarker, createFlagMarker]);
 
   // Handle map updates when selections change
   useEffect(() => {
-    if (mapLoaded) {
-      // Use RAF to smooth out rendering
-      requestAnimationFrame(() => {
-        displayAllRouteMarkers();
-      });
+    if (mapLoaded && mapInstanceRef.current) {
+      displayAllRouteMarkers();
     }
   }, [selectedRota, selectedTurno, mapLoaded, displayAllRouteMarkers]);
 
@@ -460,9 +466,8 @@ const RouteMap = ({ selectedRota, selectedTurno, busStopsByRoute, searchQuery }:
     });
   }, [busStopsByRoute, searchQuery]);
 
-  // Modified search query effect to NOT automatically search as you type
+  // Set up listener for the search button
   useEffect(() => {
-    // This effect now only sets up the search button click handler in the MapControls
     if (!mapLoaded) return;
     
     // Handle the search button click from the parent component
@@ -489,16 +494,56 @@ const RouteMap = ({ selectedRota, selectedTurno, busStopsByRoute, searchQuery }:
     };
   }, [mapLoaded, handleSearchButtonClick]);
 
+  // Add global type for callback
+  useEffect(() => {
+    // Add the global type for TypeScript
+    window.initGoogleMaps = window.initGoogleMaps || function() {};
+    
+    return () => {
+      // Cleanup on unmount
+      delete window.initGoogleMaps;
+    };
+  }, []);
+
   return (
     <Card className="overflow-hidden">
       <CardContent className="p-0">
-        <div
-          ref={mapRef}
-          className="w-full h-[70vh] rounded-md"
-        />
+        {isLoading ? (
+          <div className="w-full h-[70vh] flex items-center justify-center bg-gray-100 rounded-md">
+            <div className="text-center">
+              <LoaderSpinner size="lg" className="mx-auto mb-4" />
+              <p className="text-gray-600">Carregando mapa...</p>
+            </div>
+          </div>
+        ) : mapError ? (
+          <div className="w-full h-[70vh] flex items-center justify-center bg-gray-100 rounded-md">
+            <div className="text-center p-4">
+              <div className="text-red-500 mb-2 text-xl">⚠️</div>
+              <p className="text-gray-700 mb-2">{mapError}</p>
+              <button 
+                onClick={() => window.location.reload()} 
+                className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+              >
+                Recarregar
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div
+            ref={mapRef}
+            className="w-full h-[70vh] rounded-md"
+          />
+        )}
       </CardContent>
     </Card>
   );
 };
+
+// Add the global type declaration for the callback
+declare global {
+  interface Window {
+    initGoogleMaps: () => void;
+  }
+}
 
 export default RouteMap;
