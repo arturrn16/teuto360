@@ -26,7 +26,7 @@ const MapaRotas = () => {
 
   // Handle search button click
   const handleSearch = useCallback(() => {
-    // The actual search implementation is now in the RouteMap component
+    // The actual search implementation is in the RouteMap component
     // This function is called when the search button is clicked
   }, []);
 

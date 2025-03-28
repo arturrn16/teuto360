@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { ROUTE_COLORS } from "./routeConstants";
@@ -24,6 +25,7 @@ const RouteMap = ({ selectedRota, selectedTurno, busStopsByRoute, searchQuery }:
   const [mapError, setMapError] = useState<string | null>(null);
   const scriptLoadedRef = useRef<boolean>(false);
   const searchBoxRef = useRef<google.maps.places.SearchBox | null>(null);
+  const scriptAttempts = useRef<number>(0);
 
   const GOOGLE_MAPS_API_KEY = "AIzaSyDKsBrWnONeKqDwT4I6ooc42ogm57cqJbI";
 
@@ -47,52 +49,7 @@ const RouteMap = ({ selectedRota, selectedTurno, busStopsByRoute, searchQuery }:
     };
   }, []);
 
-  useEffect(() => {
-    if (scriptLoadedRef.current) return;
-    
-    const loadGoogleMapsScript = () => {
-      setIsLoading(true);
-      
-      const existingScript = document.getElementById("google-maps-script");
-      if (existingScript) {
-        scriptLoadedRef.current = true;
-        initMap();
-        return;
-      }
-      
-      const script = document.createElement("script");
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places&callback=initGoogleMaps`;
-      script.id = "google-maps-script";
-      script.async = true;
-      script.defer = true;
-      
-      window.initGoogleMaps = () => {
-        scriptLoadedRef.current = true;
-        initMap();
-      };
-      
-      script.onerror = () => {
-        setMapError("Falha ao carregar o Google Maps. Por favor, tente novamente.");
-        setIsLoading(false);
-        console.error("Google Maps API script failed to load");
-      };
-      
-      document.head.appendChild(script);
-    };
-    
-    loadGoogleMapsScript();
-    
-    return () => {
-      delete window.initGoogleMaps;
-      
-      if (mapInstanceRef.current) {
-        markersRef.current.forEach((marker) => marker.setMap(null));
-        flagMarkersRef.current.forEach((marker) => marker.setMap(null));
-        if (homeMarkerRef.current) homeMarkerRef.current.setMap(null);
-      }
-    };
-  }, []);
-
+  // Define initMap outside useEffect to avoid closure issues
   const initMap = useCallback(() => {
     if (!mapRef.current) return;
     
@@ -137,6 +94,67 @@ const RouteMap = ({ selectedRota, selectedTurno, busStopsByRoute, searchQuery }:
       setIsLoading(false);
     }
   }, []);
+
+  // Define the global callback function for Google Maps API
+  useEffect(() => {
+    // Define the callback function globally
+    window.initGoogleMaps = () => {
+      scriptLoadedRef.current = true;
+      initMap();
+    };
+
+    return () => {
+      // Cleanup
+      delete window.initGoogleMaps;
+    };
+  }, [initMap]);
+
+  useEffect(() => {
+    if (scriptLoadedRef.current) {
+      initMap();
+      return;
+    }
+    
+    const loadGoogleMapsScript = () => {
+      setIsLoading(true);
+      scriptAttempts.current += 1;
+      
+      // Check if script already exists
+      const existingScript = document.getElementById("google-maps-script");
+      if (existingScript) {
+        existingScript.remove(); // Remove it to try loading again
+      }
+      
+      const script = document.createElement("script");
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places&callback=initGoogleMaps`;
+      script.id = "google-maps-script";
+      script.async = true;
+      script.defer = true;
+      
+      script.onerror = () => {
+        if (scriptAttempts.current < 3) {
+          // Try again after a delay
+          setTimeout(loadGoogleMapsScript, 1000);
+        } else {
+          setMapError("Falha ao carregar o Google Maps. Por favor, recarregue a página.");
+          setIsLoading(false);
+          console.error("Google Maps API script failed to load after multiple attempts");
+        }
+      };
+      
+      document.head.appendChild(script);
+    };
+    
+    loadGoogleMapsScript();
+    
+    return () => {
+      if (mapInstanceRef.current) {
+        markersRef.current.forEach((marker) => marker.setMap(null));
+        flagMarkersRef.current.forEach((marker) => marker.setMap(null));
+        if (homeMarkerRef.current) homeMarkerRef.current.setMap(null);
+      }
+    };
+  }, [initMap]);
 
   const createFlagMarker = useCallback((position: google.maps.LatLngLiteral, flagColor: 'green' | 'red', title: string, stop: BusStop) => {
     if (!mapInstanceRef.current) return null;
