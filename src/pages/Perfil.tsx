@@ -24,6 +24,9 @@ const Perfil = () => {
   const [badgeTemplate, setBadgeTemplate] = useState<string | null>(null);
   const [lightMealBadge, setLightMealBadge] = useState<string | null>(null);
 
+  // Check if user is of type 'comum'
+  const isComumUser = user?.tipo_usuario === 'comum';
+
   useEffect(() => {
     if (!user) {
       navigate("/login");
@@ -229,19 +232,22 @@ const Perfil = () => {
                   Atualizar Foto
                 </Button>
                 
-                <div className="flex items-center space-x-2 mt-4">
-                  <Checkbox 
-                    id="light-meal" 
-                    checked={lightMeal}
-                    onCheckedChange={(checked) => handleLightMealChange(Boolean(checked))}
-                  />
-                  <label
-                    htmlFor="light-meal"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    Prefiro Refeição Light
-                  </label>
-                </div>
+                {/* Only show light meal option for common users */}
+                {isComumUser && (
+                  <div className="flex items-center space-x-2 mt-4">
+                    <Checkbox 
+                      id="light-meal" 
+                      checked={lightMeal}
+                      onCheckedChange={(checked) => handleLightMealChange(Boolean(checked))}
+                    />
+                    <label
+                      htmlFor="light-meal"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      Prefiro Refeição Light
+                    </label>
+                  </div>
+                )}
               </div>
             )}
           </CardContent>
@@ -261,7 +267,7 @@ const Perfil = () => {
                   route: user.rota
                 }}
                 badgeTemplate={badgeTemplate}
-                showLightMeal={lightMeal}
+                showLightMeal={lightMeal && isComumUser}
                 lightMealBadge={lightMealBadge}
               />
             </CardContent>
