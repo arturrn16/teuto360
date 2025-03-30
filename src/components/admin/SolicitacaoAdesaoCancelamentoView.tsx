@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,6 +8,7 @@ import { SolicitacaoAdesaoCancelamento } from "@/types/solicitacoes";
 import { Download } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { AdminCommentField } from "./AdminCommentField";
 
 interface SolicitacaoAdesaoCancelamentoViewProps {
   solicitacao: SolicitacaoAdesaoCancelamento;
@@ -203,19 +203,11 @@ export function SolicitacaoAdesaoCancelamentoView({
       
       {solicitacao.status === "pendente" && (
         <CardFooter className="flex flex-col gap-4">
-          {/* Campo de comentário administrativo */}
-          <div className="w-full">
-            <Label htmlFor="comentario_admin">Comentário (opcional)</Label>
-            <Textarea 
-              id="comentario_admin"
-              placeholder="Adicione um comentário sobre esta solicitação"
-              value={comentario}
-              onChange={(e) => setComentario(e.target.value)}
-              className="mt-1"
-            />
-          </div>
+          <AdminCommentField 
+            value={comentario}
+            onChange={setComentario}
+          />
           
-          {/* Campo de motivo para rejeição */}
           <div className="w-full">
             <Label htmlFor="motivo_rejeicao">Motivo para rejeição (obrigatório caso rejeite)</Label>
             <Textarea 
