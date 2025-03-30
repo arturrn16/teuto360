@@ -41,6 +41,14 @@ export function AdminActionDialog({
     setIsSubmitting(false);
   };
 
+  // Clear comment when dialog opens or closes
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      setComment("");
+      onClose();
+    }
+  };
+
   const label = action === "approve" 
     ? "Comentário sobre a aprovação (opcional)" 
     : isRejectionReasonRequired 
@@ -52,7 +60,7 @@ export function AdminActionDialog({
     : "Informe o motivo da rejeição";
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
