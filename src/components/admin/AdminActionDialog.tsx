@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface AdminActionDialogProps {
   isOpen: boolean;
@@ -31,6 +32,7 @@ export function AdminActionDialog({
 }: AdminActionDialogProps) {
   const [comment, setComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [includeComment, setIncludeComment] = useState(action === "reject" && isRejectionReasonRequired);
 
   const handleConfirm = () => {
     if (action === "reject" && isRejectionReasonRequired && !comment.trim()) {
@@ -38,7 +40,7 @@ export function AdminActionDialog({
     }
     
     setIsSubmitting(true);
-    onConfirm(comment);
+    onConfirm(includeComment ? comment : "");
     setIsSubmitting(false);
   };
 
@@ -46,6 +48,7 @@ export function AdminActionDialog({
   const handleOpenChange = (open: boolean) => {
     if (!open) {
       setComment("");
+      setIncludeComment(action === "reject" && isRejectionReasonRequired);
       onClose();
     }
   };
@@ -67,24 +70,43 @@ export function AdminActionDialog({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
             {action === "approve" 
-              ? "Adicione um comentário opcional antes de aprovar esta solicitação."
+              ? "Deseja adicionar um comentário opcional antes de aprovar esta solicitação?"
               : isRejectionReasonRequired 
                 ? "Informe o motivo da rejeição antes de continuar."
-                : "Adicione um comentário opcional antes de rejeitar esta solicitação."
+                : "Deseja adicionar um comentário opcional antes de rejeitar esta solicitação?"
             }
           </DialogDescription>
         </DialogHeader>
 
-        <div className="w-full">
-          <Label htmlFor="admin_comment" className="mb-1 block font-medium">{label}</Label>
-          <Textarea
-            id="admin_comment"
-            placeholder={placeholder}
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            className="min-h-[80px] resize-y w-full"
+        <div className="flex items-center space-x-2 py-2">
+          <Checkbox 
+            id="include-comment" 
+            checked={includeComment} 
+            onCheckedChange={(checked) => setIncludeComment(checked === true)}
+            disabled={action === "reject" && isRejectionReasonRequired}
           />
+          <label
+            htmlFor="include-comment"
+            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+          >
+            {action === "approve" 
+              ? "Incluir comentário na aprovação" 
+              : "Incluir motivo na rejeição"}
+          </label>
         </div>
+
+        {includeComment && (
+          <div className="w-full">
+            <Label htmlFor="admin_comment" className="mb-1 block font-medium">{label}</Label>
+            <Textarea
+              id="admin_comment"
+              placeholder={placeholder}
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              className="min-h-[80px] resize-y w-full"
+            />
+          </div>
+        )}
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
@@ -92,7 +114,7 @@ export function AdminActionDialog({
           </Button>
           <Button 
             onClick={handleConfirm} 
-            disabled={isSubmitting || (action === "reject" && isRejectionReasonRequired && !comment.trim())}
+            disabled={isSubmitting || (includeComment && action === "reject" && isRejectionReasonRequired && !comment.trim())}
             variant={action === "approve" ? "default" : "destructive"}
           >
             {action === "approve" ? "Aprovar" : "Rejeitar"}
