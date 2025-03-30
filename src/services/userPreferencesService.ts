@@ -11,18 +11,18 @@ export interface UserPreference {
 
 export const getUserPreferences = async (userId: number): Promise<UserPreference | null> => {
   try {
+    // Don't use single() as it returns an error if no record is found
     const { data, error } = await supabase
       .from("user_preferences")
       .select("*")
-      .eq("user_id", userId)
-      .single();
+      .eq("user_id", userId);
 
-    if (error && error.code !== 'PGRST116') {
+    if (error) {
       console.error("Error fetching user preferences:", error);
       return null;
     }
 
-    return data as UserPreference;
+    return data && data.length > 0 ? data[0] as UserPreference : null;
   } catch (error) {
     console.error("Error in getUserPreferences:", error);
     return null;
@@ -51,7 +51,6 @@ export const updateLightMealPreference = async (
     const timestamp = new Date().toISOString();
     
     if (existingData && existingData.length > 0) {
-      // Update existing record
       const { error: updateError } = await supabase
         .from("user_preferences")
         .update({ 
@@ -66,7 +65,6 @@ export const updateLightMealPreference = async (
         return false;
       }
     } else {
-      // Insert new record
       const { error: insertError } = await supabase
         .from("user_preferences")
         .insert({ 

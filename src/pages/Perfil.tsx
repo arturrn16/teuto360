@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Badge } from "@/components/ui/badge";
@@ -55,13 +54,12 @@ const ProfilePage = () => {
         const { data: photoData, error: photoError } = await supabase
           .from("user_photos")
           .select("photo_url")
-          .eq("user_id", user.id)
-          .single();
+          .eq("user_id", user.id);
 
-        if (photoError && photoError.code !== 'PGRST116') {
+        if (photoError) {
           console.error("Error fetching user photo:", photoError);
-        } else if (photoData) {
-          setPhotoUrl(photoData.photo_url);
+        } else if (photoData && photoData.length > 0) {
+          setPhotoUrl(photoData[0].photo_url);
         }
 
         // Fetch light meal preference using the service
@@ -134,7 +132,7 @@ const ProfilePage = () => {
         .select()
         .eq('user_id', user.id);
         
-      if (checkError && checkError.code !== 'PGRST116') {
+      if (checkError) {
         console.error("Error checking existing photo:", checkError);
         toast.dismiss(loadingToast);
         toast.error("Erro ao verificar foto existente. Tente novamente.");
