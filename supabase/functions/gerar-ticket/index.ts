@@ -29,6 +29,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
     
     let dadosSolicitacao;
+    let dataSolicitacao;
     
     // Buscar dados da solicitação de acordo com o tipo
     if (tipo === 'rota') {
@@ -50,6 +51,7 @@ const handler = async (req: Request): Promise<Response> => {
       }
       
       dadosSolicitacao = data;
+      dataSolicitacao = data.periodo_inicio;
     } else if (tipo === '12x36') {
       const { data, error } = await supabase
         .from('solicitacoes_transporte_12x36')
@@ -69,6 +71,7 @@ const handler = async (req: Request): Promise<Response> => {
       }
       
       dadosSolicitacao = data;
+      dataSolicitacao = data.data_inicio;
     } else if (tipo === 'refeicao') {
       const { data, error } = await supabase
         .from('solicitacoes_refeicao')
@@ -88,6 +91,7 @@ const handler = async (req: Request): Promise<Response> => {
       }
       
       dadosSolicitacao = data;
+      dataSolicitacao = data.data_refeicao;
       
       // Para tipo refeicão, se tiver um índice de colaborador específico, criar um ticket apenas para este colaborador
       if (tipo === 'refeicao' && colaboradorIndex !== undefined && Array.isArray(dadosSolicitacao.colaboradores)) {
@@ -105,7 +109,9 @@ const handler = async (req: Request): Promise<Response> => {
                 id: dadosSolicitacao.id,
                 tipo,
                 dados: dadosColaborador,
-                colaboradorIndex
+                colaboradorIndex,
+                dataSolicitacao,
+                tipoFormatado: "REFEIÇÃO"
               }
             }),
             { 
@@ -143,7 +149,9 @@ const handler = async (req: Request): Promise<Response> => {
             id: dadosSolicitacao.id,
             tipo,
             dados: dadosSolicitacao,
-            totalColaboradores: dadosSolicitacao.colaboradores?.length || 0
+            totalColaboradores: dadosSolicitacao.colaboradores?.length || 0,
+            dataSolicitacao,
+            tipoFormatado: "REFEIÇÃO"
           }
         }),
         { 
@@ -153,6 +161,22 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
     
+    // Formatar o tipo para exibição
+    let tipoFormatado = "";
+    switch(tipo) {
+      case 'rota':
+        tipoFormatado = "TRANSPORTE ROTA";
+        break;
+      case '12x36':
+        tipoFormatado = "TRANSPORTE 12x36";
+        break;
+      case 'refeicao':
+        tipoFormatado = "REFEIÇÃO";
+        break;
+      default:
+        tipoFormatado = tipo.toUpperCase();
+    }
+    
     // Retornar dados para gerar o ticket
     return new Response(
       JSON.stringify({ 
@@ -160,7 +184,9 @@ const handler = async (req: Request): Promise<Response> => {
         ticket: {
           id: dadosSolicitacao.id,
           tipo,
-          dados: dadosSolicitacao
+          dados: dadosSolicitacao,
+          dataSolicitacao,
+          tipoFormatado
         }
       }),
       { 

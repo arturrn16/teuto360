@@ -147,6 +147,14 @@ const Dashboard = () => {
       textColor: "text-cyan-600 dark:text-cyan-400"
     },
     {
+      title: "Minhas Solicitações",
+      description: "Visualize todas as suas solicitações",
+      icon: <FileText className="h-8 w-8 text-violet-500" />,
+      to: "/minhas-solicitacoes",
+      color: "from-violet-50 to-violet-100 dark:from-violet-900/20 dark:to-violet-800/20",
+      textColor: "text-violet-600 dark:text-violet-400"
+    },
+    {
       title: "Comunicados",
       description: "Visualize os comunicados importantes",
       icon: <FileText className="h-8 w-8 text-amber-500" />,

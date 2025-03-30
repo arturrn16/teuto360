@@ -23,7 +23,7 @@ export const navItems: NavItem[] = [
     name: "Minhas Solicitações", 
     href: "/minhas-solicitacoes", 
     icon: <span className="text-amber-600 text-xl">📋</span>,
-    allowedTypes: ["selecao", "colaborador", "comum"] as const
+    allowedTypes: ["selecao", "colaborador", "comum", "gestor"] as const
   },
   { 
     name: "Transporte", 
