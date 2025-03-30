@@ -9,7 +9,8 @@ import {
   DialogHeader, 
   DialogTitle 
 } from "@/components/ui/dialog";
-import { AdminCommentField } from "./AdminCommentField";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
 interface AdminActionDialogProps {
   isOpen: boolean;
@@ -74,12 +75,16 @@ export function AdminActionDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <AdminCommentField
-          value={comment}
-          onChange={setComment}
-          label={label}
-          placeholder={placeholder}
-        />
+        <div className="w-full">
+          <Label htmlFor="admin_comment" className="mb-1 block font-medium">{label}</Label>
+          <Textarea
+            id="admin_comment"
+            placeholder={placeholder}
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            className="min-h-[80px] resize-y w-full"
+          />
+        </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
