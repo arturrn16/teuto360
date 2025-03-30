@@ -22,7 +22,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { format } from "date-fns";
+import { format, addDays } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon, PlusCircle, Trash2 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -72,12 +73,17 @@ const Refeicao = () => {
     setIsSubmitting(true);
     
     try {
-      const { error } = await supabase.from("solicitacoes_refeicao").insert({
+      // Certifique-se de que a data seja corretamente tratada nos diferentes fusos horários
+      const dataToSubmit = {
         solicitante_id: user.id,
         colaboradores: data.colaboradores,
         tipo_refeicao: data.tipoRefeicao,
         data_refeicao: formatDate(data.dataRefeicao),
-      });
+      };
+      
+      const { error } = await supabase
+        .from("solicitacoes_refeicao")
+        .insert(dataToSubmit);
       
       if (error) {
         console.error("Erro ao enviar solicitação:", error);
@@ -215,7 +221,7 @@ const Refeicao = () => {
                           className="form-date-input"
                         >
                           {field.value ? (
-                            format(field.value, "dd/MM/yyyy")
+                            format(field.value, "dd/MM/yyyy", { locale: ptBR })
                           ) : (
                             <span>Selecione a data</span>
                           )}
@@ -230,6 +236,8 @@ const Refeicao = () => {
                         onSelect={field.onChange}
                         disabled={(date) => date < new Date()}
                         initialFocus
+                        locale={ptBR}
+                        className="p-3 pointer-events-auto"
                       />
                     </PopoverContent>
                   </Popover>

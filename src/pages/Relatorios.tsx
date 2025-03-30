@@ -1,470 +1,370 @@
-import { useEffect, useState } from "react";
-import { useAuth } from "@/context/AuthContext";
-import { supabase, queryCustomTable } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
-import { format } from "date-fns";
+
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from "recharts";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui-components/Card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
+import { CalendarIcon, Download } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { useAuth } from "@/context/AuthContext";
+import * as XLSX from 'xlsx';
 
-const COLORS = [
-  "#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8", 
-  "#82ca9d", "#ffc658", "#8dd1e1", "#a4de6c", "#d0ed57"
-];
-
-const TYPE_COLORS = {
-  "Transporte Rota": "#0EA5E9",
-  "Transporte 12x36": "#6366F1",
-  "Refeição": "#10B981",
-  "Adesão/Cancelamento": "#F59E0B",
-  "Alteração de Endereço": "#F97316",
-  "Mudança de Turno": "#8B5CF6",
-  "Abono de Ponto": "#4ADE80"
-};
+interface FormValues {
+  tipoRefeicao: string;
+  dataInicio: Date;
+  dataFim: Date;
+}
 
 const Relatorios = () => {
   const { user } = useAuth();
-  const [year, setYear] = useState(new Date().getFullYear().toString());
-  const currentYear = new Date().getFullYear();
-  const yearsArray = Array.from({ length: 5 }, (_, i) => (currentYear - i).toString());
+  const [isLoading, setIsLoading] = useState(false);
+  const [relatorioData, setRelatorioData] = useState<any[]>([]);
+  const [totais, setTotais] = useState<Record<string, number>>({});
 
-  const { data: allSolicitations, isLoading, error } = useQuery({
-    queryKey: ["all-solicitations"],
-    queryFn: async () => {
-      const tables = [
-        "solicitacoes_transporte_rota",
-        "solicitacoes_transporte_12x36",
-        "solicitacoes_refeicao",
-        "solicitacoes_adesao_cancelamento",
-        "solicitacoes_alteracao_endereco",
-        "solicitacoes_mudanca_turno",
-        "solicitacoes_abono_ponto"
-      ];
-
-      const results = await Promise.all(
-        tables.map(async (table) => {
-          const { data, error } = await queryCustomTable(table);
-
-          if (error) {
-            console.error(`Error fetching from ${table}:`, error);
-            return [];
-          }
-
-          return data.map(item => ({
-            ...item,
-            tabela: table
-          }));
-        })
-      );
-
-      return results.flat();
-    }
+  const form = useForm<FormValues>({
+    defaultValues: {
+      tipoRefeicao: "Todos",
+      dataInicio: new Date(),
+      dataFim: addDays(new Date(), 7),
+    },
   });
 
-  const { data: usersData } = useQuery({
-    queryKey: ["users-data"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("usuarios")
-        .select("id, setor");
+  const tipoRefeicaoOptions = ["Todos", "Almoço", "Jantar", "Lanche", "Ceia"];
 
-      if (error) {
-        console.error("Error fetching users:", error);
-        return [];
+  const formatDateForDb = (date: Date) => {
+    return format(date, "yyyy-MM-dd");
+  };
+
+  const formatDateDisplay = (date: Date) => {
+    return format(date, "dd/MM/yyyy", { locale: ptBR });
+  };
+
+  const onSubmit = async (data: FormValues) => {
+    if (!user || user.tipo_usuario !== 'admin') {
+      toast.error("Acesso não autorizado");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      let query = supabase
+        .from("solicitacoes_refeicao")
+        .select("*")
+        .eq("status", "aprovada")
+        .gte("data_refeicao", formatDateForDb(data.dataInicio))
+        .lte("data_refeicao", formatDateForDb(data.dataFim));
+
+      if (data.tipoRefeicao !== "Todos") {
+        query = query.eq("tipo_refeicao", data.tipoRefeicao);
       }
 
-      return data;
+      const { data: refeicoes, error } = await query;
+
+      if (error) {
+        throw error;
+      }
+
+      // Processa os dados para contagem
+      const contagem: Record<string, number> = {};
+      const detalhesRefeicoes: any[] = [];
+
+      if (refeicoes) {
+        refeicoes.forEach(refeicao => {
+          const tipo = refeicao.tipo_refeicao;
+          const data = format(new Date(refeicao.data_refeicao), "dd/MM/yyyy");
+          
+          // Incrementa a contagem
+          contagem[tipo] = (contagem[tipo] || 0) + (refeicao.colaboradores?.length || 0);
+
+          // Adiciona detalhes para cada colaborador
+          if (refeicao.colaboradores && refeicao.colaboradores.length > 0) {
+            refeicao.colaboradores.forEach((colaborador: any) => {
+              detalhesRefeicoes.push({
+                data: data,
+                tipoRefeicao: refeicao.tipo_refeicao,
+                nome: typeof colaborador === 'string' ? colaborador : colaborador.nome,
+                matricula: typeof colaborador === 'string' ? '' : colaborador.matricula,
+                id_solicitacao: refeicao.id
+              });
+            });
+          }
+        });
+      }
+
+      setTotais(contagem);
+      setRelatorioData(detalhesRefeicoes);
+      
+      toast.success("Relatório gerado com sucesso");
+    } catch (error) {
+      console.error("Erro ao gerar relatório:", error);
+      toast.error("Erro ao gerar relatório");
+    } finally {
+      setIsLoading(false);
     }
-  });
-
-  const getRequestsByType = () => {
-    if (!allSolicitations) return [];
-
-    const counts: Record<string, number> = {};
-    
-    allSolicitations.forEach((item: any) => {
-      const type = mapTableNameToReadableName(item.tabela);
-      counts[type] = (counts[type] || 0) + 1;
-    });
-
-    return Object.entries(counts).map(([name, value]) => ({ 
-      name, 
-      value,
-      color: TYPE_COLORS[name as keyof typeof TYPE_COLORS] || COLORS[0]
-    }));
   };
 
-  const getRequestsBySector = () => {
-    if (!allSolicitations || !usersData) return [];
-
-    const userSectors: Record<number, string> = {};
-    usersData.forEach((user: any) => {
-      userSectors[user.id] = user.setor;
-    });
-
-    const sectorCounts: Record<string, number> = {};
-    
-    allSolicitations.forEach((item: any) => {
-      const sector = userSectors[item.solicitante_id] || "Desconhecido";
-      sectorCounts[sector] = (sectorCounts[sector] || 0) + 1;
-    });
-
-    return Object.entries(sectorCounts)
-      .map(([name, value]) => ({ name, value }))
-      .sort((a, b) => b.value - a.value);
-  };
-
-  const getRequestsByStatus = () => {
-    if (!allSolicitations) return [];
-
-    const statusCounts: Record<string, number> = {};
-    
-    allSolicitations.forEach((item: any) => {
-      const status = mapStatusToReadable(item.status);
-      statusCounts[status] = (statusCounts[status] || 0) + 1;
-    });
-
-    return Object.entries(statusCounts).map(([name, value]) => ({ name, value }));
-  };
-
-  const getRequestsByMonth = () => {
-    if (!allSolicitations) return [];
-
-    const filteredItems = allSolicitations.filter((item: any) => {
-      const date = new Date(item.created_at);
-      return date.getFullYear().toString() === year;
-    });
-
-    const monthCounts: Record<string, number> = {};
-    for (let i = 0; i < 12; i++) {
-      const monthName = format(new Date(parseInt(year), i, 1), 'MMM', { locale: ptBR });
-      monthCounts[monthName] = 0;
+  const exportToExcel = () => {
+    if (relatorioData.length === 0) {
+      toast.error("Não há dados para exportar");
+      return;
     }
-    
-    filteredItems.forEach((item: any) => {
-      const date = new Date(item.created_at);
-      const monthName = format(date, 'MMM', { locale: ptBR });
-      monthCounts[monthName] = (monthCounts[monthName] || 0) + 1;
-    });
 
-    return Object.entries(monthCounts).map(([name, value]) => ({ name, value }));
+    try {
+      const worksheet = XLSX.utils.json_to_sheet(relatorioData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Relatório de Refeições");
+      
+      // Adiciona informações de período
+      const periodoInicio = formatDateDisplay(form.getValues().dataInicio);
+      const periodoFim = formatDateDisplay(form.getValues().dataFim);
+      const fileName = `Relatório_Refeições_${periodoInicio}_a_${periodoFim}.xlsx`;
+      
+      XLSX.writeFile(workbook, fileName);
+      toast.success("Arquivo Excel exportado com sucesso");
+    } catch (error) {
+      console.error("Erro ao exportar para Excel:", error);
+      toast.error("Erro ao exportar para Excel");
+    }
   };
-
-  const getAverageRequestsPerMonth = () => {
-    if (!allSolicitations) return 0;
-
-    const filteredItems = allSolicitations.filter((item: any) => {
-      const date = new Date(item.created_at);
-      return date.getFullYear().toString() === year;
-    });
-
-    const monthsWithRequests = new Set();
-    filteredItems.forEach((item: any) => {
-      const date = new Date(item.created_at);
-      monthsWithRequests.add(date.getMonth());
-    });
-
-    const totalMonths = monthsWithRequests.size || 1;
-    return Math.round((filteredItems.length / totalMonths) * 100) / 100;
-  };
-
-  const mapTableNameToReadableName = (tableName: string) => {
-    const mapping: Record<string, string> = {
-      "solicitacoes_transporte_rota": "Transporte Rota",
-      "solicitacoes_transporte_12x36": "Transporte 12x36",
-      "solicitacoes_refeicao": "Refeição",
-      "solicitacoes_adesao_cancelamento": "Adesão/Cancelamento",
-      "solicitacoes_alteracao_endereco": "Alteração de Endereço",
-      "solicitacoes_mudanca_turno": "Mudança de Turno",
-      "solicitacoes_abono_ponto": "Abono de Ponto"
-    };
-    return mapping[tableName] || tableName;
-  };
-
-  const mapStatusToReadable = (status: string) => {
-    const mapping: Record<string, string> = {
-      "pendente": "Pendente",
-      "aprovado": "Aprovado",
-      "rejeitado": "Rejeitado"
-    };
-    return mapping[status] || status;
-  };
-
-  const renderCustomizedLabel = (props: any) => {
-    const { cx, cy, midAngle, innerRadius, outerRadius, percent, index, name } = props;
-    const RADIAN = Math.PI / 180;
-    const radius = outerRadius * 1.4;
-    const x = cx + radius * Math.cos(-midAngle * RADIAN);
-    const y = cy + radius * Math.sin(-midAngle * RADIAN);
-    
-    return percent > 0.05 ? (
-      <text 
-        x={x} 
-        y={y} 
-        fill={TYPE_COLORS[name as keyof typeof TYPE_COLORS] || "#333"}
-        textAnchor={x > cx ? 'start' : 'end'} 
-        dominantBaseline="central"
-        fontSize={12}
-        fontWeight={500}
-      >
-        {`${name.length > 10 ? name.substring(0, 10) + '...' : name} (${(percent * 100).toFixed(0)}%)`}
-      </text>
-    ) : null;
-  };
-
-  if (isLoading) {
-    return (
-      <div className="p-6 space-y-6">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Relatórios</h1>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Card key={i}>
-              <CardHeader>
-                <Skeleton className="h-8 w-3/4" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-[200px] w-full" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="p-6">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Relatórios</h1>
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mt-4">
-          Erro ao carregar os dados. Por favor, tente novamente mais tarde.
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className="p-6 space-y-6 animate-slide-in">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Relatórios</h1>
-        <div className="flex items-center space-x-2">
-          <span className="text-sm text-gray-500">Ano:</span>
-          <Select value={year} onValueChange={setYear}>
-            <SelectTrigger className="w-[100px]">
-              <SelectValue placeholder="Ano" />
-            </SelectTrigger>
-            <SelectContent>
-              {yearsArray.map((y) => (
-                <SelectItem key={y} value={y}>{y}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="mb-4">
-          <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-          <TabsTrigger value="monthly">Análise Mensal</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="overview" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Solicitações por Tipo</CardTitle>
-                <CardDescription>Distribuição de solicitações por tipo</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[380px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={getRequestsByType()}
-                        cx="50%"
-                        cy="45%"
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                        nameKey="name"
-                        label={renderCustomizedLabel}
-                        labelLine={false}
+    <div className="container mx-auto py-8 px-4">
+      <h1 className="text-2xl font-bold mb-6">Relatórios de Refeição</h1>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="md:col-span-1">
+          <CardHeader>
+            <CardTitle>Filtros</CardTitle>
+            <CardDescription>
+              Selecione os parâmetros para gerar o relatório
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="tipoRefeicao"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tipo de Refeição</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
                       >
-                        {getRequestsByType().map((entry, index) => (
-                          <Cell 
-                            key={`cell-${index}`} 
-                            fill={entry.color || COLORS[index % COLORS.length]} 
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione o tipo" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {tipoRefeicaoOptions.map((option) => (
+                            <SelectItem key={option} value={option}>
+                              {option}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="dataInicio"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Data de Início</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              className="w-full flex justify-between"
+                            >
+                              {field.value ? (
+                                formatDateDisplay(field.value)
+                              ) : (
+                                <span>Selecione a data</span>
+                              )}
+                              <CalendarIcon className="h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            locale={ptBR}
+                            className="p-3 pointer-events-auto"
                           />
-                        ))}
-                      </Pie>
-                      <Tooltip formatter={(value) => [`${value} solicitações`, '']} />
-                      <Legend layout="horizontal" verticalAlign="bottom" align="center" />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Solicitações por Setor</CardTitle>
-                <CardDescription>Número de solicitações por setor da empresa</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[350px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={getRequestsBySector()}
-                      layout="vertical"
-                      margin={{ top: 20, right: 30, left: 100, bottom: 5 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis type="number" />
-                      <YAxis 
-                        dataKey="name" 
-                        type="category" 
-                        width={100} 
-                        tick={{ fontSize: 12 }}
-                      />
-                      <Tooltip formatter={(value) => [`${value} solicitações`, 'Quantidade']} />
-                      <Bar dataKey="value" fill="#0EA5E9" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Status das Solicitações</CardTitle>
-                <CardDescription>Distribuição por status (aprovadas, pendentes, rejeitadas)</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[380px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={getRequestsByStatus()}
-                        cx="50%"
-                        cy="45%"
-                        labelLine={true}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                        label={({name, percent}) => `${name} (${(percent * 100).toFixed(0)}%)`}
-                      >
-                        {getRequestsByStatus().map((entry, index) => (
-                          <Cell 
-                            key={`cell-${index}`} 
-                            fill={
-                              entry.name === "Aprovado" ? "#4ade80" : 
-                              entry.name === "Rejeitado" ? "#f87171" : 
-                              entry.name === "Pendente" ? "#facc15" : 
-                              COLORS[index % COLORS.length]
-                            } 
+                <FormField
+                  control={form.control}
+                  name="dataFim"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Data de Fim</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              className="w-full flex justify-between"
+                            >
+                              {field.value ? (
+                                formatDateDisplay(field.value)
+                              ) : (
+                                <span>Selecione a data</span>
+                              )}
+                              <CalendarIcon className="h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            disabled={(date) => date < form.getValues().dataInicio}
+                            locale={ptBR}
+                            className="p-3 pointer-events-auto"
                           />
-                        ))}
-                      </Pie>
-                      <Tooltip formatter={(value) => [`${value} solicitações`, '']} />
-                      <Legend verticalAlign="bottom" align="center" />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Estatísticas Gerais</CardTitle>
-                <CardDescription>Resumo de indicadores importantes</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 gap-4">
-                  <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg">
-                    <div className="text-sm text-blue-600 dark:text-blue-400">Total de solicitações</div>
-                    <div className="text-3xl font-bold text-blue-700 dark:text-blue-300">{allSolicitations.length}</div>
-                  </div>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Gerando..." : "Gerar Relatório"}
+                </Button>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
 
-                  <div className="bg-green-50 dark:bg-green-950 p-4 rounded-lg">
-                    <div className="text-sm text-green-600 dark:text-green-400">Média mensal ({year})</div>
-                    <div className="text-3xl font-bold text-green-700 dark:text-green-300">{getAverageRequestsPerMonth()}</div>
-                  </div>
-
-                  <div className="bg-purple-50 dark:bg-purple-950 p-4 rounded-lg">
-                    <div className="text-sm text-purple-600 dark:text-purple-400">Tipos de solicitações</div>
-                    <div className="text-3xl font-bold text-purple-700 dark:text-purple-300">{getRequestsByType().length}</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="monthly" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Solicitações por Mês em {year}</CardTitle>
-              <CardDescription>Evolução mensal do número de solicitações</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[400px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart
-                    data={getRequestsByMonth()}
-                    margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip formatter={(value) => [`${value} solicitações`, 'Quantidade']} />
-                    <Legend />
-                    <Line 
-                      type="monotone" 
-                      dataKey="value" 
-                      name="Solicitações"
-                      stroke="#0EA5E9" 
-                      strokeWidth={2}
-                      activeDot={{ r: 8 }} 
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+        <Card className="md:col-span-2">
+          <CardHeader>
+            <div className="flex justify-between items-center">
+              <div>
+                <CardTitle>Resultado</CardTitle>
+                <CardDescription>
+                  {relatorioData.length > 0
+                    ? `${relatorioData.length} refeições no período selecionado`
+                    : "Nenhum dado disponível"}
+                </CardDescription>
               </div>
-            </CardContent>
-          </Card>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Taxa de Aprovação Mensal</CardTitle>
-                <CardDescription>Percentual de solicitações aprovadas por mês</CardDescription>
-              </CardHeader>
-              <CardContent className="h-[300px] flex items-center justify-center">
-                <div className="text-center text-gray-500">
-                  Funcionalidade em desenvolvimento
+              {relatorioData.length > 0 && (
+                <Button
+                  variant="outline"
+                  onClick={exportToExcel}
+                  className="flex items-center gap-2"
+                >
+                  <Download className="h-4 w-4" />
+                  Exportar Excel
+                </Button>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent>
+            {Object.keys(totais).length > 0 ? (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {Object.entries(totais).map(([tipo, quantidade]) => (
+                    <Card key={tipo} className="bg-muted">
+                      <CardHeader className="py-3">
+                        <CardTitle className="text-lg">{tipo}</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-3xl font-bold">{quantidade}</p>
+                      </CardContent>
+                    </Card>
+                  ))}
                 </div>
-              </CardContent>
-            </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Tempo Médio de Processamento</CardTitle>
-                <CardDescription>Média de dias para processar solicitações</CardDescription>
-              </CardHeader>
-              <CardContent className="h-[300px] flex items-center justify-center">
-                <div className="text-center text-gray-500">
-                  Funcionalidade em desenvolvimento
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm border-collapse">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-2 px-3">Data</th>
+                        <th className="text-left py-2 px-3">Tipo</th>
+                        <th className="text-left py-2 px-3">Nome</th>
+                        <th className="text-left py-2 px-3">Matrícula</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {relatorioData.slice(0, 20).map((item, index) => (
+                        <tr key={index} className="border-b hover:bg-muted/50">
+                          <td className="py-2 px-3">{item.data}</td>
+                          <td className="py-2 px-3">{item.tipoRefeicao}</td>
+                          <td className="py-2 px-3">{item.nome}</td>
+                          <td className="py-2 px-3">{item.matricula}</td>
+                        </tr>
+                      ))}
+                      {relatorioData.length > 20 && (
+                        <tr>
+                          <td colSpan={4} className="py-2 px-3 text-center text-muted-foreground">
+                            ... e mais {relatorioData.length - 20} registros. Exporte para Excel para ver todos os dados.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-      </Tabs>
+              </div>
+            ) : (
+              <div className="text-center py-12 text-muted-foreground">
+                <p>
+                  {isLoading
+                    ? "Carregando dados..."
+                    : "Selecione os filtros e clique em Gerar Relatório para visualizar os dados."}
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
 
 export default Relatorios;
-

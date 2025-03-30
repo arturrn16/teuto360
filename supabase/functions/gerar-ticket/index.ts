@@ -30,6 +30,7 @@ const handler = async (req: Request): Promise<Response> => {
     
     let dadosSolicitacao;
     let dataSolicitacao;
+    let nomeColaborador = "";
     
     // Buscar dados da solicitação de acordo com o tipo
     if (tipo === 'rota') {
@@ -52,6 +53,7 @@ const handler = async (req: Request): Promise<Response> => {
       
       dadosSolicitacao = data;
       dataSolicitacao = data.periodo_inicio;
+      nomeColaborador = data.colaborador_nome || "";
     } else if (tipo === '12x36') {
       const { data, error } = await supabase
         .from('solicitacoes_transporte_12x36')
@@ -72,6 +74,7 @@ const handler = async (req: Request): Promise<Response> => {
       
       dadosSolicitacao = data;
       dataSolicitacao = data.data_inicio;
+      nomeColaborador = data.colaborador_nome || "";
     } else if (tipo === 'refeicao') {
       const { data, error } = await supabase
         .from('solicitacoes_refeicao')
@@ -102,6 +105,15 @@ const handler = async (req: Request): Promise<Response> => {
           const colaborador = dadosSolicitacao.colaboradores[colaboradorIndex];
           dadosColaborador.colaborador_atual = colaborador;
           
+          // Obter o nome do colaborador
+          if (colaborador) {
+            if (typeof colaborador === 'string') {
+              nomeColaborador = colaborador;
+            } else if (colaborador.nome) {
+              nomeColaborador = colaborador.nome;
+            }
+          }
+          
           return new Response(
             JSON.stringify({ 
               success: true,
@@ -111,6 +123,7 @@ const handler = async (req: Request): Promise<Response> => {
                 dados: dadosColaborador,
                 colaboradorIndex,
                 dataSolicitacao,
+                nomeColaborador,
                 tipoFormatado: "REFEIÇÃO"
               }
             }),
@@ -142,6 +155,16 @@ const handler = async (req: Request): Promise<Response> => {
     // Para solicitações de refeição, retorna a informação de quantos colaboradores existem
     // para que o frontend possa solicitar tickets individuais para cada um
     if (tipo === 'refeicao' && colaboradorIndex === undefined) {
+      // Obter o nome do primeiro colaborador para solicitações multi-colaboradores
+      if (dadosSolicitacao.colaboradores && dadosSolicitacao.colaboradores.length > 0) {
+        const primeiroColaborador = dadosSolicitacao.colaboradores[0];
+        if (typeof primeiroColaborador === 'string') {
+          nomeColaborador = primeiroColaborador;
+        } else if (primeiroColaborador.nome) {
+          nomeColaborador = primeiroColaborador.nome;
+        }
+      }
+      
       return new Response(
         JSON.stringify({ 
           success: true,
@@ -151,6 +174,7 @@ const handler = async (req: Request): Promise<Response> => {
             dados: dadosSolicitacao,
             totalColaboradores: dadosSolicitacao.colaboradores?.length || 0,
             dataSolicitacao,
+            nomeColaborador,
             tipoFormatado: "REFEIÇÃO"
           }
         }),
@@ -186,6 +210,7 @@ const handler = async (req: Request): Promise<Response> => {
           tipo,
           dados: dadosSolicitacao,
           dataSolicitacao,
+          nomeColaborador,
           tipoFormatado
         }
       }),
