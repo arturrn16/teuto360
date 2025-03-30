@@ -1,25 +1,14 @@
+
 import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Upload } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
-import { getUserPreferences, updateLightMealPreference } from "@/services/userPreferencesService";
 import { uploadUserPhoto } from "@/services/fileUploadService";
-import { 
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { 
   Dialog, 
   DialogContent, 
@@ -32,8 +21,6 @@ import { Input } from "@/components/ui/input";
 const ProfilePage = () => {
   const { user } = useAuth();
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
-  const [lightMeal, setLightMeal] = useState(false);
-  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [photoDialogOpen, setPhotoDialogOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [badgeTemplate, setBadgeTemplate] = useState("badge_basic");
@@ -64,12 +51,6 @@ const ProfilePage = () => {
         } else {
           console.log("No photo found for user", user.id);
         }
-
-        const preferences = await getUserPreferences(user.id);
-        console.log("User preferences retrieved:", preferences);
-        if (preferences) {
-          setLightMeal(preferences.light_meal || false);
-        }
       } catch (error) {
         console.error("Error fetching user data:", error);
       }
@@ -79,14 +60,12 @@ const ProfilePage = () => {
   }, [user]);
 
   useEffect(() => {
-    if (user?.rota && lightMeal) {
-      setBadgeTemplate("badge_light_route");
-    } else if (user?.rota) {
+    if (user?.rota) {
       setBadgeTemplate("badge_route_only");
     } else {
       setBadgeTemplate("badge_basic");
     }
-  }, [user?.rota, lightMeal]);
+  }, [user?.rota]);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -122,39 +101,6 @@ const ProfilePage = () => {
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
-    }
-  };
-
-  const handleLightMealChange = async (checked: boolean) => {
-    if (!checked) {
-      await updateUserLightMealPreference(false);
-    } else {
-      setConfirmDialogOpen(true);
-    }
-  };
-  
-  const confirmLightMealChoice = async () => {
-    await updateUserLightMealPreference(true);
-    setConfirmDialogOpen(false);
-  };
-  
-  const cancelLightMealChoice = () => {
-    setConfirmDialogOpen(false);
-    setLightMeal(false);
-  };
-
-  const updateUserLightMealPreference = async (checked: boolean) => {
-    if (!user) return;
-    
-    console.log(`Updating user light meal preference: ${checked}`);
-    
-    setLightMeal(checked);
-    
-    const success = await updateLightMealPreference(user.id, checked);
-    console.log(`Preference update result: ${success}`);
-    
-    if (!success) {
-      setLightMeal(!checked); // Revert if failed
     }
   };
 
@@ -215,12 +161,6 @@ const ProfilePage = () => {
                           ROTA: {user.rota}
                         </Badge>
                       )}
-                      
-                      {lightMeal && (
-                        <Badge variant="outline" className="text-xs font-medium bg-white text-[#0087c8] border-white">
-                          REFEIÇÃO LIGHT
-                        </Badge>
-                      )}
                     </div>
                   </div>
                 </div>
@@ -245,41 +185,8 @@ const ProfilePage = () => {
               </Button>
             </div>
           </Card>
-          
-          <Card className="p-6">
-            <h2 className="text-lg font-semibold mb-4">Preferências</h2>
-            
-            <div className="flex items-center space-x-2">
-              <Checkbox 
-                id="light-meal" 
-                checked={lightMeal}
-                onCheckedChange={handleLightMealChange}
-              />
-              <label
-                htmlFor="light-meal"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Refeição Light
-              </label>
-            </div>
-          </Card>
         </div>
       </div>
-      
-      <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmação de Refeição Light</AlertDialogTitle>
-            <AlertDialogDescription>
-              Ao utilizar o benefício de refeição light do Laboratório Teuto SA, você concorda com os termos e condições estabelecidos.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={cancelLightMealChoice}>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmLightMealChoice}>Concordo</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
       <Dialog open={photoDialogOpen} onOpenChange={setPhotoDialogOpen}>
         <DialogContent className="sm:max-w-md">
