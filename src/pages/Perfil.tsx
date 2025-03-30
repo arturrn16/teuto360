@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Camera, Check, X, Upload, Smartphone } from "lucide-react";
+import { Camera, Check, X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { 
@@ -36,10 +36,10 @@ const ProfilePage = () => {
   const [badgeTemplate, setBadgeTemplate] = useState("badge_basic");
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [photoDialogOpen, setPhotoDialogOpen] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Get user's first and second name
   const userName = user?.nome 
@@ -151,40 +151,27 @@ const ProfilePage = () => {
         return;
       }
       
-      await uploadPhoto(blob);
+      uploadPhoto(blob);
     }, 'image/jpeg', 0.9);
-  };
-
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && user) {
-      if (file.type !== 'image/jpeg' && file.type !== 'image/png') {
-        toast.error("Por favor, selecione uma imagem JPG ou PNG.");
-        return;
-      }
-      
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        toast.error("A imagem deve ter no máximo 5MB.");
-        return;
-      }
-      
-      uploadPhoto(file);
-    }
   };
 
   const uploadPhoto = async (fileOrBlob: File | Blob) => {
     if (!user) return;
     
     try {
-      // Show loading toast
+      // Show loading toast and set uploading state
+      setIsUploading(true);
       const loadingToast = toast.loading("Enviando foto...");
       
       const fileName = `${user.id}_${Date.now()}.jpg`;
       
+      // Create a unique file name to prevent caching issues
+      const uniqueFileName = `photos/${user.id}/${fileName}`;
+
       // Upload to Storage
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('user_photos')
-        .upload(fileName, fileOrBlob, {
+        .upload(uniqueFileName, fileOrBlob, {
           contentType: 'image/jpeg',
           upsert: true
         });
@@ -193,17 +180,21 @@ const ProfilePage = () => {
         console.error("Error uploading photo:", uploadError);
         toast.dismiss(loadingToast);
         toast.error("Erro ao fazer upload da foto. Tente novamente.");
+        setIsUploading(false);
         return;
       }
         
       // Get public URL
       const { data: publicUrlData } = await supabase.storage
         .from('user_photos')
-        .getPublicUrl(fileName);
+        .getPublicUrl(uniqueFileName);
         
       const photoUrl = publicUrlData.publicUrl;
       
-      // Update or create entry in user_photos table
+      // Generate timestamp to avoid browser caching
+      const timeStampedUrl = `${photoUrl}?t=${Date.now()}`;
+      
+      // Check if user already has a photo entry
       const { data: existingData, error: checkError } = await supabase
         .from('user_photos')
         .select()
@@ -213,20 +204,23 @@ const ProfilePage = () => {
         console.error("Error checking existing photo:", checkError);
         toast.dismiss(loadingToast);
         toast.error("Erro ao verificar foto existente. Tente novamente.");
+        setIsUploading(false);
         return;
       }
       
       let updateError;
       if (existingData && existingData.length > 0) {
+        // Update existing record
         const { error } = await supabase
           .from('user_photos')
-          .update({ photo_url: photoUrl })
+          .update({ photo_url: timeStampedUrl, updated_at: new Date().toISOString() })
           .eq('user_id', user.id);
         updateError = error;
       } else {
+        // Insert new record
         const { error } = await supabase
           .from('user_photos')
-          .insert({ user_id: user.id, photo_url: photoUrl });
+          .insert({ user_id: user.id, photo_url: timeStampedUrl });
         updateError = error;
       }
       
@@ -234,10 +228,12 @@ const ProfilePage = () => {
         console.error("Error updating user_photos table:", updateError);
         toast.dismiss(loadingToast);
         toast.error("Erro ao salvar a referência da foto. Tente novamente.");
+        setIsUploading(false);
         return;
       }
       
-      setPhotoUrl(photoUrl);
+      // Update local state
+      setPhotoUrl(timeStampedUrl);
       stopCamera();
       setPhotoDialogOpen(false);
       toast.dismiss(loadingToast);
@@ -245,12 +241,8 @@ const ProfilePage = () => {
     } catch (error) {
       console.error("Error in photo capture process:", error);
       toast.error("Erro ao salvar foto. Tente novamente.");
-    }
-  };
-
-  const takeMobilePhoto = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -278,23 +270,54 @@ const ProfilePage = () => {
   const updateLightMealPreference = async (checked: boolean) => {
     if (!user) return;
     
+    // Optimistically update UI
     setLightMeal(checked);
     
     try {
-      const { data: existingData } = await supabase
+      // Check if user preference already exists
+      const { data: existingData, error: checkError } = await supabase
         .from('user_preferences')
         .select()
         .eq('user_id', user.id);
         
+      if (checkError) {
+        console.error("Error checking existing preferences:", checkError);
+        toast.error("Erro ao verificar preferências. Tente novamente.");
+        // Revert UI state on error
+        setLightMeal(!checked);
+        return;
+      }
+      
+      let updateError;
       if (existingData && existingData.length > 0) {
-        await supabase
+        // Update existing record
+        const { error } = await supabase
           .from('user_preferences')
-          .update({ light_meal: checked })
+          .update({ 
+            light_meal: checked,
+            updated_at: new Date().toISOString()
+          })
           .eq('user_id', user.id);
+        updateError = error;
       } else {
-        await supabase
+        // Insert new record
+        const { error } = await supabase
           .from('user_preferences')
-          .insert({ user_id: user.id, light_meal: checked });
+          .insert({ 
+            user_id: user.id, 
+            light_meal: checked,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+        updateError = error;
+      }
+      
+      if (updateError) {
+        console.error("Error updating light meal preference:", updateError);
+        toast.error("Erro ao atualizar preferência. Tente novamente.");
+        // Revert UI state on error
+        setLightMeal(!checked);
+        return;
       }
       
       toast.success(checked 
@@ -303,7 +326,8 @@ const ProfilePage = () => {
     } catch (error) {
       console.error("Error updating light meal preference:", error);
       toast.error("Erro ao atualizar preferência. Tente novamente.");
-      setLightMeal(!checked); // Revert UI state on error
+      // Revert UI state on error
+      setLightMeal(!checked);
     }
   };
 
@@ -391,19 +415,15 @@ const ProfilePage = () => {
             <h2 className="text-lg font-semibold mb-4">Atualizar Foto</h2>
             
             <div className="space-y-4">
-              <Button onClick={openPhotoDialog} className="w-full" variant="outline">
+              <Button 
+                onClick={openPhotoDialog} 
+                className="w-full" 
+                variant="outline"
+                disabled={isUploading}
+              >
                 <Camera className="h-4 w-4 mr-2" />
-                Escolher Foto
+                {isUploading ? "Enviando..." : "Tirar Foto"}
               </Button>
-              
-              <input 
-                type="file" 
-                accept="image/*" 
-                capture="user"
-                className="hidden" 
-                ref={fileInputRef}
-                onChange={handleFileUpload}
-              />
             </div>
           </Card>
           
@@ -444,12 +464,15 @@ const ProfilePage = () => {
       </AlertDialog>
 
       {/* Photo Dialog */}
-      <Dialog open={photoDialogOpen} onOpenChange={setPhotoDialogOpen}>
+      <Dialog open={photoDialogOpen} onOpenChange={(open) => {
+        if (!open) stopCamera();
+        setPhotoDialogOpen(open);
+      }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Escolher Foto</DialogTitle>
+            <DialogTitle>Tirar Foto</DialogTitle>
             <DialogDescription>
-              Escolha como deseja adicionar sua foto
+              Use a câmera para tirar uma foto para seu crachá
             </DialogDescription>
           </DialogHeader>
           
@@ -469,9 +492,13 @@ const ProfilePage = () => {
                 <canvas ref={canvasRef} className="hidden" />
                 
                 <div className="flex justify-center gap-3">
-                  <Button onClick={capturePhoto} variant="default">
+                  <Button 
+                    onClick={capturePhoto} 
+                    variant="default"
+                    disabled={isUploading}
+                  >
                     <Check className="h-4 w-4 mr-2" />
-                    Capturar
+                    {isUploading ? "Enviando..." : "Capturar"}
                   </Button>
                   <Button onClick={stopCamera} variant="destructive">
                     <X className="h-4 w-4 mr-2" />
@@ -481,23 +508,14 @@ const ProfilePage = () => {
               </div>
             ) : (
               <div className="flex flex-col gap-4">
-                <Button onClick={startCamera} variant="outline" className="w-full">
+                <Button 
+                  onClick={startCamera} 
+                  variant="default" 
+                  className="w-full"
+                  disabled={isUploading}
+                >
                   <Camera className="h-4 w-4 mr-2" />
                   Usar Webcam
-                </Button>
-                
-                <Button onClick={takeMobilePhoto} variant="outline" className="w-full">
-                  <Smartphone className="h-4 w-4 mr-2" />
-                  Usar Câmera do Dispositivo
-                </Button>
-                
-                <Button 
-                  variant="outline" 
-                  className="w-full"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <Upload className="h-4 w-4 mr-2" />
-                  Enviar do Dispositivo
                 </Button>
               </div>
             )}
