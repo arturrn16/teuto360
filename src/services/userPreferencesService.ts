@@ -52,61 +52,34 @@ export const updateLightMealPreference = async (
     
     if (existingData && existingData.length > 0) {
       // Update existing record
-      const { error } = await supabase.rpc(
-        'update_user_preference',
-        { 
-          p_user_id: userId,
-          p_light_meal: lightMeal,
-          p_updated_at: timestamp
-        }
-      );
-      
-      if (error) {
-        console.error("RPC update error, trying direct update:", error);
-        // Fallback to direct update
-        const { error: updateError } = await supabase
-          .from("user_preferences")
-          .update({ 
-            light_meal: lightMeal,
-            updated_at: timestamp
-          })
-          .eq("user_id", userId);
+      const { error: updateError } = await supabase
+        .from("user_preferences")
+        .update({ 
+          light_meal: lightMeal,
+          updated_at: timestamp
+        })
+        .eq("user_id", userId);
           
-        if (updateError) {
-          console.error("Error updating preference:", updateError);
-          toast.error("Erro ao atualizar preferência de refeição");
-          return false;
-        }
+      if (updateError) {
+        console.error("Error updating preference:", updateError);
+        toast.error("Erro ao atualizar preferência de refeição");
+        return false;
       }
     } else {
       // Insert new record
-      const { error } = await supabase.rpc(
-        'create_user_preference',
-        { 
-          p_user_id: userId,
-          p_light_meal: lightMeal,
-          p_created_at: timestamp,
-          p_updated_at: timestamp
-        }
-      );
-      
-      if (error) {
-        console.error("RPC insert error, trying direct insert:", error);
-        // Fallback to direct insert
-        const { error: insertError } = await supabase
-          .from("user_preferences")
-          .insert({ 
-            user_id: userId, 
-            light_meal: lightMeal,
-            created_at: timestamp,
-            updated_at: timestamp
-          });
+      const { error: insertError } = await supabase
+        .from("user_preferences")
+        .insert({ 
+          user_id: userId, 
+          light_meal: lightMeal,
+          created_at: timestamp,
+          updated_at: timestamp
+        });
           
-        if (insertError) {
-          console.error("Error inserting preference:", insertError);
-          toast.error("Erro ao salvar preferência de refeição");
-          return false;
-        }
+      if (insertError) {
+        console.error("Error inserting preference:", insertError);
+        toast.error("Erro ao salvar preferência de refeição");
+        return false;
       }
     }
     
