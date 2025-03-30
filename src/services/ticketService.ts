@@ -1,3 +1,4 @@
+
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { TEUTO_LOGO } from "@/App";
@@ -5,13 +6,14 @@ import { TEUTO_LOGO } from "@/App";
 interface GenerateTicketParams {
   id: number;
   tipo: 'rota' | '12x36' | 'refeicao';
+  colaboradorIndex?: number;
 }
 
-export const generateTicket = async ({ id, tipo }: GenerateTicketParams): Promise<string | null> => {
+export const generateTicket = async ({ id, tipo, colaboradorIndex }: GenerateTicketParams): Promise<string | null> => {
   try {
     // Call the gerar-ticket edge function
     const { data, error } = await supabase.functions.invoke('gerar-ticket', {
-      body: { id, tipo }
+      body: { id, tipo, colaboradorIndex }
     });
 
     if (error) {
@@ -31,6 +33,12 @@ export const generateTicket = async ({ id, tipo }: GenerateTicketParams): Promis
         description: data.error || "Erro ao gerar ticket"
       });
       return null;
+    }
+
+    // For refeicao tickets, if no colaboradorIndex was provided, we're just getting
+    // the number of collaborators for later individual ticket generation
+    if (tipo === 'refeicao' && colaboradorIndex === undefined && data.ticket.totalColaboradores > 0) {
+      return JSON.stringify(data.ticket);
     }
 
     // Create a canvas to generate JPEG from ticket data
@@ -107,10 +115,21 @@ export const generateTicket = async ({ id, tipo }: GenerateTicketParams): Promis
           ctx.fillText(`Data de Início: ${new Date(ticketData.data_inicio).toLocaleDateString()}`, 30, y_start + line_height * 4);
           ctx.fillText(`Status: ${ticketData.status.toUpperCase()}`, 30, y_start + line_height * 5);
         } else if (tipo === 'refeicao') {
-          ctx.fillText(`Colaborador: ${ticketData.colaboradores.join(', ')}`, 30, y_start);
-          ctx.fillText(`Tipo de Refeição: ${ticketData.tipo_refeicao}`, 30, y_start + line_height);
-          ctx.fillText(`Data da Refeição: ${new Date(ticketData.data_refeicao).toLocaleDateString()}`, 30, y_start + line_height * 2);
-          ctx.fillText(`Status: ${ticketData.status.toUpperCase()}`, 30, y_start + line_height * 3);
+          // Para tickets individuais de refeição, mostrar apenas o colaborador específico
+          if (ticketData.colaborador_atual) {
+            ctx.fillText(`Colaborador: ${ticketData.colaborador_atual.nome}`, 30, y_start);
+            ctx.fillText(`Matrícula: ${ticketData.colaborador_atual.matricula}`, 30, y_start + line_height);
+            ctx.fillText(`Tipo de Refeição: ${ticketData.tipo_refeicao}`, 30, y_start + line_height * 2);
+            ctx.fillText(`Data da Refeição: ${new Date(ticketData.data_refeicao).toLocaleDateString()}`, 30, y_start + line_height * 3);
+            ctx.fillText(`Status: ${ticketData.status.toUpperCase()}`, 30, y_start + line_height * 4);
+          } else {
+            // Se não tiver colaborador_atual, mostrar todos (comportamento original)
+            const colaboradoresText = ticketData.colaboradores.map(c => `${c.nome} (${c.matricula})`).join(', ');
+            ctx.fillText(`Colaboradores: ${colaboradoresText}`, 30, y_start);
+            ctx.fillText(`Tipo de Refeição: ${ticketData.tipo_refeicao}`, 30, y_start + line_height);
+            ctx.fillText(`Data da Refeição: ${new Date(ticketData.data_refeicao).toLocaleDateString()}`, 30, y_start + line_height * 2);
+            ctx.fillText(`Status: ${ticketData.status.toUpperCase()}`, 30, y_start + line_height * 3);
+          }
         }
         
         // Footer message
@@ -169,10 +188,21 @@ export const generateTicket = async ({ id, tipo }: GenerateTicketParams): Promis
           ctx.fillText(`Data de Início: ${new Date(ticketData.data_inicio).toLocaleDateString()}`, 30, y_start + line_height * 4);
           ctx.fillText(`Status: ${ticketData.status.toUpperCase()}`, 30, y_start + line_height * 5);
         } else if (tipo === 'refeicao') {
-          ctx.fillText(`Colaborador: ${ticketData.colaboradores.join(', ')}`, 30, y_start);
-          ctx.fillText(`Tipo de Refeição: ${ticketData.tipo_refeicao}`, 30, y_start + line_height);
-          ctx.fillText(`Data da Refeição: ${new Date(ticketData.data_refeicao).toLocaleDateString()}`, 30, y_start + line_height * 2);
-          ctx.fillText(`Status: ${ticketData.status.toUpperCase()}`, 30, y_start + line_height * 3);
+          // Para tickets individuais de refeição, mostrar apenas o colaborador específico
+          if (ticketData.colaborador_atual) {
+            ctx.fillText(`Colaborador: ${ticketData.colaborador_atual.nome}`, 30, y_start);
+            ctx.fillText(`Matrícula: ${ticketData.colaborador_atual.matricula}`, 30, y_start + line_height);
+            ctx.fillText(`Tipo de Refeição: ${ticketData.tipo_refeicao}`, 30, y_start + line_height * 2);
+            ctx.fillText(`Data da Refeição: ${new Date(ticketData.data_refeicao).toLocaleDateString()}`, 30, y_start + line_height * 3);
+            ctx.fillText(`Status: ${ticketData.status.toUpperCase()}`, 30, y_start + line_height * 4);
+          } else {
+            // Se não tiver colaborador_atual, mostrar todos (comportamento original)
+            const colaboradoresText = ticketData.colaboradores.map(c => `${c.nome} (${c.matricula})`).join(', ');
+            ctx.fillText(`Colaboradores: ${colaboradoresText}`, 30, y_start);
+            ctx.fillText(`Tipo de Refeição: ${ticketData.tipo_refeicao}`, 30, y_start + line_height);
+            ctx.fillText(`Data da Refeição: ${new Date(ticketData.data_refeicao).toLocaleDateString()}`, 30, y_start + line_height * 2);
+            ctx.fillText(`Status: ${ticketData.status.toUpperCase()}`, 30, y_start + line_height * 3);
+          }
         }
         
         // Footer message
@@ -205,6 +235,56 @@ export const downloadTicket = async (params: GenerateTicketParams): Promise<void
   });
   
   try {
+    // Para refeição, primeiro obtemos o número total de colaboradores
+    if (params.tipo === 'refeicao' && params.colaboradorIndex === undefined) {
+      const dataJson = await generateTicket(params);
+      
+      if (!dataJson) {
+        toast({
+          variant: "destructive",
+          title: "Erro",
+          description: "Falha ao gerar ticket"
+        });
+        return;
+      }
+      
+      const data = JSON.parse(dataJson);
+      const totalColaboradores = data.totalColaboradores;
+      
+      // Se tiver mais de um colaborador, gera ticket individual para cada um
+      if (totalColaboradores > 0) {
+        toast({
+          title: "Informação",
+          description: `Gerando ${totalColaboradores} tickets individuais...`
+        });
+        
+        for (let i = 0; i < totalColaboradores; i++) {
+          // Generate and download individual ticket
+          const dataUrl = await generateTicket({ 
+            ...params, 
+            colaboradorIndex: i 
+          });
+          
+          if (!dataUrl) continue;
+          
+          // Create a temporary link to download the image
+          const link = document.createElement('a');
+          link.href = dataUrl;
+          link.download = `ticket-${params.tipo}-${params.id}-colaborador-${i+1}.jpg`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
+        
+        toast({
+          title: "Sucesso",
+          description: `${totalColaboradores} tickets gerados com sucesso!`
+        });
+        return;
+      }
+    }
+    
+    // For other types or single collaborator, proceed with normal flow
     const dataUrl = await generateTicket(params);
     
     if (!dataUrl) {

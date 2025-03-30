@@ -81,8 +81,13 @@ export interface SolicitacaoTransporte12x36 extends BaseSolicitacao {
   data_inicio: string;
 }
 
+export interface ColaboradorRefeicao {
+  nome: string;
+  matricula: string;
+}
+
 export interface SolicitacaoRefeicao extends BaseSolicitacao {
-  colaboradores: string[];
+  colaboradores: ColaboradorRefeicao[];
   tipo_refeicao: string;
   data_refeicao: string;
 }

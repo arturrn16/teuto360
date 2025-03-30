@@ -107,7 +107,9 @@ export function SolicitacaoRefeicaoView({
           <h3 className="text-sm font-medium text-muted-foreground">Colaboradores</h3>
           <ul className="list-disc pl-5">
             {solicitacao.colaboradores.map((colaborador, index) => (
-              <li key={index}>{colaborador}</li>
+              <li key={index}>
+                {colaborador.nome} - Matrícula: {colaborador.matricula}
+              </li>
             ))}
           </ul>
         </div>

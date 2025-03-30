@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -28,7 +29,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { FormLayout } from "@/components/FormLayout";
 
 interface FormValues {
-  colaboradores: { nome: string }[];
+  colaboradores: { nome: string; matricula: string }[];
   tipoRefeicao: "Almoço" | "Jantar" | "Lanche" | "Ceia";
   dataRefeicao: Date;
 }
@@ -40,7 +41,7 @@ const Refeicao = () => {
   
   const form = useForm<FormValues>({
     defaultValues: {
-      colaboradores: [{ nome: "" }],
+      colaboradores: [{ nome: "", matricula: "" }],
       tipoRefeicao: "Almoço",
       dataRefeicao: new Date(),
     },
@@ -63,8 +64,8 @@ const Refeicao = () => {
       return;
     }
     
-    if (data.colaboradores.some(col => !col.nome.trim())) {
-      toast.error("Preencha o nome de todos os colaboradores");
+    if (data.colaboradores.some(col => !col.nome.trim() || !col.matricula.trim())) {
+      toast.error("Preencha o nome e a matrícula de todos os colaboradores");
       return;
     }
     
@@ -73,7 +74,7 @@ const Refeicao = () => {
     try {
       const { error } = await supabase.from("solicitacoes_refeicao").insert({
         solicitante_id: user.id,
-        colaboradores: data.colaboradores.map(c => c.nome),
+        colaboradores: data.colaboradores,
         tipo_refeicao: data.tipoRefeicao,
         data_refeicao: formatDate(data.dataRefeicao),
       });
@@ -108,7 +109,7 @@ const Refeicao = () => {
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => append({ nome: "" })}
+                onClick={() => append({ nome: "", matricula: "" })}
                 className="flex items-center gap-1"
               >
                 <PlusCircle className="h-4 w-4" />
@@ -117,12 +118,12 @@ const Refeicao = () => {
             </div>
             
             {fields.map((field, index) => (
-              <div key={field.id} className="flex items-center gap-2">
+              <div key={field.id} className="grid grid-cols-1 md:grid-cols-5 gap-2">
                 <FormField
                   control={form.control}
                   name={`colaboradores.${index}.nome`}
                   render={({ field }) => (
-                    <FormItem className="flex-1">
+                    <FormItem className="col-span-1 md:col-span-3">
                       <FormControl>
                         <Input 
                           placeholder="Nome do colaborador" 
@@ -134,16 +135,36 @@ const Refeicao = () => {
                     </FormItem>
                   )}
                 />
+                
+                <FormField
+                  control={form.control}
+                  name={`colaboradores.${index}.matricula`}
+                  render={({ field }) => (
+                    <FormItem className="col-span-1 md:col-span-1">
+                      <FormControl>
+                        <Input 
+                          placeholder="Matrícula" 
+                          {...field} 
+                          className="form-field-input"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
                 {fields.length > 1 && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => remove(index)}
-                    className="text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <div className="flex items-center justify-end col-span-1">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => remove(index)}
+                      className="text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 )}
               </div>
             ))}

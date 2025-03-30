@@ -16,7 +16,7 @@ const handler = async (req: Request): Promise<Response> => {
     const supabase = createClient(supabaseUrl, supabaseKey);
     
     // Extrair parâmetros da requisição
-    const { id, tipo } = await req.json();
+    const { id, tipo, colaboradorIndex } = await req.json();
     
     if (!id || !tipo) {
       return new Response(
@@ -88,12 +88,67 @@ const handler = async (req: Request): Promise<Response> => {
       }
       
       dadosSolicitacao = data;
+      
+      // Para tipo refeicão, se tiver um índice de colaborador específico, criar um ticket apenas para este colaborador
+      if (tipo === 'refeicao' && colaboradorIndex !== undefined && Array.isArray(dadosSolicitacao.colaboradores)) {
+        if (colaboradorIndex >= 0 && colaboradorIndex < dadosSolicitacao.colaboradores.length) {
+          // Cria uma cópia dos dados da solicitação para não modificar o original
+          const dadosColaborador = {...dadosSolicitacao};
+          // Seleciona apenas o colaborador específico
+          const colaborador = dadosSolicitacao.colaboradores[colaboradorIndex];
+          dadosColaborador.colaborador_atual = colaborador;
+          
+          return new Response(
+            JSON.stringify({ 
+              success: true,
+              ticket: {
+                id: dadosSolicitacao.id,
+                tipo,
+                dados: dadosColaborador,
+                colaboradorIndex
+              }
+            }),
+            { 
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+              status: 200 
+            }
+          );
+        } else {
+          return new Response(
+            JSON.stringify({ error: "Índice de colaborador inválido" }),
+            { 
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+              status: 400 
+            }
+          );
+        }
+      }
     } else {
       return new Response(
         JSON.stringify({ error: "Tipo de solicitação inválido" }),
         { 
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 400 
+        }
+      );
+    }
+    
+    // Para solicitações de refeição, retorna a informação de quantos colaboradores existem
+    // para que o frontend possa solicitar tickets individuais para cada um
+    if (tipo === 'refeicao' && colaboradorIndex === undefined) {
+      return new Response(
+        JSON.stringify({ 
+          success: true,
+          ticket: {
+            id: dadosSolicitacao.id,
+            tipo,
+            dados: dadosSolicitacao,
+            totalColaboradores: dadosSolicitacao.colaboradores?.length || 0
+          }
+        }),
+        { 
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200 
         }
       );
     }
