@@ -1,12 +1,11 @@
-
 export interface BaseSolicitacao {
   id: number;
   solicitante_id: number;
   status: string;
   created_at: string;
   updated_at: string;
-  motivo_rejeicao?: string;
   motivo_comentario?: string;
+  motivo_rejeicao?: string;
 }
 
 export interface SolicitacaoAdesaoCancelamento extends BaseSolicitacao {
