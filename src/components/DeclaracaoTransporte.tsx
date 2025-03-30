@@ -1,6 +1,7 @@
 
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale/pt-BR";
+import { TEUTO_LOGO } from "@/App";
 
 interface DeclaracaoTransporteProps {
   tipo: "Aderir" | "Cancelar";
@@ -35,7 +36,7 @@ export const DeclaracaoTransporte = ({
     <div className="border border-gray-300 bg-white p-8 rounded-md text-sm w-full max-w-[800px] mx-auto">
       <div className="flex justify-between items-center border-b-2 border-gray-400 pb-4 mb-6">
         <div className="flex items-center gap-2">
-          <div className="bg-blue-600 text-white font-bold py-2 px-4 rounded">TEUTO</div>
+          <img src={TEUTO_LOGO} alt="Teuto Logo" className="h-10 object-contain" />
           <span className="text-xs text-gray-600">SE É TEUTO, É DE CONFIANÇA</span>
         </div>
         <div className="font-bold text-xl">

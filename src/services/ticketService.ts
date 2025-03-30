@@ -1,6 +1,6 @@
-
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { TEUTO_LOGO } from "@/App";
 
 interface GenerateTicketParams {
   id: number;
@@ -60,57 +60,133 @@ export const generateTicket = async ({ id, tipo }: GenerateTicketParams): Promis
     ctx.lineWidth = 4;
     ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
     
-    // Header
-    ctx.fillStyle = '#1e40af';
-    ctx.fillRect(10, 10, canvas.width - 20, 50);
+    // Load and draw Teuto logo
+    const logoImg = new Image();
+    logoImg.src = TEUTO_LOGO;
     
-    // Header Text
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 24px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('TICKET DE ' + tipo.toUpperCase(), canvas.width / 2, 45);
-    
-    // Content
-    ctx.fillStyle = '#1f2937';
-    ctx.font = '16px Arial';
-    ctx.textAlign = 'left';
-    
-    const ticketData = data.ticket.dados;
-    const y_start = 90;
-    const line_height = 25;
-    
-    // Different content based on ticket type
-    if (tipo === 'rota') {
-      // Simplified route ticket with just matrícula, name, route, period and status
-      ctx.fillText(`Matrícula: ${ticketData.matricula || 'N/A'}`, 30, y_start);
-      ctx.fillText(`Colaborador: ${ticketData.colaborador_nome}`, 30, y_start + line_height);
-      ctx.fillText(`Rota: ${ticketData.rota}`, 30, y_start + line_height * 2);
-      ctx.fillText(`Período: ${new Date(ticketData.periodo_inicio).toLocaleDateString()} a ${new Date(ticketData.periodo_fim).toLocaleDateString()}`, 30, y_start + line_height * 3);
-      ctx.fillText(`Status: ${ticketData.status.toUpperCase()}`, 30, y_start + line_height * 4);
-    } else if (tipo === '12x36') {
-      ctx.fillText(`Colaborador: ${ticketData.colaborador_nome}`, 30, y_start);
-      ctx.fillText(`Telefone: ${ticketData.telefone}`, 30, y_start + line_height);
-      ctx.fillText(`Endereço: ${ticketData.endereco}`, 30, y_start + line_height * 2);
-      ctx.fillText(`Rota: ${ticketData.rota}`, 30, y_start + line_height * 3);
-      ctx.fillText(`Data de Início: ${new Date(ticketData.data_inicio).toLocaleDateString()}`, 30, y_start + line_height * 4);
-      ctx.fillText(`Status: ${ticketData.status.toUpperCase()}`, 30, y_start + line_height * 5);
-    } else if (tipo === 'refeicao') {
-      ctx.fillText(`Colaborador: ${ticketData.colaboradores.join(', ')}`, 30, y_start);
-      ctx.fillText(`Tipo de Refeição: ${ticketData.tipo_refeicao}`, 30, y_start + line_height);
-      ctx.fillText(`Data da Refeição: ${new Date(ticketData.data_refeicao).toLocaleDateString()}`, 30, y_start + line_height * 2);
-      ctx.fillText(`Status: ${ticketData.status.toUpperCase()}`, 30, y_start + line_height * 3);
-    }
-    
-    // Footer message
-    ctx.font = 'italic 14px Arial';
-    if (tipo === 'rota' || tipo === '12x36') {
-      ctx.fillText("Apresente este ticket ao motorista responsável pela rota", 30, y_start + line_height * 6);
-    } else {
-      ctx.fillText("Apresente este ticket no refeitório", 30, y_start + line_height * 5);
-    }
-    
-    // Return dataURL
-    return canvas.toDataURL('image/jpeg', 0.8);
+    // Wait for the logo to load before drawing the rest of the ticket
+    return new Promise((resolve) => {
+      logoImg.onload = () => {
+        // Draw logo in the top left
+        const logoHeight = 40;
+        const logoWidth = (logoImg.width / logoImg.height) * logoHeight;
+        ctx.drawImage(logoImg, 20, 15, logoWidth, logoHeight);
+        
+        // Header
+        ctx.fillStyle = '#00A9E0'; // Teuto blue
+        ctx.fillRect(logoWidth + 30, 10, canvas.width - logoWidth - 40, 50);
+        
+        // Header Text
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 24px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('TICKET DE ' + tipo.toUpperCase(), canvas.width / 2 + 30, 45);
+        
+        // Content
+        ctx.fillStyle = '#1f2937';
+        ctx.font = '16px Arial';
+        ctx.textAlign = 'left';
+        
+        const ticketData = data.ticket.dados;
+        const y_start = 90;
+        const line_height = 25;
+        
+        // Different content based on ticket type
+        if (tipo === 'rota') {
+          // Simplified route ticket with just matrícula, name, route, period and status
+          ctx.fillText(`Matrícula: ${ticketData.matricula || 'N/A'}`, 30, y_start);
+          ctx.fillText(`Colaborador: ${ticketData.colaborador_nome}`, 30, y_start + line_height);
+          ctx.fillText(`Rota: ${ticketData.rota}`, 30, y_start + line_height * 2);
+          ctx.fillText(`Período: ${new Date(ticketData.periodo_inicio).toLocaleDateString()} a ${new Date(ticketData.periodo_fim).toLocaleDateString()}`, 30, y_start + line_height * 3);
+          ctx.fillText(`Status: ${ticketData.status.toUpperCase()}`, 30, y_start + line_height * 4);
+        } else if (tipo === '12x36') {
+          ctx.fillText(`Colaborador: ${ticketData.colaborador_nome}`, 30, y_start);
+          ctx.fillText(`Telefone: ${ticketData.telefone}`, 30, y_start + line_height);
+          ctx.fillText(`Endereço: ${ticketData.endereco}`, 30, y_start + line_height * 2);
+          ctx.fillText(`Rota: ${ticketData.rota}`, 30, y_start + line_height * 3);
+          ctx.fillText(`Data de Início: ${new Date(ticketData.data_inicio).toLocaleDateString()}`, 30, y_start + line_height * 4);
+          ctx.fillText(`Status: ${ticketData.status.toUpperCase()}`, 30, y_start + line_height * 5);
+        } else if (tipo === 'refeicao') {
+          ctx.fillText(`Colaborador: ${ticketData.colaboradores.join(', ')}`, 30, y_start);
+          ctx.fillText(`Tipo de Refeição: ${ticketData.tipo_refeicao}`, 30, y_start + line_height);
+          ctx.fillText(`Data da Refeição: ${new Date(ticketData.data_refeicao).toLocaleDateString()}`, 30, y_start + line_height * 2);
+          ctx.fillText(`Status: ${ticketData.status.toUpperCase()}`, 30, y_start + line_height * 3);
+        }
+        
+        // Footer message
+        ctx.font = 'italic 14px Arial';
+        if (tipo === 'rota' || tipo === '12x36') {
+          ctx.fillText("Apresente este ticket ao motorista responsável pela rota", 30, y_start + line_height * 6);
+        } else {
+          ctx.fillText("Apresente este ticket no refeitório", 30, y_start + line_height * 5);
+        }
+        
+        // Footer with slogan
+        ctx.font = 'bold 12px Arial';
+        ctx.fillStyle = '#00A9E0'; // Teuto blue
+        ctx.textAlign = 'right';
+        ctx.fillText("SE É TEUTO, É DE CONFIANÇA", canvas.width - 30, canvas.height - 20);
+        
+        // Return dataURL
+        resolve(canvas.toDataURL('image/jpeg', 0.8));
+      };
+      
+      logoImg.onerror = () => {
+        // If logo fails to load, continue with the regular ticket
+        console.error("Erro ao carregar logo Teuto");
+        
+        // Header
+        ctx.fillStyle = '#1e40af';
+        ctx.fillRect(10, 10, canvas.width - 20, 50);
+        
+        // Header Text
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 24px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('TICKET DE ' + tipo.toUpperCase(), canvas.width / 2, 45);
+        
+        // Content
+        ctx.fillStyle = '#1f2937';
+        ctx.font = '16px Arial';
+        ctx.textAlign = 'left';
+        
+        const ticketData = data.ticket.dados;
+        const y_start = 90;
+        const line_height = 25;
+        
+        // Different content based on ticket type
+        if (tipo === 'rota') {
+          ctx.fillText(`Matrícula: ${ticketData.matricula || 'N/A'}`, 30, y_start);
+          ctx.fillText(`Colaborador: ${ticketData.colaborador_nome}`, 30, y_start + line_height);
+          ctx.fillText(`Rota: ${ticketData.rota}`, 30, y_start + line_height * 2);
+          ctx.fillText(`Período: ${new Date(ticketData.periodo_inicio).toLocaleDateString()} a ${new Date(ticketData.periodo_fim).toLocaleDateString()}`, 30, y_start + line_height * 3);
+          ctx.fillText(`Status: ${ticketData.status.toUpperCase()}`, 30, y_start + line_height * 4);
+        } else if (tipo === '12x36') {
+          ctx.fillText(`Colaborador: ${ticketData.colaborador_nome}`, 30, y_start);
+          ctx.fillText(`Telefone: ${ticketData.telefone}`, 30, y_start + line_height);
+          ctx.fillText(`Endereço: ${ticketData.endereco}`, 30, y_start + line_height * 2);
+          ctx.fillText(`Rota: ${ticketData.rota}`, 30, y_start + line_height * 3);
+          ctx.fillText(`Data de Início: ${new Date(ticketData.data_inicio).toLocaleDateString()}`, 30, y_start + line_height * 4);
+          ctx.fillText(`Status: ${ticketData.status.toUpperCase()}`, 30, y_start + line_height * 5);
+        } else if (tipo === 'refeicao') {
+          ctx.fillText(`Colaborador: ${ticketData.colaboradores.join(', ')}`, 30, y_start);
+          ctx.fillText(`Tipo de Refeição: ${ticketData.tipo_refeicao}`, 30, y_start + line_height);
+          ctx.fillText(`Data da Refeição: ${new Date(ticketData.data_refeicao).toLocaleDateString()}`, 30, y_start + line_height * 2);
+          ctx.fillText(`Status: ${ticketData.status.toUpperCase()}`, 30, y_start + line_height * 3);
+        }
+        
+        // Footer message
+        ctx.font = 'italic 14px Arial';
+        if (tipo === 'rota' || tipo === '12x36') {
+          ctx.fillText("Apresente este ticket ao motorista responsável pela rota", 30, y_start + line_height * 6);
+        } else {
+          ctx.fillText("Apresente este ticket no refeitório", 30, y_start + line_height * 5);
+        }
+        
+        // Return dataURL
+        resolve(canvas.toDataURL('image/jpeg', 0.8));
+      };
+    });
   } catch (error) {
     console.error("Erro ao gerar ticket:", error);
     toast({
