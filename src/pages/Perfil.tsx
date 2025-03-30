@@ -211,19 +211,32 @@ const ProfilePage = () => {
             <h2 className="text-xl font-semibold mb-4">Crachá Digital</h2>
             
             <div className="relative w-full max-w-md mx-auto">
-              {/* Badge background image */}
-              <div className="relative aspect-[3/4] rounded-lg shadow-lg overflow-hidden border border-gray-200">
-                <div className="absolute inset-0 bg-gradient-to-b from-blue-50 to-blue-100 z-0"></div>
+              {/* Badge design based on the new Teuto template */}
+              <div className="relative aspect-[3/4] rounded-lg shadow-lg overflow-hidden">
+                {/* White background with subtle shadow */}
+                <div className="absolute inset-0 bg-white shadow-md z-0"></div>
                 
                 {/* Badge content */}
                 <div className="relative z-10 h-full flex flex-col items-center p-4">
-                  {/* Logo */}
-                  <div className="mb-2 w-32 h-16 bg-blue-900 flex items-center justify-center rounded-md">
-                    <h3 className="text-xl font-bold text-white">TEUTO</h3>
+                  {/* Top clip section */}
+                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-3 w-16 h-8 bg-white rounded shadow"></div>
+                  
+                  {/* Teuto Logo */}
+                  <div className="mt-6 mb-2 flex items-center justify-center w-full">
+                    <div className="flex flex-col items-center">
+                      <div className="h-2 w-24 bg-[#0087c8] mb-2"></div>
+                      <h3 className="text-xl font-bold text-[#0087c8]">TEUTO</h3>
+                      <div className="h-2 w-24 bg-[#0087c8] mt-2"></div>
+                    </div>
+                    <div className="h-12 w-px bg-[#0087c8] mx-4"></div>
+                    <div className="text-[#0087c8] text-sm leading-tight">
+                      <p>SE É TEUTO,</p>
+                      <p>É DE CONFIANÇA</p>
+                    </div>
                   </div>
                   
-                  {/* Photo area */}
-                  <div className="mt-4 w-32 h-32 bg-white rounded-full border-4 border-blue-300 overflow-hidden relative">
+                  {/* Photo area with gray border */}
+                  <div className="mt-6 w-40 h-40 bg-white border-4 border-gray-300 overflow-hidden">
                     {photoUrl ? (
                       <img 
                         src={photoUrl} 
@@ -237,25 +250,25 @@ const ProfilePage = () => {
                     )}
                   </div>
                   
-                  {/* Name and department */}
-                  <div className="mt-6 w-11/12 min-h-16 bg-blue-600 text-white rounded-md p-3 flex flex-col items-center justify-center">
-                    <h3 className="font-bold text-center">{userName}</h3>
-                    <p className="text-sm text-center">{user?.setor || "Sem setor"}</p>
-                  </div>
-                  
-                  {/* Badges */}
-                  <div className="mt-4 flex gap-2 flex-wrap justify-center">
-                    {user?.rota && (
-                      <Badge variant="secondary" className="text-xs font-medium">
-                        ROTA: {user.rota}
-                      </Badge>
-                    )}
+                  {/* Bottom blue section with name */}
+                  <div className="absolute bottom-0 left-0 right-0 bg-[#0087c8] h-20 flex flex-col items-center justify-center text-white p-3">
+                    <h3 className="font-bold text-lg">{userName}</h3>
+                    <p className="text-sm">{user?.setor || "Sem setor"}</p>
                     
-                    {lightMeal && (
-                      <Badge variant="success" className="text-xs font-medium">
-                        REFEIÇÃO LIGHT
-                      </Badge>
-                    )}
+                    {/* Badges */}
+                    <div className="mt-1 flex gap-2 flex-wrap justify-center">
+                      {user?.rota && (
+                        <Badge variant="outline" className="text-xs font-medium bg-white text-[#0087c8] border-white">
+                          ROTA: {user.rota}
+                        </Badge>
+                      )}
+                      
+                      {lightMeal && (
+                        <Badge variant="outline" className="text-xs font-medium bg-white text-[#0087c8] border-white">
+                          REFEIÇÃO LIGHT
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
