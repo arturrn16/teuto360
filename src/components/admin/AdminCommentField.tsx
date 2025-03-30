@@ -17,13 +17,13 @@ export function AdminCommentField({
 }: AdminCommentFieldProps) {
   return (
     <div className="w-full">
-      <Label htmlFor="admin_comment">{label}</Label>
+      <Label htmlFor="admin_comment" className="mb-1 block font-medium">{label}</Label>
       <Textarea
         id="admin_comment"
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-1"
+        className="min-h-[80px] resize-y w-full"
       />
     </div>
   );
