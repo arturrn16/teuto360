@@ -9,9 +9,23 @@ export interface UserPreference {
   updated_at?: string;
 }
 
+/**
+ * Get user preferences with improved error handling
+ */
 export const getUserPreferences = async (userId: number): Promise<UserPreference | null> => {
   try {
     console.log(`Fetching preferences for user ${userId}`);
+    
+    // Check if the table exists first
+    const { data: tableData, error: tableError } = await supabase
+      .from('user_preferences')
+      .select('count(*)', { count: 'exact', head: true });
+      
+    if (tableError && tableError.message.includes('does not exist')) {
+      console.error("Table doesn't exist:", tableError);
+      return null;
+    }
+    
     const { data, error } = await supabase
       .from("user_preferences")
       .select("*")
@@ -19,6 +33,7 @@ export const getUserPreferences = async (userId: number): Promise<UserPreference
 
     if (error) {
       console.error("Error fetching user preferences:", error);
+      console.log("Error details:", error.message, error.hint);
       toast.error("Erro ao buscar preferências");
       return null;
     }
@@ -32,12 +47,18 @@ export const getUserPreferences = async (userId: number): Promise<UserPreference
   }
 };
 
+/**
+ * Update user's light meal preference with comprehensive error handling
+ */
 export const updateLightMealPreference = async (
   userId: number, 
   lightMeal: boolean
 ): Promise<boolean> => {
   try {
     console.log(`Updating light meal preference for user ${userId} to ${lightMeal} - START`);
+    
+    const timestamp = new Date().toISOString();
+    console.log("Current timestamp:", timestamp);
     
     // Check if user preference already exists
     const { data: existingData, error: checkError } = await supabase
@@ -47,12 +68,12 @@ export const updateLightMealPreference = async (
       
     if (checkError) {
       console.error("Error checking existing preferences:", checkError);
+      console.log("Error details:", checkError.message);
       toast.error("Erro ao verificar preferências existentes");
       return false;
     }
     
     console.log("Existing preferences data:", existingData);
-    const timestamp = new Date().toISOString();
     
     let result;
     if (existingData && existingData.length > 0) {
@@ -78,6 +99,7 @@ export const updateLightMealPreference = async (
     
     if (result.error) {
       console.error("Error in preference operation:", result.error);
+      console.log("Error details:", result.error.message, result.error.hint);
       toast.error("Erro ao atualizar preferência de refeição");
       return false;
     }

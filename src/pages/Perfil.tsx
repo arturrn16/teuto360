@@ -9,6 +9,7 @@ import { Upload } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { getUserPreferences, updateLightMealPreference } from "@/services/userPreferencesService";
+import { uploadUserPhoto } from "@/services/fileUploadService";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -57,7 +58,6 @@ const ProfilePage = () => {
 
         if (photoError) {
           console.error("Error fetching user photo:", photoError);
-          console.log("Photo error details:", photoError.message, photoError.hint);
         } else if (photoData && photoData.length > 0) {
           console.log("Photo data retrieved:", photoData);
           setPhotoUrl(photoData[0].photo_url);
@@ -98,86 +98,22 @@ const ProfilePage = () => {
     try {
       setIsUploading(true);
       const loadingToast = toast.loading("Enviando foto...");
-      console.log("Starting photo upload process for user:", user.id);
       
-      const fileName = `${user.id}_${Date.now()}.${file.name.split('.').pop()}`;
+      const { url, error } = await uploadUserPhoto(user.id, file);
       
-      console.log("Generated filename:", fileName);
-      console.log("Storage bucket:", 'user_photos');
-      
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('user_photos')
-        .upload(fileName, file, {
-          cacheControl: 'no-cache',
-          upsert: true
-        });
-        
-      if (uploadError) {
-        console.error("Error uploading photo:", uploadError);
-        console.log("Upload error details:", uploadError.message, uploadError.name);
-        toast.dismiss(loadingToast);
-        toast.error("Erro ao fazer upload da foto. Tente novamente.");
-        setIsUploading(false);
-        return;
-      }
-        
-      console.log("Upload successful:", uploadData);
-        
-      const { data: publicUrlData } = await supabase.storage
-        .from('user_photos')
-        .getPublicUrl(fileName);
-        
-      const photoUrl = publicUrlData.publicUrl;
-      console.log("Public URL:", photoUrl);
-      
-      const timeStampedUrl = `${photoUrl}?t=${Date.now()}`;
-      console.log("Timestamped URL:", timeStampedUrl);
-      
-      const { data: existingData, error: checkError } = await supabase
-        .from('user_photos')
-        .select()
-        .eq('user_id', user.id);
-        
-      if (checkError) {
-        console.error("Error checking existing photo:", checkError);
-        console.log("Check error details:", checkError.message, checkError.hint);
-        toast.dismiss(loadingToast);
-        toast.error("Erro ao verificar foto existente. Tente novamente.");
-        setIsUploading(false);
-        return;
-      }
-      
-      console.log("Existing data check result:", existingData);
-      
-      let updateResult;
-      if (existingData && existingData.length > 0) {
-        console.log("Updating existing photo record...");
-        updateResult = await supabase
-          .from('user_photos')
-          .update({ photo_url: timeStampedUrl, updated_at: new Date().toISOString() })
-          .eq('user_id', user.id);
-      } else {
-        console.log("Creating new photo record...");
-        updateResult = await supabase
-          .from('user_photos')
-          .insert({ user_id: user.id, photo_url: timeStampedUrl });
-      }
-      
-      if (updateResult.error) {
-        console.error("Error updating user_photos table:", updateResult.error);
-        console.log("Update error details:", updateResult.error.message, updateResult.error.hint);
-        toast.dismiss(loadingToast);
-        toast.error("Erro ao salvar a referência da foto. Tente novamente.");
-        setIsUploading(false);
-        return;
-      }
-      
-      console.log("Photo update successful:", updateResult);
-      
-      setPhotoUrl(timeStampedUrl);
-      setPhotoDialogOpen(false);
       toast.dismiss(loadingToast);
-      toast.success("Foto atualizada com sucesso!");
+      
+      if (error) {
+        console.error("Error uploading photo:", error);
+        toast.error("Erro ao atualizar foto. Tente novamente.");
+        setIsUploading(false);
+        return;
+      }
+      
+      if (url) {
+        setPhotoUrl(url);
+        setPhotoDialogOpen(false);
+      }
     } catch (error) {
       console.error("Error in photo upload process:", error);
       toast.error("Erro ao salvar foto. Tente novamente.");
@@ -217,12 +153,8 @@ const ProfilePage = () => {
     const success = await updateLightMealPreference(user.id, checked);
     console.log(`Preference update result: ${success}`);
     
-    if (success) {
-      toast.success(checked 
-        ? "Preferência de refeição light ativada!" 
-        : "Preferência de refeição light desativada!");
-    } else {
-      setLightMeal(!checked);
+    if (!success) {
+      setLightMeal(!checked); // Revert if failed
     }
   };
 
