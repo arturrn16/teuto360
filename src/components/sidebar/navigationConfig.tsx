@@ -1,3 +1,4 @@
+
 import React from "react";
 
 // Types for user roles
@@ -142,7 +143,7 @@ export const navItems: NavItem[] = [
     name: "Relatórios", 
     href: "/relatorios", 
     icon: <span className="text-indigo-600 text-xl">📊</span>,
-    allowedTypes: ["admin"] as const
+    allowedTypes: ["admin", "gestor"] as const  // Added "gestor" back to relatórios
   },
   { 
     name: "Gerenciar Comunicados", 

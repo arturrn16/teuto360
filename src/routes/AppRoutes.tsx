@@ -59,7 +59,6 @@ ProtectedPage.displayName = 'ProtectedPage';
 const routeGroups = {
   admin: [
     { path: '/admin', component: Admin },
-    { path: '/relatorios', component: Relatorios },
     { path: '/gerenciar-comunicados', component: GerenciarComunicados },
     { path: '/gerenciar-cardapio', component: GerenciarCardapio },
     { path: '/gerenciar-cartoes', component: GerenciarCartoes },
@@ -76,6 +75,7 @@ const routeGroups = {
   
   adminGestor: [
     { path: '/refeicao', component: Refeicao },
+    { path: '/relatorios', component: Relatorios }, // Make relatorios available to gestor
   ],
   
   selecaoGestorColaboradorComum: [

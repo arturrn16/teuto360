@@ -22,10 +22,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { format, addDays } from "date-fns";
+import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon, PlusCircle, Trash2 } from "lucide-react";
+import { CalendarIcon, PlusCircle, Trash2, ArrowLeft } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { FormLayout } from "@/components/FormLayout";
 
@@ -101,11 +101,26 @@ const Refeicao = () => {
     }
   };
   
+  const handleBack = () => {
+    navigate(-1); // Navigate back to the previous page
+  };
+  
   return (
     <FormLayout
       title="Solicitação de Refeição"
       description="Preencha o formulário para solicitar refeições para colaboradores"
     >
+      <div className="mb-4">
+        <Button 
+          variant="ghost" 
+          onClick={handleBack} 
+          className="flex items-center text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Voltar
+        </Button>
+      </div>
+      
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div className="space-y-4">
