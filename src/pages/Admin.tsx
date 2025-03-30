@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import React from "react"; // Add explicit React import
 import { useAuth } from "@/context/AuthContext";
@@ -95,8 +94,13 @@ interface SolicitacaoTransporte12x36 extends Solicitacao {
   data_inicio: string;
 }
 
+interface ColaboradorData {
+  nome: string;
+  matricula: string;
+}
+
 interface SolicitacaoRefeicao extends Solicitacao {
-  colaboradores: string[];
+  colaboradores: ColaboradorData[];
   tipo_refeicao: string;
   data_refeicao: string;
 }
@@ -182,7 +186,18 @@ const Admin = () => {
       if (errorRefeicao) {
         console.error("Erro ao buscar solicitações de refeição:", errorRefeicao);
       } else {
-        setSolicitacoesRefeicao(dataRefeicao || []);
+        // Convert the data to the expected format
+        const typedData = dataRefeicao?.map(item => ({
+          ...item,
+          colaboradores: Array.isArray(item.colaboradores) 
+            ? item.colaboradores.map((col: any) => ({
+                nome: col.nome || '',
+                matricula: col.matricula || ''
+              }))
+            : []
+        })) || [];
+        
+        setSolicitacoesRefeicao(typedData);
       }
 
       try {
@@ -337,7 +352,7 @@ const Admin = () => {
   const filtrarSolicitacoesRefeicao = () => {
     return solicitacoesRefeicao.filter(s => {
       const matchColaborador = s.colaboradores.some(c => 
-        c.toLowerCase().includes(filtroColaborador.toLowerCase())
+        c.nome.toLowerCase().includes(filtroColaborador.toLowerCase())
       );
       const matchStatus = filtroStatus === "todos" || s.status === filtroStatus;
       return matchColaborador && matchStatus;
@@ -820,7 +835,9 @@ const Admin = () => {
                                     <TableCell>
                                       <SolicitanteInfo id={solicitacao.solicitante_id} />
                                     </TableCell>
-                                    <TableCell className="font-medium">{solicitacao.colaboradores.join(", ")}</TableCell>
+                                    <TableCell className="font-medium">
+                                      {solicitacao.colaboradores.map(c => c.nome).join(", ")}
+                                    </TableCell>
                                     <TableCell>{solicitacao.tipo_refeicao}</TableCell>
                                     <TableCell>{formatarData(solicitacao.data_refeicao)}</TableCell>
                                     <TableCell>{formatarTimestamp(solicitacao.created_at)}</TableCell>
@@ -1340,7 +1357,9 @@ const Admin = () => {
                                 <TableCell>
                                   <SolicitanteInfo id={solicitacao.solicitante_id} />
                                 </TableCell>
-                                <TableCell className="font-medium">{solicitacao.colaboradores.join(", ")}</TableCell>
+                                <TableCell className="font-medium">
+                                  {solicitacao.colaboradores.map(c => c.nome).join(", ")}
+                                </TableCell>
                                 <TableCell>{solicitacao.tipo_refeicao}</TableCell>
                                 <TableCell>{formatarData(solicitacao.data_refeicao)}</TableCell>
                                 <TableCell>{formatarTimestamp(solicitacao.created_at)}</TableCell>
