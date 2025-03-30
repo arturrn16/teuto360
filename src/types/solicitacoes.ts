@@ -5,13 +5,14 @@ export interface BaseSolicitacao {
   status: string;
   created_at: string;
   updated_at: string;
+  motivo_rejeicao?: string;
+  motivo_comentario?: string;
 }
 
 export interface SolicitacaoAdesaoCancelamento extends BaseSolicitacao {
   tipo_solicitacao: "Aderir" | "Cancelar";
   tipo_transporte: "Fretado" | "ValeTransporte";
   motivo: string;
-  motivo_rejeicao?: string;
   cep?: string;
   rua?: string;
   bairro?: string;
