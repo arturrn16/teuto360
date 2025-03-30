@@ -6,9 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SolicitacaoRefeicao } from "@/types/solicitacoes";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { AdminCommentField } from "./AdminCommentField";
+import { AdminActionDialog } from "./AdminActionDialog";
 
 interface SolicitacaoRefeicaoViewProps {
   solicitacao: SolicitacaoRefeicao;
@@ -20,19 +18,12 @@ export function SolicitacaoRefeicaoView({
   onStatusChange 
 }: SolicitacaoRefeicaoViewProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [motivo, setMotivo] = useState("");
-  const [comentario, setComentario] = useState("");
+  const [isApproveDialogOpen, setIsApproveDialogOpen] = useState(false);
+  const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
 
-  const handleUpdateStatus = async (newStatus: string) => {
+  const handleUpdateStatus = async (newStatus: string, comentario: string = "") => {
     setIsLoading(true);
     try {
-      // Verificando se há motivo em caso de rejeição
-      if (newStatus === 'rejeitada' && !motivo.trim()) {
-        toast.error("É necessário informar o motivo da rejeição");
-        setIsLoading(false);
-        return;
-      }
-      
       const updateData: { 
         status: string; 
         motivo_rejeicao?: string;
@@ -41,9 +32,9 @@ export function SolicitacaoRefeicaoView({
         status: newStatus 
       };
       
-      // Adicionar motivo apenas se for rejeitada
-      if (newStatus === 'rejeitada') {
-        updateData.motivo_rejeicao = motivo;
+      // Adicionar motivo apenas se for rejeitada e houver comentário
+      if (newStatus === 'rejeitada' && comentario.trim()) {
+        updateData.motivo_rejeicao = comentario;
       }
       
       // Adicionar comentário se houver
@@ -137,38 +128,43 @@ export function SolicitacaoRefeicaoView({
       </CardContent>
       
       {solicitacao.status === "pendente" && (
-        <CardFooter className="flex flex-col gap-4">
-          <AdminCommentField 
-            value={comentario}
-            onChange={setComentario}
+        <CardFooter className="flex justify-end gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setIsRejectDialogOpen(true)}
+            disabled={isLoading}
+          >
+            Rejeitar
+          </Button>
+          <Button
+            onClick={() => setIsApproveDialogOpen(true)}
+            disabled={isLoading}
+          >
+            Aprovar
+          </Button>
+          
+          <AdminActionDialog 
+            isOpen={isApproveDialogOpen}
+            onClose={() => setIsApproveDialogOpen(false)}
+            onConfirm={(comment) => {
+              setIsApproveDialogOpen(false);
+              handleUpdateStatus("aprovada", comment);
+            }}
+            title="Aprovar Solicitação"
+            action="approve"
           />
           
-          <div className="w-full">
-            <Label htmlFor="motivo_rejeicao">Motivo para rejeição (obrigatório caso rejeite)</Label>
-            <Textarea 
-              id="motivo_rejeicao"
-              placeholder="Informe o motivo caso decida rejeitar a solicitação"
-              value={motivo}
-              onChange={(e) => setMotivo(e.target.value)}
-              className="mt-1"
-            />
-          </div>
-          
-          <div className="flex justify-end gap-2 w-full">
-            <Button
-              variant="outline"
-              onClick={() => handleUpdateStatus("rejeitada")}
-              disabled={isLoading}
-            >
-              Rejeitar
-            </Button>
-            <Button
-              onClick={() => handleUpdateStatus("aprovada")}
-              disabled={isLoading}
-            >
-              Aprovar
-            </Button>
-          </div>
+          <AdminActionDialog 
+            isOpen={isRejectDialogOpen}
+            onClose={() => setIsRejectDialogOpen(false)}
+            onConfirm={(comment) => {
+              setIsRejectDialogOpen(false);
+              handleUpdateStatus("rejeitada", comment);
+            }}
+            title="Rejeitar Solicitação"
+            action="reject"
+            isRejectionReasonRequired={true}
+          />
         </CardFooter>
       )}
     </Card>
