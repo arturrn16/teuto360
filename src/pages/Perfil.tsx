@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Badge } from "@/components/ui/badge";
@@ -123,7 +122,7 @@ const ProfilePage = () => {
         
       if (uploadError) {
         console.error("Error uploading photo:", uploadError);
-        console.log("Upload error details:", uploadError.message, uploadError.name, uploadError.cause);
+        console.log("Upload error details:", uploadError.message, uploadError.name);
         toast.dismiss(loadingToast);
         toast.error("Erro ao fazer upload da foto. Tente novamente.");
         setIsUploading(false);
