@@ -526,13 +526,6 @@ const MinhasSolicitacoes = () => {
               <p className="font-medium">{solicitacaoSelecionada.motivo}</p>
             </div>
           )}
-          
-          {solicitacaoSelecionada.status === "rejeitada" && "motivo_comentario" in solicitacaoSelecionada && solicitacaoSelecionada.motivo_comentario && (
-            <div className="mt-4 p-3 border border-red-200 bg-red-50 rounded-md">
-              <p className="text-sm text-gray-600">Motivo da rejeição:</p>
-              <p className="text-red-700">{solicitacaoSelecionada.motivo_comentario}</p>
-            </div>
-          )}
         </>
       );
     } else if (isAbonoPontoSolicitacao(solicitacaoSelecionada)) {
@@ -564,13 +557,6 @@ const MinhasSolicitacoes = () => {
             <p className="text-sm text-gray-500">Descrição</p>
             <p className="font-medium">{solicitacaoSelecionada.descricao}</p>
           </div>
-          
-          {solicitacaoSelecionada.status === "rejeitada" && solicitacaoSelecionada.motivo_comentario && (
-            <div className="mt-4 p-3 border border-red-200 bg-red-50 rounded-md">
-              <p className="text-sm text-gray-600">Motivo da rejeição:</p>
-              <p className="text-red-700">{solicitacaoSelecionada.motivo_comentario}</p>
-            </div>
-          )}
         </>
       );
     } else if (isAdesaoCancelamentoSolicitacao(solicitacaoSelecionada)) {
@@ -661,13 +647,6 @@ const MinhasSolicitacoes = () => {
               </div>
             )}
           </div>
-          
-          {solicitacaoSelecionada.status === "rejeitada" && solicitacaoSelecionada.motivo_comentario && (
-            <div className="mt-4 p-3 border border-red-200 bg-red-50 rounded-md">
-              <p className="text-sm text-gray-600">Motivo da rejeição:</p>
-              <p className="text-red-700">{solicitacaoSelecionada.motivo_comentario}</p>
-            </div>
-          )}
         </>
       );
     } else if (isMudancaTurnoSolicitacao(solicitacaoSelecionada)) {
@@ -715,13 +694,6 @@ const MinhasSolicitacoes = () => {
             <p className="text-sm text-gray-500">Motivo</p>
             <p className="font-medium">{solicitacaoSelecionada.motivo}</p>
           </div>
-          
-          {solicitacaoSelecionada.status === "rejeitada" && solicitacaoSelecionada.motivo_comentario && (
-            <div className="mt-4 p-3 border border-red-200 bg-red-50 rounded-md">
-              <p className="text-sm text-gray-600">Motivo da rejeição:</p>
-              <p className="text-red-700">{solicitacaoSelecionada.motivo_comentario}</p>
-            </div>
-          )}
         </>
       );
     }
