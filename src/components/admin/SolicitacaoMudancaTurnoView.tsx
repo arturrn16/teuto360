@@ -154,31 +154,31 @@ export function SolicitacaoMudancaTurnoView({
           >
             Aprovar
           </Button>
-          
-          <AdminActionDialog 
-            isOpen={isApproveDialogOpen}
-            onClose={() => setIsApproveDialogOpen(false)}
-            onConfirm={(comment) => {
-              setIsApproveDialogOpen(false);
-              handleUpdateStatus("aprovada", comment);
-            }}
-            title="Aprovar Solicitação"
-            action="approve"
-          />
-          
-          <AdminActionDialog 
-            isOpen={isRejectDialogOpen}
-            onClose={() => setIsRejectDialogOpen(false)}
-            onConfirm={(comment) => {
-              setIsRejectDialogOpen(false);
-              handleUpdateStatus("rejeitada", comment);
-            }}
-            title="Rejeitar Solicitação"
-            action="reject"
-            isRejectionReasonRequired={true}
-          />
         </CardFooter>
       )}
+      
+      <AdminActionDialog 
+        isOpen={isApproveDialogOpen}
+        onClose={() => setIsApproveDialogOpen(false)}
+        onConfirm={(comment) => {
+          setIsApproveDialogOpen(false);
+          handleUpdateStatus("aprovada", comment);
+        }}
+        title="Aprovar Solicitação"
+        action="approve"
+      />
+      
+      <AdminActionDialog 
+        isOpen={isRejectDialogOpen}
+        onClose={() => setIsRejectDialogOpen(false)}
+        onConfirm={(comment) => {
+          setIsRejectDialogOpen(false);
+          handleUpdateStatus("rejeitada", comment);
+        }}
+        title="Rejeitar Solicitação"
+        action="reject"
+        isRejectionReasonRequired={true}
+      />
     </Card>
   );
 }
