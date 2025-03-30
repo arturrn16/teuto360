@@ -487,13 +487,6 @@ const MinhasSolicitacoes = () => {
               ))}
             </ul>
           </div>
-          
-          {solicitacaoSelecionada.motivo_comentario && (
-            <div className="mt-4 p-3 border rounded-md bg-gray-50">
-              <p className="text-sm text-gray-500 font-semibold">Comentário do Administrador:</p>
-              <p className="text-gray-700">{solicitacaoSelecionada.motivo_comentario}</p>
-            </div>
-          )}
         </>
       );
     } else if (isTransporteSolicitacao(solicitacaoSelecionada)) {
@@ -533,13 +526,6 @@ const MinhasSolicitacoes = () => {
               <p className="font-medium">{solicitacaoSelecionada.motivo}</p>
             </div>
           )}
-          
-          {solicitacaoSelecionada.motivo_comentario && (
-            <div className="mt-4 p-3 border rounded-md bg-gray-50">
-              <p className="text-sm text-gray-500 font-semibold">Comentário do Administrador:</p>
-              <p className="text-gray-700">{solicitacaoSelecionada.motivo_comentario}</p>
-            </div>
-          )}
         </>
       );
     } else if (isAbonoPontoSolicitacao(solicitacaoSelecionada)) {
@@ -571,13 +557,6 @@ const MinhasSolicitacoes = () => {
             <p className="text-sm text-gray-500">Descrição</p>
             <p className="font-medium">{solicitacaoSelecionada.descricao}</p>
           </div>
-          
-          {solicitacaoSelecionada.motivo_comentario && (
-            <div className="mt-4 p-3 border rounded-md bg-gray-50">
-              <p className="text-sm text-gray-500 font-semibold">Comentário do Administrador:</p>
-              <p className="text-gray-700">{solicitacaoSelecionada.motivo_comentario}</p>
-            </div>
-          )}
         </>
       );
     } else if (isAdesaoCancelamentoSolicitacao(solicitacaoSelecionada)) {
@@ -619,19 +598,12 @@ const MinhasSolicitacoes = () => {
               <p className="text-red-700">
                 Sua solicitação de adesão ou cancelamento de transporte foi rejeitada.
               </p>
-              {(solicitacaoSelecionada.motivo_rejeicao || solicitacaoSelecionada.motivo_comentario) && (
+              {solicitacaoSelecionada.motivo_rejeicao && (
                 <div className="mt-2">
                   <p className="text-sm text-gray-600">Motivo da rejeição:</p>
-                  <p className="text-red-700">{solicitacaoSelecionada.motivo_rejeicao || solicitacaoSelecionada.motivo_comentario}</p>
+                  <p className="text-red-700">{solicitacaoSelecionada.motivo_rejeicao}</p>
                 </div>
               )}
-            </div>
-          )}
-          
-          {solicitacaoSelecionada.status !== "rejeitada" && solicitacaoSelecionada.motivo_comentario && (
-            <div className="mt-4 p-3 border rounded-md bg-gray-50">
-              <p className="text-sm text-gray-500 font-semibold">Comentário do Administrador:</p>
-              <p className="text-gray-700">{solicitacaoSelecionada.motivo_comentario}</p>
             </div>
           )}
         </>
@@ -675,13 +647,6 @@ const MinhasSolicitacoes = () => {
               </div>
             )}
           </div>
-          
-          {solicitacaoSelecionada.motivo_comentario && (
-            <div className="mt-4 p-3 border rounded-md bg-gray-50">
-              <p className="text-sm text-gray-500 font-semibold">Comentário do Administrador:</p>
-              <p className="text-gray-700">{solicitacaoSelecionada.motivo_comentario}</p>
-            </div>
-          )}
         </>
       );
     } else if (isMudancaTurnoSolicitacao(solicitacaoSelecionada)) {
@@ -729,13 +694,6 @@ const MinhasSolicitacoes = () => {
             <p className="text-sm text-gray-500">Motivo</p>
             <p className="font-medium">{solicitacaoSelecionada.motivo}</p>
           </div>
-          
-          {solicitacaoSelecionada.motivo_comentario && (
-            <div className="mt-4 p-3 border rounded-md bg-gray-50">
-              <p className="text-sm text-gray-500 font-semibold">Comentário do Administrador:</p>
-              <p className="text-gray-700">{solicitacaoSelecionada.motivo_comentario}</p>
-            </div>
-          )}
         </>
       );
     }
