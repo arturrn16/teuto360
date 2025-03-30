@@ -60,7 +60,7 @@ const ProfilePage = () => {
 
         if (photoError) {
           console.error("Error fetching user photo:", photoError);
-          console.log("Photo error details:", photoError.details, photoError.hint, photoError.message);
+          console.log("Photo error details:", photoError.message, photoError.hint);
         } else if (photoData && photoData.length > 0) {
           console.log("Photo data retrieved:", photoData);
           setPhotoUrl(photoData[0].photo_url);
@@ -153,7 +153,7 @@ const ProfilePage = () => {
         
       if (checkError) {
         console.error("Error checking existing photo:", checkError);
-        console.log("Check error details:", checkError.details, checkError.hint, checkError.message);
+        console.log("Check error details:", checkError.message, checkError.hint);
         toast.dismiss(loadingToast);
         toast.error("Erro ao verificar foto existente. Tente novamente.");
         setIsUploading(false);
@@ -180,7 +180,7 @@ const ProfilePage = () => {
       
       if (updateResult.error) {
         console.error("Error updating user_photos table:", updateResult.error);
-        console.log("Update error details:", updateResult.error.details, updateResult.error.hint, updateResult.error.message);
+        console.log("Update error details:", updateResult.error.message, updateResult.error.hint);
         toast.dismiss(loadingToast);
         toast.error("Erro ao salvar a referência da foto. Tente novamente.");
         setIsUploading(false);

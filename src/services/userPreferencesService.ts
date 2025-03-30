@@ -47,7 +47,7 @@ export const updateLightMealPreference = async (
       
     if (checkError) {
       console.error("Error checking existing preferences:", checkError);
-      console.log("Check error details:", checkError.details, checkError.hint, checkError.message);
+      console.log("Check error details:", checkError.message, checkError.hint);
       toast.error("Erro ao verificar preferências existentes");
       return false;
     }
@@ -79,7 +79,7 @@ export const updateLightMealPreference = async (
     
     if (result.error) {
       console.error("Error in preference operation:", result.error);
-      console.log("Error details:", result.error.details, result.error.hint, result.error.message);
+      console.log("Error details:", result.error.message, result.error.hint);
       toast.error("Erro ao atualizar preferência de refeição");
       return false;
     }
