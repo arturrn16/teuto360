@@ -1,8 +1,7 @@
-
 import React from "react";
 
 // Types for user roles
-export type UserType = 'admin' | 'selecao' | 'gestor' | 'colaborador' | 'comum' | 'refeicao';
+export type UserType = 'admin' | 'selecao' | 'gestor' | 'colaborador' | 'comum';
 
 // Navigation structure with support for nested items
 export interface NavItem {
@@ -18,13 +17,7 @@ export const navItems: NavItem[] = [
     name: "Dashboard", 
     href: "/dashboard", 
     icon: <span className="text-red-400 text-xl">🏠</span>,
-    allowedTypes: ["selecao", "gestor", "colaborador", "comum", "refeicao"] as const
-  },
-  { 
-    name: "Perfil", 
-    href: "/perfil", 
-    icon: <span className="text-purple-500 text-xl">👤</span>,
-    allowedTypes: ["comum"] as const
+    allowedTypes: ["selecao", "gestor", "colaborador", "comum"] as const
   },
   { 
     name: "Minhas Solicitações", 

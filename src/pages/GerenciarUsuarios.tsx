@@ -65,9 +65,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { UserType } from "@/components/sidebar/navigationConfig";
 import { useForm } from "react-hook-form";
-
-type UserType = 'admin' | 'selecao' | 'gestor' | 'colaborador' | 'comum' | 'refeicao';
 
 const GerenciarUsuarios = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -495,7 +494,7 @@ const GerenciarUsuarios = () => {
               Editar Usuário
             </DialogTitle>
             <DialogDescription>
-              Atualize as informações do usuário abaixo.
+              Atualize as informa��ões do usuário abaixo.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleEditSubmit}>
@@ -594,7 +593,6 @@ const GerenciarUsuarios = () => {
                               <SelectItem value="selecao">Seleção</SelectItem>
                               <SelectItem value="gestor">Gestor</SelectItem>
                               <SelectItem value="admin">Administrador</SelectItem>
-                              <SelectItem value="refeicao">Refeição</SelectItem>
                             </SelectContent>
                           </Select>
                         </FormItem>
@@ -798,7 +796,6 @@ const GerenciarUsuarios = () => {
                               <SelectItem value="selecao">Seleção</SelectItem>
                               <SelectItem value="gestor">Gestor</SelectItem>
                               <SelectItem value="admin">Administrador</SelectItem>
-                              <SelectItem value="refeicao">Refeição</SelectItem>
                             </SelectContent>
                           </Select>
                         </FormItem>
