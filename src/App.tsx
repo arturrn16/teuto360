@@ -12,8 +12,8 @@ import { PageLoader } from "./components/ui/loader-spinner";
 const Login = lazy(() => import("./pages/Login"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
-// Import routes - fixing this import to use default export
-const AppRoutes = lazy(() => import("./routes/AppRoutes"));
+// Import routes
+const AppRoutes = lazy(() => import("./routes/AppRoutes").then(module => ({ default: module.AppRoutes })));
 
 // Create a client with performance optimizations
 const queryClient = new QueryClient({

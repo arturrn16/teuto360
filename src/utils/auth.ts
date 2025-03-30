@@ -12,7 +12,6 @@ export interface User {
   username: string;
   admin: boolean;
   tipo_usuario: 'admin' | 'selecao' | 'gestor' | 'colaborador' | 'comum';
-  rota?: string; // Add the rota property as optional
   created_at?: string;
   updated_at?: string;
 }
