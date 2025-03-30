@@ -19,6 +19,7 @@ export const getUserPreferences = async (userId: number): Promise<UserPreference
 
     if (error) {
       console.error("Error fetching user preferences:", error);
+      toast.error("Erro ao buscar preferências");
       return null;
     }
 
@@ -26,6 +27,7 @@ export const getUserPreferences = async (userId: number): Promise<UserPreference
     return data && data.length > 0 ? data[0] as UserPreference : null;
   } catch (error) {
     console.error("Error in getUserPreferences:", error);
+    toast.error("Erro ao buscar preferências");
     return null;
   }
 };
@@ -36,7 +38,6 @@ export const updateLightMealPreference = async (
 ): Promise<boolean> => {
   try {
     console.log(`Updating light meal preference for user ${userId} to ${lightMeal} - START`);
-    console.log("Current timestamp:", new Date().toISOString());
     
     // Check if user preference already exists
     const { data: existingData, error: checkError } = await supabase
@@ -46,7 +47,6 @@ export const updateLightMealPreference = async (
       
     if (checkError) {
       console.error("Error checking existing preferences:", checkError);
-      console.log("Check error details:", checkError.message, checkError.hint);
       toast.error("Erro ao verificar preferências existentes");
       return false;
     }
@@ -78,12 +78,12 @@ export const updateLightMealPreference = async (
     
     if (result.error) {
       console.error("Error in preference operation:", result.error);
-      console.log("Error details:", result.error.message, result.error.hint);
       toast.error("Erro ao atualizar preferência de refeição");
       return false;
     }
     
     console.log("Preference operation successful:", result);
+    toast.success(lightMeal ? "Preferência de refeição light ativada!" : "Preferência de refeição light desativada!");
     return true;
   } catch (error) {
     console.error("Error in updateLightMealPreference:", error);
