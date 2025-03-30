@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Camera, Check, X } from "lucide-react";
+import { Upload } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
+import { getUserPreferences, updateLightMealPreference } from "@/services/userPreferencesService";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -26,20 +27,18 @@ import {
   DialogTitle, 
   DialogDescription 
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 const ProfilePage = () => {
   const { user } = useAuth();
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [lightMeal, setLightMeal] = useState(false);
-  const [isCapturing, setIsCapturing] = useState(false);
-  const [photoStream, setPhotoStream] = useState<MediaStream | null>(null);
-  const [badgeTemplate, setBadgeTemplate] = useState("badge_basic");
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [photoDialogOpen, setPhotoDialogOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [badgeTemplate, setBadgeTemplate] = useState("badge_basic");
   
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Get user's first and second name
   const userName = user?.nome 
@@ -65,17 +64,10 @@ const ProfilePage = () => {
           setPhotoUrl(photoData.photo_url);
         }
 
-        // Fetch light meal preference
-        const { data: prefData, error: prefError } = await supabase
-          .from("user_preferences")
-          .select("light_meal")
-          .eq("user_id", user.id)
-          .single();
-
-        if (prefError && prefError.code !== 'PGRST116') {
-          console.error("Error fetching user preferences:", prefError);
-        } else if (prefData) {
-          setLightMeal(prefData.light_meal || false);
+        // Fetch light meal preference using the service
+        const preferences = await getUserPreferences(user.id);
+        if (preferences) {
+          setLightMeal(preferences.light_meal || false);
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
@@ -96,83 +88,25 @@ const ProfilePage = () => {
     }
   }, [user?.rota, lightMeal]);
 
-  const startCamera = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: "user" } 
-      });
-      
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-      }
-      
-      setPhotoStream(stream);
-      setIsCapturing(true);
-    } catch (error) {
-      console.error("Error accessing camera:", error);
-      toast.error("Não foi possível acessar a câmera. Verifique as permissões.");
-    }
-  };
-
-  const stopCamera = () => {
-    if (photoStream) {
-      photoStream.getTracks().forEach(track => track.stop());
-      setPhotoStream(null);
-    }
-    setIsCapturing(false);
-  };
-
-  const capturePhoto = () => {
-    if (!videoRef.current || !canvasRef.current) {
-      toast.error("Não foi possível capturar a foto. Tente novamente.");
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !user) {
       return;
     }
     
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    
-    // Set canvas dimensions to match video
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    
-    // Draw video frame to canvas
-    const ctx = canvas.getContext('2d');
-    if (!ctx) {
-      toast.error("Erro ao processar a foto. Tente novamente.");
-      return;
-    }
-    
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    
-    // Convert canvas to blob and upload
-    canvas.toBlob(async (blob) => {
-      if (!blob || !user) {
-        toast.error("Erro ao processar a imagem. Tente novamente.");
-        return;
-      }
-      
-      uploadPhoto(blob);
-    }, 'image/jpeg', 0.9);
-  };
-
-  const uploadPhoto = async (fileOrBlob: File | Blob) => {
-    if (!user) return;
-    
     try {
-      // Show loading toast and set uploading state
       setIsUploading(true);
       const loadingToast = toast.loading("Enviando foto...");
       
-      const fileName = `${user.id}_${Date.now()}.jpg`;
-      
-      // Create a unique file name to prevent caching issues
+      // Create a unique file name
+      const fileName = `${user.id}_${Date.now()}.${file.name.split('.').pop()}`;
       const uniqueFileName = `photos/${user.id}/${fileName}`;
-
+      
       // Upload to Storage
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('user_photos')
-        .upload(uniqueFileName, fileOrBlob, {
-          contentType: 'image/jpeg',
+        .upload(uniqueFileName, file, {
+          cacheControl: 'no-cache',
           upsert: true
         });
         
@@ -234,30 +168,33 @@ const ProfilePage = () => {
       
       // Update local state
       setPhotoUrl(timeStampedUrl);
-      stopCamera();
       setPhotoDialogOpen(false);
       toast.dismiss(loadingToast);
       toast.success("Foto atualizada com sucesso!");
     } catch (error) {
-      console.error("Error in photo capture process:", error);
+      console.error("Error in photo upload process:", error);
       toast.error("Erro ao salvar foto. Tente novamente.");
     } finally {
       setIsUploading(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
   const handleLightMealChange = async (checked: boolean) => {
     if (!checked) {
       // If turning off, no need for confirmation
-      updateLightMealPreference(false);
+      await updateUserLightMealPreference(false);
     } else {
       // If turning on, show confirmation dialog
       setConfirmDialogOpen(true);
     }
   };
   
-  const confirmLightMealChoice = () => {
-    updateLightMealPreference(true);
+  const confirmLightMealChoice = async () => {
+    await updateUserLightMealPreference(true);
     setConfirmDialogOpen(false);
   };
   
@@ -267,65 +204,20 @@ const ProfilePage = () => {
     setLightMeal(false);
   };
 
-  const updateLightMealPreference = async (checked: boolean) => {
+  const updateUserLightMealPreference = async (checked: boolean) => {
     if (!user) return;
     
     // Optimistically update UI
     setLightMeal(checked);
     
-    try {
-      // Check if user preference already exists
-      const { data: existingData, error: checkError } = await supabase
-        .from('user_preferences')
-        .select()
-        .eq('user_id', user.id);
-        
-      if (checkError) {
-        console.error("Error checking existing preferences:", checkError);
-        toast.error("Erro ao verificar preferências. Tente novamente.");
-        // Revert UI state on error
-        setLightMeal(!checked);
-        return;
-      }
-      
-      let updateError;
-      if (existingData && existingData.length > 0) {
-        // Update existing record
-        const { error } = await supabase
-          .from('user_preferences')
-          .update({ 
-            light_meal: checked,
-            updated_at: new Date().toISOString()
-          })
-          .eq('user_id', user.id);
-        updateError = error;
-      } else {
-        // Insert new record
-        const { error } = await supabase
-          .from('user_preferences')
-          .insert({ 
-            user_id: user.id, 
-            light_meal: checked,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          });
-        updateError = error;
-      }
-      
-      if (updateError) {
-        console.error("Error updating light meal preference:", updateError);
-        toast.error("Erro ao atualizar preferência. Tente novamente.");
-        // Revert UI state on error
-        setLightMeal(!checked);
-        return;
-      }
-      
+    // Use the service to update the preference
+    const success = await updateLightMealPreference(user.id, checked);
+    
+    if (success) {
       toast.success(checked 
         ? "Preferência de refeição light ativada!" 
         : "Preferência de refeição light desativada!");
-    } catch (error) {
-      console.error("Error updating light meal preference:", error);
-      toast.error("Erro ao atualizar preferência. Tente novamente.");
+    } else {
       // Revert UI state on error
       setLightMeal(!checked);
     }
@@ -333,6 +225,10 @@ const ProfilePage = () => {
 
   const openPhotoDialog = () => {
     setPhotoDialogOpen(true);
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
   };
 
   return (
@@ -421,8 +317,8 @@ const ProfilePage = () => {
                 variant="outline"
                 disabled={isUploading}
               >
-                <Camera className="h-4 w-4 mr-2" />
-                {isUploading ? "Enviando..." : "Tirar Foto"}
+                <Upload className="h-4 w-4 mr-2" />
+                {isUploading ? "Enviando..." : "Selecionar Foto"}
               </Button>
             </div>
           </Card>
@@ -463,62 +359,34 @@ const ProfilePage = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Photo Dialog */}
-      <Dialog open={photoDialogOpen} onOpenChange={(open) => {
-        if (!open) stopCamera();
-        setPhotoDialogOpen(open);
-      }}>
+      {/* Photo Upload Dialog */}
+      <Dialog open={photoDialogOpen} onOpenChange={setPhotoDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Tirar Foto</DialogTitle>
+            <DialogTitle>Atualizar Foto</DialogTitle>
             <DialogDescription>
-              Use a câmera para tirar uma foto para seu crachá
+              Selecione uma foto da sua galeria para seu crachá
             </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4 py-4">
-            {isCapturing ? (
-              <div className="space-y-4">
-                <div className="relative aspect-video bg-gray-100 rounded overflow-hidden">
-                  <video 
-                    ref={videoRef} 
-                    autoPlay 
-                    muted 
-                    playsInline 
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                
-                <canvas ref={canvasRef} className="hidden" />
-                
-                <div className="flex justify-center gap-3">
-                  <Button 
-                    onClick={capturePhoto} 
-                    variant="default"
-                    disabled={isUploading}
-                  >
-                    <Check className="h-4 w-4 mr-2" />
-                    {isUploading ? "Enviando..." : "Capturar"}
-                  </Button>
-                  <Button onClick={stopCamera} variant="destructive">
-                    <X className="h-4 w-4 mr-2" />
-                    Cancelar
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-4">
-                <Button 
-                  onClick={startCamera} 
-                  variant="default" 
-                  className="w-full"
-                  disabled={isUploading}
-                >
-                  <Camera className="h-4 w-4 mr-2" />
-                  Usar Webcam
-                </Button>
-              </div>
-            )}
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              accept="image/*"
+              className="hidden"
+            />
+            
+            <Button 
+              onClick={triggerFileInput}
+              variant="default" 
+              className="w-full"
+              disabled={isUploading}
+            >
+              <Upload className="h-4 w-4 mr-2" />
+              {isUploading ? "Enviando..." : "Escolher da Galeria"}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
