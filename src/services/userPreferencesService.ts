@@ -11,6 +11,7 @@ export interface UserPreference {
 
 export const getUserPreferences = async (userId: number): Promise<UserPreference | null> => {
   try {
+    console.log(`Fetching preferences for user ${userId}`);
     // Don't use single() as it returns an error if no record is found
     const { data, error } = await supabase
       .from("user_preferences")
@@ -22,6 +23,7 @@ export const getUserPreferences = async (userId: number): Promise<UserPreference
       return null;
     }
 
+    console.log("User preferences data:", data);
     return data && data.length > 0 ? data[0] as UserPreference : null;
   } catch (error) {
     console.error("Error in getUserPreferences:", error);
@@ -34,7 +36,8 @@ export const updateLightMealPreference = async (
   lightMeal: boolean
 ): Promise<boolean> => {
   try {
-    console.log("Updating light meal preference for user", userId, "to", lightMeal);
+    console.log(`Updating light meal preference for user ${userId} to ${lightMeal} - START`);
+    console.log("Current timestamp:", new Date().toISOString());
     
     // Check if user preference already exists
     const { data: existingData, error: checkError } = await supabase
@@ -44,28 +47,27 @@ export const updateLightMealPreference = async (
       
     if (checkError) {
       console.error("Error checking existing preferences:", checkError);
+      console.log("Check error details:", checkError.details, checkError.hint, checkError.message);
       toast.error("Erro ao verificar preferências existentes");
       return false;
     }
     
+    console.log("Existing preferences data:", existingData);
     const timestamp = new Date().toISOString();
     
+    let result;
     if (existingData && existingData.length > 0) {
-      const { error: updateError } = await supabase
+      console.log(`Updating existing preference for user ${userId}`);
+      result = await supabase
         .from("user_preferences")
         .update({ 
           light_meal: lightMeal,
           updated_at: timestamp
         })
         .eq("user_id", userId);
-          
-      if (updateError) {
-        console.error("Error updating preference:", updateError);
-        toast.error("Erro ao atualizar preferência de refeição");
-        return false;
-      }
     } else {
-      const { error: insertError } = await supabase
+      console.log(`Creating new preference for user ${userId}`);
+      result = await supabase
         .from("user_preferences")
         .insert({ 
           user_id: userId, 
@@ -73,14 +75,16 @@ export const updateLightMealPreference = async (
           created_at: timestamp,
           updated_at: timestamp
         });
-          
-      if (insertError) {
-        console.error("Error inserting preference:", insertError);
-        toast.error("Erro ao salvar preferência de refeição");
-        return false;
-      }
     }
     
+    if (result.error) {
+      console.error("Error in preference operation:", result.error);
+      console.log("Error details:", result.error.details, result.error.hint, result.error.message);
+      toast.error("Erro ao atualizar preferência de refeição");
+      return false;
+    }
+    
+    console.log("Preference operation successful:", result);
     return true;
   } catch (error) {
     console.error("Error in updateLightMealPreference:", error);

@@ -51,6 +51,8 @@ const ProfilePage = () => {
     // Fetch user photo and preference
     const fetchUserData = async () => {
       try {
+        console.log("Fetching user data for user:", user.id);
+        
         // Fetch photo
         const { data: photoData, error: photoError } = await supabase
           .from("user_photos")
@@ -59,12 +61,17 @@ const ProfilePage = () => {
 
         if (photoError) {
           console.error("Error fetching user photo:", photoError);
+          console.log("Photo error details:", photoError.details, photoError.hint, photoError.message);
         } else if (photoData && photoData.length > 0) {
+          console.log("Photo data retrieved:", photoData);
           setPhotoUrl(photoData[0].photo_url);
+        } else {
+          console.log("No photo found for user", user.id);
         }
 
         // Fetch light meal preference using the service
         const preferences = await getUserPreferences(user.id);
+        console.log("User preferences retrieved:", preferences);
         if (preferences) {
           setLightMeal(preferences.light_meal || false);
         }
@@ -90,44 +97,56 @@ const ProfilePage = () => {
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || !user) {
+      console.log("No file selected or user not logged in");
       return;
     }
     
     try {
       setIsUploading(true);
       const loadingToast = toast.loading("Enviando foto...");
+      console.log("Starting photo upload process for user:", user.id);
       
       // Create a unique file name
       const fileName = `${user.id}_${Date.now()}.${file.name.split('.').pop()}`;
-      const uniqueFileName = `${user.id}/${fileName}`;
+      
+      console.log("Generated filename:", fileName);
+      console.log("Storage bucket:", 'user_photos');
       
       // Upload to Storage
+      console.log("Uploading file to Storage...");
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('user_photos')
-        .upload(uniqueFileName, file, {
+        .upload(fileName, file, {
           cacheControl: 'no-cache',
           upsert: true
         });
         
       if (uploadError) {
         console.error("Error uploading photo:", uploadError);
+        console.log("Upload error details:", uploadError.message, uploadError.name, uploadError.cause);
         toast.dismiss(loadingToast);
         toast.error("Erro ao fazer upload da foto. Tente novamente.");
         setIsUploading(false);
         return;
       }
         
+      console.log("Upload successful:", uploadData);
+        
       // Get public URL
+      console.log("Getting public URL...");
       const { data: publicUrlData } = await supabase.storage
         .from('user_photos')
-        .getPublicUrl(uniqueFileName);
+        .getPublicUrl(fileName);
         
       const photoUrl = publicUrlData.publicUrl;
+      console.log("Public URL:", photoUrl);
       
       // Generate timestamp to avoid browser caching
       const timeStampedUrl = `${photoUrl}?t=${Date.now()}`;
+      console.log("Timestamped URL:", timeStampedUrl);
       
       // Check if user already has a photo entry
+      console.log("Checking if user already has a photo entry...");
       const { data: existingData, error: checkError } = await supabase
         .from('user_photos')
         .select()
@@ -135,35 +154,41 @@ const ProfilePage = () => {
         
       if (checkError) {
         console.error("Error checking existing photo:", checkError);
+        console.log("Check error details:", checkError.details, checkError.hint, checkError.message);
         toast.dismiss(loadingToast);
         toast.error("Erro ao verificar foto existente. Tente novamente.");
         setIsUploading(false);
         return;
       }
       
-      let updateError;
+      console.log("Existing data check result:", existingData);
+      
+      let updateResult;
       if (existingData && existingData.length > 0) {
         // Update existing record
-        const { error } = await supabase
+        console.log("Updating existing photo record...");
+        updateResult = await supabase
           .from('user_photos')
           .update({ photo_url: timeStampedUrl, updated_at: new Date().toISOString() })
           .eq('user_id', user.id);
-        updateError = error;
       } else {
         // Insert new record
-        const { error } = await supabase
+        console.log("Creating new photo record...");
+        updateResult = await supabase
           .from('user_photos')
           .insert({ user_id: user.id, photo_url: timeStampedUrl });
-        updateError = error;
       }
       
-      if (updateError) {
-        console.error("Error updating user_photos table:", updateError);
+      if (updateResult.error) {
+        console.error("Error updating user_photos table:", updateResult.error);
+        console.log("Update error details:", updateResult.error.details, updateResult.error.hint, updateResult.error.message);
         toast.dismiss(loadingToast);
         toast.error("Erro ao salvar a referência da foto. Tente novamente.");
         setIsUploading(false);
         return;
       }
+      
+      console.log("Photo update successful:", updateResult);
       
       // Update local state
       setPhotoUrl(timeStampedUrl);
@@ -206,11 +231,14 @@ const ProfilePage = () => {
   const updateUserLightMealPreference = async (checked: boolean) => {
     if (!user) return;
     
+    console.log(`Updating user light meal preference: ${checked}`);
+    
     // Optimistically update UI
     setLightMeal(checked);
     
     // Use the service to update the preference
     const success = await updateLightMealPreference(user.id, checked);
+    console.log(`Preference update result: ${success}`);
     
     if (success) {
       toast.success(checked 
