@@ -18,7 +18,7 @@ import {
   BadgeCheck
 } from "lucide-react";
 
-export type UserType = 'admin' | 'selecao' | 'gestor' | 'colaborador' | 'comum';
+export type UserType = 'admin' | 'selecao' | 'gestor' | 'colaborador' | 'comum' | 'refeicao';
 
 export interface NavItem {
   href: string;
@@ -28,7 +28,6 @@ export interface NavItem {
   children?: NavItem[];
 }
 
-// Função para obter o título do papel do usuário
 export const getUserRoleLabel = (tipoUsuario: string): string => {
   switch (tipoUsuario) {
     case 'admin':
@@ -44,7 +43,6 @@ export const getUserRoleLabel = (tipoUsuario: string): string => {
   }
 };
 
-// Configuração da navegação com items e subitems
 export const navItems: NavItem[] = [
   {
     href: "/dashboard",

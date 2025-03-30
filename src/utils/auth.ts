@@ -11,7 +11,8 @@ export interface User {
   setor: string;
   username: string;
   admin: boolean;
-  tipo_usuario: 'admin' | 'selecao' | 'gestor' | 'colaborador' | 'comum';
+  tipo_usuario: 'admin' | 'selecao' | 'gestor' | 'colaborador' | 'comum' | 'refeicao';
+  rota: string | null;
   created_at?: string;
   updated_at?: string;
 }
