@@ -103,7 +103,10 @@ const ProfilePage = () => {
   };
 
   const capturePhoto = () => {
-    if (!videoRef.current || !canvasRef.current) return;
+    if (!videoRef.current || !canvasRef.current) {
+      toast.error("Não foi possível capturar a foto. Tente novamente.");
+      return;
+    }
     
     const video = videoRef.current;
     const canvas = canvasRef.current;
@@ -114,16 +117,25 @@ const ProfilePage = () => {
     
     // Draw video frame to canvas
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) {
+      toast.error("Erro ao processar a foto. Tente novamente.");
+      return;
+    }
     
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     
     // Convert canvas to blob and upload
     canvas.toBlob(async (blob) => {
-      if (!blob || !user) return;
+      if (!blob || !user) {
+        toast.error("Erro ao processar a imagem. Tente novamente.");
+        return;
+      }
       
       try {
-        const fileName = `${user.id}/profile-photo-${Date.now()}.jpg`;
+        // Show loading toast
+        const loadingToast = toast.loading("Enviando foto...");
+        
+        const fileName = `${user.id}_${Date.now()}.jpg`;
         
         // Upload to Storage
         const { data: uploadData, error: uploadError } = await supabase.storage
@@ -133,8 +145,13 @@ const ProfilePage = () => {
             upsert: true
           });
           
-        if (uploadError) throw uploadError;
-        
+        if (uploadError) {
+          console.error("Error uploading photo:", uploadError);
+          toast.dismiss(loadingToast);
+          toast.error("Erro ao fazer upload da foto. Tente novamente.");
+          return;
+        }
+          
         // Get public URL
         const { data: publicUrlData } = await supabase.storage
           .from('user_photos')
@@ -143,27 +160,45 @@ const ProfilePage = () => {
         const photoUrl = publicUrlData.publicUrl;
         
         // Update or create entry in user_photos table
-        const { data: existingData } = await supabase
+        const { data: existingData, error: checkError } = await supabase
           .from('user_photos')
           .select()
           .eq('user_id', user.id);
           
+        if (checkError && checkError.code !== 'PGRST116') {
+          console.error("Error checking existing photo:", checkError);
+          toast.dismiss(loadingToast);
+          toast.error("Erro ao verificar foto existente. Tente novamente.");
+          return;
+        }
+        
+        let updateError;
         if (existingData && existingData.length > 0) {
-          await supabase
+          const { error } = await supabase
             .from('user_photos')
             .update({ photo_url: photoUrl })
             .eq('user_id', user.id);
+          updateError = error;
         } else {
-          await supabase
+          const { error } = await supabase
             .from('user_photos')
             .insert({ user_id: user.id, photo_url: photoUrl });
+          updateError = error;
+        }
+        
+        if (updateError) {
+          console.error("Error updating user_photos table:", updateError);
+          toast.dismiss(loadingToast);
+          toast.error("Erro ao salvar a referência da foto. Tente novamente.");
+          return;
         }
         
         setPhotoUrl(photoUrl);
         stopCamera();
+        toast.dismiss(loadingToast);
         toast.success("Foto atualizada com sucesso!");
       } catch (error) {
-        console.error("Error uploading photo:", error);
+        console.error("Error in photo capture process:", error);
         toast.error("Erro ao salvar foto. Tente novamente.");
       }
     }, 'image/jpeg', 0.9);
