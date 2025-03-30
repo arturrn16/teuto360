@@ -9,7 +9,7 @@ interface AuthContextType {
   login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
   isAuthenticated: boolean;
-  shouldShowRoute: (allowedTypes: ReadonlyArray<'admin' | 'selecao' | 'gestor' | 'colaborador' | 'comum'>) => boolean;
+  shouldShowRoute: (allowedTypes: ReadonlyArray<'admin' | 'selecao' | 'gestor' | 'colaborador' | 'comum' | 'refeicao'>) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -60,7 +60,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     navigate("/login");
   };
 
-  const checkShouldShowRoute = (allowedTypes: ReadonlyArray<'admin' | 'selecao' | 'gestor' | 'colaborador' | 'comum'>) => {
+  const checkShouldShowRoute = (allowedTypes: ReadonlyArray<'admin' | 'selecao' | 'gestor' | 'colaborador' | 'comum' | 'refeicao'>) => {
     return shouldShowRoute(user, allowedTypes);
   };
 
@@ -90,8 +90,8 @@ export const useAuth = (): AuthContextType => {
 
 export const ProtectedRoute: React.FC<{
   children: React.ReactNode;
-  allowedTypes?: ReadonlyArray<'admin' | 'selecao' | 'gestor' | 'colaborador' | 'comum'>;
-}> = ({ children, allowedTypes = ["admin", "selecao", "gestor", "colaborador", "comum"] as const }) => {
+  allowedTypes?: ReadonlyArray<'admin' | 'selecao' | 'gestor' | 'colaborador' | 'comum' | 'refeicao'>;
+}> = ({ children, allowedTypes = ["admin", "selecao", "gestor", "colaborador", "comum", "refeicao"] as const }) => {
   const { user, isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
 

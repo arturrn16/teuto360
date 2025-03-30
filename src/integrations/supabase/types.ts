@@ -9,6 +9,36 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      app_assets: {
+        Row: {
+          asset_type: string
+          created_at: string
+          description: string | null
+          file_url: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          asset_type: string
+          created_at?: string
+          description?: string | null
+          file_url: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          asset_type?: string
+          created_at?: string
+          description?: string | null
+          file_url?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       cardapio: {
         Row: {
           created_at: string | null
@@ -612,6 +642,70 @@ export type Database = {
             foreignKeyName: "solicitacoes_transporte_rota_solicitante_id_fkey"
             columns: ["solicitante_id"]
             isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_photos: {
+        Row: {
+          created_at: string
+          id: string
+          photo_url: string
+          updated_at: string
+          user_id: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          photo_url: string
+          updated_at?: string
+          user_id: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          photo_url?: string
+          updated_at?: string
+          user_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_photos_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_preferences: {
+        Row: {
+          created_at: string
+          id: string
+          light_meal: boolean | null
+          updated_at: string
+          user_id: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          light_meal?: boolean | null
+          updated_at?: string
+          user_id: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          light_meal?: boolean | null
+          updated_at?: string
+          user_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
             referencedRelation: "usuarios"
             referencedColumns: ["id"]
           },
