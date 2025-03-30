@@ -1,203 +1,186 @@
-import {
-  Home,
-  CreditCard,
-  Clock,
-  FileText,
-  Users,
-  Map,
-  Calendar,
-  Utensils,
-  Bell,
-  Truck,
-  UserPlus,
-  BarChart3,
-  Clock8,
-  User,
-  Route,
-  Car,
-  BadgeCheck
-} from "lucide-react";
+import React from "react";
 
-export type UserType = 'admin' | 'selecao' | 'gestor' | 'colaborador' | 'comum' | 'refeicao';
+// Types for user roles
+export type UserType = 'admin' | 'selecao' | 'gestor' | 'colaborador' | 'comum';
 
+// Navigation structure with support for nested items
 export interface NavItem {
-  href: string;
   name: string;
+  href: string;
   icon: React.ReactNode;
-  allowedTypes: UserType[];
+  allowedTypes: ReadonlyArray<UserType>;
   children?: NavItem[];
 }
 
-export const getUserRoleLabel = (tipoUsuario: string): string => {
-  switch (tipoUsuario) {
+export const navItems: NavItem[] = [
+  { 
+    name: "Dashboard", 
+    href: "/dashboard", 
+    icon: <span className="text-red-400 text-xl">🏠</span>,
+    allowedTypes: ["selecao", "gestor", "colaborador", "comum"] as const
+  },
+  { 
+    name: "Minhas Solicitações", 
+    href: "/minhas-solicitacoes", 
+    icon: <span className="text-amber-600 text-xl">📋</span>,
+    allowedTypes: ["selecao", "colaborador", "comum"] as const
+  },
+  { 
+    name: "Transporte", 
+    href: "#", // No direct link
+    icon: <span className="text-blue-600 text-xl">🚌</span>,
+    allowedTypes: ["comum", "gestor"] as const, 
+    children: [
+      { 
+        name: "Mapa de Rotas", 
+        href: "/mapa-rotas", 
+        icon: <></>,
+        allowedTypes: ["comum"] as const 
+      },
+      { 
+        name: "Uso de Rota", 
+        href: "/transporte-rota", 
+        icon: <></>,
+        allowedTypes: ["comum"] as const 
+      },
+      { 
+        name: "Mudança de Turno", 
+        href: "/mudanca-turno", 
+        icon: <></>,
+        allowedTypes: ["gestor"] as const 
+      },
+      { 
+        name: "Alteração de Endereço", 
+        href: "/alteracao-endereco", 
+        icon: <></>,
+        allowedTypes: ["comum"] as const 
+      },
+      { 
+        name: "Adesão/Cancelamento", 
+        href: "/adesao-cancelamento", 
+        icon: <></>,
+        allowedTypes: ["comum"] as const 
+      },
+      { 
+        name: "Abono de Ponto", 
+        href: "/abono-ponto", 
+        icon: <></>,
+        allowedTypes: ["comum"] as const 
+      },
+      { 
+        name: "Plantão 24hs", 
+        href: "/plantao", 
+        icon: <></>,
+        allowedTypes: ["comum"] as const 
+      },
+      { 
+        name: "Avaliação", 
+        href: "/avaliacao", 
+        icon: <></>,
+        allowedTypes: ["comum"] as const 
+      },
+    ]
+  },
+  { 
+    name: "Refeitório", 
+    href: "#", // No direct link
+    icon: <span className="text-gray-600 text-xl">🍽️</span>,
+    allowedTypes: ["comum"] as const, 
+    children: [
+      { 
+        name: "Cardápio da Semana", 
+        href: "/cardapio-semana", 
+        icon: <span className="text-green-500 text-xl">📅</span>,
+        allowedTypes: ["comum"] as const 
+      }
+    ]
+  },
+  { 
+    name: "Comunicados", 
+    href: "/comunicados", 
+    icon: <span className="text-red-500 text-xl">📢</span>,
+    allowedTypes: ["gestor", "comum", "colaborador"] as const
+  },
+  { 
+    name: "Ofertas de Carona", 
+    href: "/oferta-caronas", 
+    icon: <span className="text-red-600 text-xl">🚗</span>,
+    allowedTypes: ["comum"] as const 
+  },
+  { 
+    name: "Consulta de Cartão", 
+    href: "/consulta-cartao", 
+    icon: <span className="text-blue-600 text-xl">💳</span>,
+    allowedTypes: ["comum"] as const 
+  },
+  // Admin sections - keep these for admin users
+  { 
+    name: "Transporte Rota", 
+    href: "/transporte-rota", 
+    icon: <span className="text-violet-500 text-xl">🚏</span>,
+    allowedTypes: ["selecao"] as const
+  },
+  { 
+    name: "Transporte 12x36", 
+    href: "/transporte-12x36", 
+    icon: <span className="text-fuchsia-500 text-xl">🗺️</span>,
+    allowedTypes: ["selecao", "gestor"] as const 
+  },
+  { 
+    name: "Refeição", 
+    href: "/refeicao", 
+    icon: <span className="text-amber-500 text-xl">🍽️</span>,
+    allowedTypes: ["gestor"] as const 
+  },
+  { 
+    name: "Administração", 
+    href: "/admin", 
+    icon: <span className="text-emerald-600 text-xl">🛡️</span>,
+    allowedTypes: ["admin"] as const
+  },
+  { 
+    name: "Relatórios", 
+    href: "/relatorios", 
+    icon: <span className="text-indigo-600 text-xl">📊</span>,
+    allowedTypes: ["admin"] as const
+  },
+  { 
+    name: "Gerenciar Comunicados", 
+    href: "/gerenciar-comunicados", 
+    icon: <span className="text-blue-600 text-xl">📢</span>,
+    allowedTypes: ["admin"] as const
+  },
+  { 
+    name: "Gerenciar Cardápio", 
+    href: "/gerenciar-cardapio", 
+    icon: <span className="text-purple-600 text-xl">🍽️</span>,
+    allowedTypes: ["admin"] as const
+  },
+  { 
+    name: "Gerenciar Cartões", 
+    href: "/gerenciar-cartoes", 
+    icon: <span className="text-green-600 text-xl">💳</span>,
+    allowedTypes: ["admin"] as const
+  },
+  { 
+    name: "Gerenciar Usuários", 
+    href: "/gerenciar-usuarios", 
+    icon: <span className="text-blue-600 text-xl">👥</span>,
+    allowedTypes: ["admin"] as const
+  },
+];
+
+export const getUserRoleLabel = (roleType: string): string => {
+  switch (roleType) {
     case 'admin':
       return 'Administrador';
-    case 'selecao':
-      return 'Seleção';
     case 'gestor':
       return 'Gestor';
+    case 'selecao':
+      return 'Seleção';
+    case 'comum':
     case 'colaborador':
-      return 'Colaborador';
     default:
       return 'Colaborador';
   }
 };
-
-export const navItems: NavItem[] = [
-  {
-    href: "/dashboard",
-    name: "Dashboard",
-    icon: <Home className="h-5 w-5" />,
-    allowedTypes: ['admin', 'selecao', 'gestor', 'colaborador', 'comum'],
-  },
-  {
-    href: "/perfil",
-    name: "Meu Perfil",
-    icon: <User className="h-5 w-5" />,
-    allowedTypes: ['admin', 'selecao', 'gestor', 'colaborador', 'comum'],
-  },
-  {
-    href: "/comunicados",
-    name: "Comunicados",
-    icon: <Bell className="h-5 w-5" />,
-    allowedTypes: ['admin', 'selecao', 'gestor', 'colaborador', 'comum'],
-  },
-  {
-    href: "/cardapio-semana",
-    name: "Cardápio",
-    icon: <Utensils className="h-5 w-5" />,
-    allowedTypes: ['admin', 'selecao', 'gestor', 'colaborador', 'comum'],
-  },
-  {
-    href: "/admin",
-    name: "Admin",
-    icon: <Users className="h-5 w-5" />,
-    allowedTypes: ['admin'],
-    children: [
-      {
-        href: "/gerenciar-usuarios",
-        name: "Gerenciar Usuários",
-        icon: <UserPlus className="h-5 w-5" />,
-        allowedTypes: ['admin'],
-      },
-      {
-        href: "/gerenciar-comunicados",
-        name: "Gerenciar Comunicados",
-        icon: <FileText className="h-5 w-5" />,
-        allowedTypes: ['admin'],
-      },
-      {
-        href: "/gerenciar-cardapio",
-        name: "Gerenciar Cardápio",
-        icon: <Utensils className="h-5 w-5" />,
-        allowedTypes: ['admin'],
-      },
-      {
-        href: "/gerenciar-cartoes",
-        name: "Gerenciar Cartões",
-        icon: <CreditCard className="h-5 w-5" />,
-        allowedTypes: ['admin'],
-      },
-      {
-        href: "/relatorios",
-        name: "Relatórios",
-        icon: <BarChart3 className="h-5 w-5" />,
-        allowedTypes: ['admin'],
-      },
-    ]
-  },
-  {
-    href: "/consulta-cartao",
-    name: "Consulta Cartão",
-    icon: <CreditCard className="h-5 w-5" />,
-    allowedTypes: ['admin', 'selecao'],
-  },
-  {
-    href: "/refeicao",
-    name: "Solicitação Refeição",
-    icon: <Utensils className="h-5 w-5" />,
-    allowedTypes: ['admin', 'refeicao'],
-  },
-  {
-    href: "/avaliacao",
-    name: "Avaliação Refeição",
-    icon: <Clock className="h-5 w-5" />,
-    allowedTypes: ['admin', 'refeicao'],
-  },
-  {
-    href: "#",
-    name: "Transporte",
-    icon: <Truck className="h-5 w-5" />,
-    allowedTypes: ['admin', 'selecao', 'gestor', 'colaborador', 'comum'],
-    children: [
-      {
-        href: "/transporte-rota",
-        name: "Transporte por Rota",
-        icon: <Route className="h-5 w-5" />,
-        allowedTypes: ['admin', 'selecao', 'gestor', 'colaborador', 'comum'],
-      },
-      {
-        href: "/transporte-12x36",
-        name: "Transporte 12x36",
-        icon: <Clock8 className="h-5 w-5" />,
-        allowedTypes: ['admin', 'selecao', 'gestor', 'colaborador', 'comum'],
-      },
-      {
-        href: "/mapa-rotas",
-        name: "Mapa de Rotas",
-        icon: <Map className="h-5 w-5" />,
-        allowedTypes: ['admin', 'selecao', 'gestor', 'colaborador', 'comum'],
-      },
-      {
-        href: "/oferta-caronas",
-        name: "Oferta de Caronas",
-        icon: <Car className="h-5 w-5" />,
-        allowedTypes: ['admin', 'selecao', 'gestor', 'colaborador', 'comum'],
-      },
-    ]
-  },
-  {
-    href: "#",
-    name: "Solicitações",
-    icon: <FileText className="h-5 w-5" />,
-    allowedTypes: ['admin', 'selecao', 'gestor', 'colaborador', 'comum'],
-    children: [
-      {
-        href: "/abono-ponto",
-        name: "Abono de Ponto",
-        icon: <Clock className="h-5 w-5" />,
-        allowedTypes: ['admin', 'selecao', 'gestor', 'colaborador', 'comum'],
-      },
-      {
-        href: "/adesao-cancelamento",
-        name: "Adesão/Cancelamento",
-        icon: <CreditCard className="h-5 w-5" />,
-        allowedTypes: ['admin', 'selecao', 'gestor', 'colaborador', 'comum'],
-      },
-      {
-        href: "/alteracao-endereco",
-        name: "Alteração de Endereço",
-        icon: <Home className="h-5 w-5" />,
-        allowedTypes: ['admin', 'selecao', 'gestor', 'colaborador', 'comum'],
-      },
-      {
-        href: "/mudanca-turno",
-        name: "Mudança de Turno",
-        icon: <Calendar className="h-5 w-5" />,
-        allowedTypes: ['admin', 'selecao', 'gestor', 'colaborador', 'comum'],
-      },
-      {
-        href: "/minhas-solicitacoes",
-        name: "Minhas Solicitações",
-        icon: <FileText className="h-5 w-5" />,
-        allowedTypes: ['admin', 'selecao', 'gestor', 'colaborador', 'comum'],
-      },
-    ]
-  },
-  {
-    href: "/plantao",
-    name: "Plantão",
-    icon: <Clock className="h-5 w-5" />,
-    allowedTypes: ['admin', 'selecao'],
-  },
-];
