@@ -12,7 +12,6 @@ export interface UserPreference {
 export const getUserPreferences = async (userId: number): Promise<UserPreference | null> => {
   try {
     console.log(`Fetching preferences for user ${userId}`);
-    // Don't use single() as it returns an error if no record is found
     const { data, error } = await supabase
       .from("user_preferences")
       .select("*")

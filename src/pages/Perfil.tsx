@@ -39,7 +39,6 @@ const ProfilePage = () => {
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Get user's first and second name
   const userName = user?.nome 
     ? user.nome.split(' ').slice(0, 2).join(' ')
     : '';
@@ -47,12 +46,10 @@ const ProfilePage = () => {
   useEffect(() => {
     if (!user) return;
     
-    // Fetch user photo and preference
     const fetchUserData = async () => {
       try {
         console.log("Fetching user data for user:", user.id);
         
-        // Fetch photo
         const { data: photoData, error: photoError } = await supabase
           .from("user_photos")
           .select("photo_url")
@@ -68,7 +65,6 @@ const ProfilePage = () => {
           console.log("No photo found for user", user.id);
         }
 
-        // Fetch light meal preference using the service
         const preferences = await getUserPreferences(user.id);
         console.log("User preferences retrieved:", preferences);
         if (preferences) {
@@ -82,7 +78,6 @@ const ProfilePage = () => {
     fetchUserData();
   }, [user]);
 
-  // Update badge template based on user data
   useEffect(() => {
     if (user?.rota && lightMeal) {
       setBadgeTemplate("badge_light_route");
@@ -105,14 +100,11 @@ const ProfilePage = () => {
       const loadingToast = toast.loading("Enviando foto...");
       console.log("Starting photo upload process for user:", user.id);
       
-      // Create a unique file name
       const fileName = `${user.id}_${Date.now()}.${file.name.split('.').pop()}`;
       
       console.log("Generated filename:", fileName);
       console.log("Storage bucket:", 'user_photos');
       
-      // Upload to Storage
-      console.log("Uploading file to Storage...");
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('user_photos')
         .upload(fileName, file, {
@@ -131,8 +123,6 @@ const ProfilePage = () => {
         
       console.log("Upload successful:", uploadData);
         
-      // Get public URL
-      console.log("Getting public URL...");
       const { data: publicUrlData } = await supabase.storage
         .from('user_photos')
         .getPublicUrl(fileName);
@@ -140,12 +130,9 @@ const ProfilePage = () => {
       const photoUrl = publicUrlData.publicUrl;
       console.log("Public URL:", photoUrl);
       
-      // Generate timestamp to avoid browser caching
       const timeStampedUrl = `${photoUrl}?t=${Date.now()}`;
       console.log("Timestamped URL:", timeStampedUrl);
       
-      // Check if user already has a photo entry
-      console.log("Checking if user already has a photo entry...");
       const { data: existingData, error: checkError } = await supabase
         .from('user_photos')
         .select()
@@ -164,14 +151,12 @@ const ProfilePage = () => {
       
       let updateResult;
       if (existingData && existingData.length > 0) {
-        // Update existing record
         console.log("Updating existing photo record...");
         updateResult = await supabase
           .from('user_photos')
           .update({ photo_url: timeStampedUrl, updated_at: new Date().toISOString() })
           .eq('user_id', user.id);
       } else {
-        // Insert new record
         console.log("Creating new photo record...");
         updateResult = await supabase
           .from('user_photos')
@@ -189,7 +174,6 @@ const ProfilePage = () => {
       
       console.log("Photo update successful:", updateResult);
       
-      // Update local state
       setPhotoUrl(timeStampedUrl);
       setPhotoDialogOpen(false);
       toast.dismiss(loadingToast);
@@ -199,7 +183,6 @@ const ProfilePage = () => {
       toast.error("Erro ao salvar foto. Tente novamente.");
     } finally {
       setIsUploading(false);
-      // Reset file input
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -208,10 +191,8 @@ const ProfilePage = () => {
 
   const handleLightMealChange = async (checked: boolean) => {
     if (!checked) {
-      // If turning off, no need for confirmation
       await updateUserLightMealPreference(false);
     } else {
-      // If turning on, show confirmation dialog
       setConfirmDialogOpen(true);
     }
   };
@@ -223,7 +204,6 @@ const ProfilePage = () => {
   
   const cancelLightMealChoice = () => {
     setConfirmDialogOpen(false);
-    // Reset checkbox state since user canceled
     setLightMeal(false);
   };
 
@@ -232,10 +212,8 @@ const ProfilePage = () => {
     
     console.log(`Updating user light meal preference: ${checked}`);
     
-    // Optimistically update UI
     setLightMeal(checked);
     
-    // Use the service to update the preference
     const success = await updateLightMealPreference(user.id, checked);
     console.log(`Preference update result: ${success}`);
     
@@ -244,7 +222,6 @@ const ProfilePage = () => {
         ? "Preferência de refeição light ativada!" 
         : "Preferência de refeição light desativada!");
     } else {
-      // Revert UI state on error
       setLightMeal(!checked);
     }
   };
@@ -267,17 +244,10 @@ const ProfilePage = () => {
             <h2 className="text-xl font-semibold mb-4">Crachá Digital</h2>
             
             <div className="relative w-full max-w-md mx-auto">
-              {/* Badge design based on the Teuto template */}
               <div className="relative aspect-[3/4] rounded-lg shadow-lg overflow-hidden">
-                {/* White background with subtle shadow */}
                 <div className="absolute inset-0 bg-white shadow-md z-0"></div>
-                
-                {/* Badge content */}
                 <div className="relative z-10 h-full flex flex-col items-center p-4">
-                  {/* Top clip section */}
                   <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-3 w-16 h-8 bg-white rounded shadow"></div>
-                  
-                  {/* Teuto Logo */}
                   <div className="mt-6 mb-2 flex items-center justify-center w-full">
                     <div className="flex flex-col items-center">
                       <div className="h-2 w-24 bg-[#0087c8] mb-2"></div>
@@ -290,8 +260,6 @@ const ProfilePage = () => {
                       <p>É DE CONFIANÇA</p>
                     </div>
                   </div>
-                  
-                  {/* Photo area with gray border */}
                   <div className="mt-6 w-40 h-40 bg-white border-4 border-gray-300 overflow-hidden">
                     {photoUrl ? (
                       <img 
@@ -305,13 +273,10 @@ const ProfilePage = () => {
                       </div>
                     )}
                   </div>
-                  
-                  {/* Bottom blue section with name */}
                   <div className="absolute bottom-0 left-0 right-0 bg-[#0087c8] h-20 flex flex-col items-center justify-center text-white p-3">
                     <h3 className="font-bold text-lg">{userName}</h3>
                     <p className="text-sm">{user?.setor || "Sem setor"}</p>
                     
-                    {/* Badges */}
                     <div className="mt-1 flex gap-2 flex-wrap justify-center">
                       {user?.rota && (
                         <Badge variant="outline" className="text-xs font-medium bg-white text-[#0087c8] border-white">
@@ -369,7 +334,6 @@ const ProfilePage = () => {
         </div>
       </div>
       
-      {/* Light Meal Confirmation Dialog */}
       <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -385,7 +349,6 @@ const ProfilePage = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Photo Upload Dialog */}
       <Dialog open={photoDialogOpen} onOpenChange={setPhotoDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
