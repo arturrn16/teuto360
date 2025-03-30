@@ -98,7 +98,7 @@ const ProfilePage = () => {
       
       // Create a unique file name
       const fileName = `${user.id}_${Date.now()}.${file.name.split('.').pop()}`;
-      const uniqueFileName = `photos/${user.id}/${fileName}`;
+      const uniqueFileName = `${user.id}/${fileName}`;
       
       // Upload to Storage
       const { data: uploadData, error: uploadError } = await supabase.storage
