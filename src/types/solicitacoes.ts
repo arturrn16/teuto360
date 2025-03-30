@@ -5,6 +5,7 @@ export interface BaseSolicitacao {
   status: string;
   created_at: string;
   updated_at: string;
+  motivo_comentario?: string;
 }
 
 export interface SolicitacaoAdesaoCancelamento extends BaseSolicitacao {

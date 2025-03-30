@@ -294,7 +294,6 @@ export type Database = {
           declaracao_url: string | null
           id: number
           motivo: string
-          motivo_comentario: string | null
           rua: string | null
           solicitante_id: number | null
           status: string | null
@@ -311,7 +310,6 @@ export type Database = {
           declaracao_url?: string | null
           id?: number
           motivo: string
-          motivo_comentario?: string | null
           rua?: string | null
           solicitante_id?: number | null
           status?: string | null
@@ -328,7 +326,6 @@ export type Database = {
           declaracao_url?: string | null
           id?: number
           motivo?: string
-          motivo_comentario?: string | null
           rua?: string | null
           solicitante_id?: number | null
           status?: string | null
