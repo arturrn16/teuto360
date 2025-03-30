@@ -1,5 +1,5 @@
 
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 interface GenerateTicketParams {
@@ -16,20 +16,12 @@ export const generateTicket = async ({ id, tipo }: GenerateTicketParams): Promis
 
     if (error) {
       console.error("Erro ao gerar ticket:", error);
-      toast({
-        variant: "destructive",
-        title: "Erro",
-        description: "Erro ao gerar ticket"
-      });
+      toast.error("Erro ao gerar ticket");
       return null;
     }
 
     if (!data.success) {
-      toast({
-        variant: "destructive",
-        title: "Erro",
-        description: data.error || "Erro ao gerar ticket"
-      });
+      toast.error(data.error || "Erro ao gerar ticket");
       return null;
     }
 
@@ -43,11 +35,7 @@ export const generateTicket = async ({ id, tipo }: GenerateTicketParams): Promis
     
     // Exit if no canvas context
     if (!ctx) {
-      toast({
-        variant: "destructive",
-        title: "Erro",
-        description: "Erro ao criar imagem do ticket"
-      });
+      toast.error("Erro ao criar imagem do ticket");
       return null;
     }
     
@@ -113,30 +101,19 @@ export const generateTicket = async ({ id, tipo }: GenerateTicketParams): Promis
     return canvas.toDataURL('image/jpeg', 0.8);
   } catch (error) {
     console.error("Erro ao gerar ticket:", error);
-    toast({
-      variant: "destructive",
-      title: "Erro",
-      description: "Erro ao gerar ticket"
-    });
+    toast.error("Erro ao gerar ticket");
     return null;
   }
 };
 
 export const downloadTicket = async (params: GenerateTicketParams): Promise<void> => {
-  toast({
-    title: "Informação",
-    description: "Gerando ticket..."
-  });
+  toast.info("Gerando ticket...");
   
   try {
     const dataUrl = await generateTicket(params);
     
     if (!dataUrl) {
-      toast({
-        variant: "destructive",
-        title: "Erro",
-        description: "Falha ao gerar ticket"
-      });
+      toast.error("Falha ao gerar ticket");
       return;
     }
     
@@ -148,16 +125,9 @@ export const downloadTicket = async (params: GenerateTicketParams): Promise<void
     link.click();
     document.body.removeChild(link);
     
-    toast({
-      title: "Sucesso",
-      description: "Ticket gerado com sucesso!"
-    });
+    toast.success("Ticket gerado com sucesso!");
   } catch (error) {
     console.error("Erro ao baixar ticket:", error);
-    toast({
-      variant: "destructive",
-      title: "Erro",
-      description: "Erro ao baixar ticket"
-    });
+    toast.error("Erro ao baixar ticket");
   }
 };

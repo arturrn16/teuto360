@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Camera, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
@@ -220,16 +220,27 @@ const Perfil = () => {
         
         <CardContent>
           <div className="flex flex-col items-center">
-            {/* Digital Badge */}
-            <div className="relative w-full max-w-md aspect-[3/4] border-2 border-gray-300 rounded-md overflow-hidden bg-white mb-6">
+            {/* New Badge Design */}
+            <div className="relative w-full max-w-md aspect-[3/4] bg-white rounded-lg shadow-md overflow-hidden mb-6">
+              {/* Badge Top Clip */}
+              <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-16 h-8 bg-white z-10 rounded-b-lg shadow-md"></div>
+              
               {/* Badge Header */}
-              <div className="bg-blue-700 p-4 flex items-center justify-center">
-                <h2 className="text-white font-bold text-xl">CRACHÁ DIGITAL</h2>
+              <div className="pt-8 px-6 text-center">
+                <div className="flex items-center justify-center space-x-2 mb-4">
+                  <div className="bg-blue-700 h-2 w-16"></div>
+                  <div className="text-blue-700 text-4xl font-bold">TEUTO</div>
+                  <div className="bg-blue-700 h-2 w-16"></div>
+                </div>
+                <div className="text-blue-700 text-sm font-medium mb-2">
+                  SE É TEUTO,<br />
+                  É DE CONFIANÇA
+                </div>
               </div>
               
               {/* Photo Area */}
-              <div className="relative flex justify-center p-6 pb-0">
-                <div className="w-48 h-48 relative border-4 border-blue-700 rounded-md overflow-hidden bg-gray-200">
+              <div className="flex justify-center px-6 py-4">
+                <div className="w-40 h-40 border-2 border-gray-300 rounded-md overflow-hidden flex items-center justify-center bg-gray-100">
                   {photoURL ? (
                     <img 
                       src={photoURL} 
@@ -237,19 +248,17 @@ const Perfil = () => {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                      <Avatar className="w-32 h-32">
-                        <AvatarFallback className="text-3xl bg-blue-100 text-blue-800">
-                          {user?.nome?.charAt(0) || '?'}
-                        </AvatarFallback>
-                      </Avatar>
-                    </div>
+                    <Avatar className="w-24 h-24">
+                      <AvatarFallback className="text-2xl bg-blue-100 text-blue-800">
+                        {user?.nome?.charAt(0) || '?'}
+                      </AvatarFallback>
+                    </Avatar>
                   )}
                 </div>
               </div>
               
               {/* User Info */}
-              <div className="bg-blue-600 text-white mt-6 p-4 text-center">
+              <div className="bg-blue-700 text-white p-4 text-center mt-auto">
                 <h3 className="text-xl font-bold">{formatName()}</h3>
                 <p className="text-sm">{user?.setor || 'Setor não informado'}</p>
               </div>
@@ -263,8 +272,13 @@ const Perfil = () => {
                 )}
                 
                 {lightMeal && (
-                  <Badge variant="success" className="text-xs">
-                    Refeição Light
+                  <Badge variant="success" className="text-xs flex items-center gap-1">
+                    <img 
+                      src="/lovable-uploads/c0e6ea3f-0825-4de4-893e-c9251e1051c5.png" 
+                      alt="Refeição Light" 
+                      className="w-5 h-5"
+                    />
+                    AUTORIZADO(A) REFEIÇÃO LIGHT
                   </Badge>
                 )}
               </div>
