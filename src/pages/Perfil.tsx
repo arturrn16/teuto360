@@ -7,7 +7,6 @@ import { Camera, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 
@@ -211,36 +210,48 @@ const Perfil = () => {
     }
   };
 
+  // Choose which badge to display based on user preferences and route
+  const getBadgeImage = () => {
+    if (lightMeal && user?.rota) {
+      return "/lovable-uploads/d91a5918-898b-483a-85e9-829a70669c2c.png"; // Badge with light meal and route
+    } else if (user?.rota) {
+      return "/lovable-uploads/924a98d9-dcd1-4e05-9c17-8efc7ccbe4ff.png"; // Badge with route only
+    } else {
+      return "/lovable-uploads/99b12f04-db2b-49c6-90cb-32977dab2321.png"; // Basic badge
+    }
+  };
+
   return (
     <Container className="py-4">
       <Card className="shadow-md">
         <CardHeader className="pb-2">
-          <CardTitle className="text-xl">Meu Perfil</CardTitle>
+          <CardTitle className="text-xl">Meu Crachá Digital</CardTitle>
         </CardHeader>
         
         <CardContent>
           <div className="flex flex-col items-center">
-            {/* New Badge Design */}
-            <div className="relative w-full max-w-md aspect-[3/4] bg-white rounded-lg shadow-md overflow-hidden mb-6">
-              {/* Badge Top Clip */}
-              <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-16 h-8 bg-white z-10 rounded-b-lg shadow-md"></div>
-              
-              {/* Badge Header */}
-              <div className="pt-8 px-6 text-center">
-                <div className="flex items-center justify-center space-x-2 mb-4">
-                  <div className="bg-blue-700 h-2 w-16"></div>
-                  <div className="text-blue-700 text-4xl font-bold">TEUTO</div>
-                  <div className="bg-blue-700 h-2 w-16"></div>
-                </div>
-                <div className="text-blue-700 text-sm font-medium mb-2">
-                  SE É TEUTO,<br />
-                  É DE CONFIANÇA
-                </div>
-              </div>
-              
-              {/* Photo Area */}
-              <div className="flex justify-center px-6 py-4">
-                <div className="w-40 h-40 border-2 border-gray-300 rounded-md overflow-hidden flex items-center justify-center bg-gray-100">
+            {/* Badge Display */}
+            <div className="relative w-full max-w-md mb-6">
+              {/* Base Badge Image */}
+              <div className="relative">
+                <img 
+                  src={getBadgeImage()} 
+                  alt="Crachá Digital" 
+                  className="w-full h-auto"
+                />
+                
+                {/* User Photo */}
+                <div className="absolute" style={{ 
+                  top: '47%', 
+                  left: '50%', 
+                  transform: 'translate(-50%, -50%)',
+                  width: '42%',
+                  height: '28%',
+                  overflow: 'hidden',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
                   {photoURL ? (
                     <img 
                       src={photoURL} 
@@ -248,38 +259,33 @@ const Perfil = () => {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <Avatar className="w-24 h-24">
-                      <AvatarFallback className="text-2xl bg-blue-100 text-blue-800">
+                    <Avatar className="w-full h-full">
+                      <AvatarFallback className="text-4xl bg-gray-100 text-blue-800 flex items-center justify-center h-full">
                         {user?.nome?.charAt(0) || '?'}
                       </AvatarFallback>
                     </Avatar>
                   )}
                 </div>
-              </div>
-              
-              {/* User Info */}
-              <div className="bg-blue-700 text-white p-4 text-center mt-auto">
-                <h3 className="text-xl font-bold">{formatName()}</h3>
-                <p className="text-sm">{user?.setor || 'Setor não informado'}</p>
-              </div>
-              
-              {/* Badge Footer with Route Info */}
-              <div className="p-4 flex flex-col items-center">
+
+                {/* Add User Name and Details to the Blue Footer */}
+                <div className="absolute bottom-0 left-0 right-0 h-[20%] flex items-center justify-center">
+                  <div className="text-center text-white">
+                    <h3 className="text-xl font-bold">{formatName()}</h3>
+                    <p className="text-sm">{user?.setor || 'Setor não informado'}</p>
+                  </div>
+                </div>
+
+                {/* Show Route Code if Available */}
                 {user?.rota && (
-                  <Badge variant="secondary" className="mb-2 text-xs">
-                    Rota: {user.rota}
-                  </Badge>
-                )}
-                
-                {lightMeal && (
-                  <Badge variant="success" className="text-xs flex items-center gap-1">
-                    <img 
-                      src="/lovable-uploads/c0e6ea3f-0825-4de4-893e-c9251e1051c5.png" 
-                      alt="Refeição Light" 
-                      className="w-5 h-5"
-                    />
-                    AUTORIZADO(A) REFEIÇÃO LIGHT
-                  </Badge>
+                  <div className="absolute" style={{
+                    top: '17%',
+                    right: '14%',
+                    fontSize: '2rem',
+                    color: 'white',
+                    fontWeight: 'bold'
+                  }}>
+                    {user.rota}
+                  </div>
                 )}
               </div>
             </div>
