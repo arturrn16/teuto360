@@ -1,4 +1,3 @@
-
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { TEUTO_LOGO } from "@/App";
@@ -6,14 +5,13 @@ import { TEUTO_LOGO } from "@/App";
 interface GenerateTicketParams {
   id: number;
   tipo: 'rota' | '12x36' | 'refeicao';
-  colaboradorIndex?: number;
 }
 
-export const generateTicket = async ({ id, tipo, colaboradorIndex }: GenerateTicketParams): Promise<string | null> => {
+export const generateTicket = async ({ id, tipo }: GenerateTicketParams): Promise<string | null> => {
   try {
     // Call the gerar-ticket edge function
     const { data, error } = await supabase.functions.invoke('gerar-ticket', {
-      body: { id, tipo, colaboradorIndex }
+      body: { id, tipo }
     });
 
     if (error) {
@@ -33,12 +31,6 @@ export const generateTicket = async ({ id, tipo, colaboradorIndex }: GenerateTic
         description: data.error || "Erro ao gerar ticket"
       });
       return null;
-    }
-
-    // For refeicao tickets, if no colaboradorIndex was provided, we're just getting
-    // the number of collaborators for later individual ticket generation
-    if (tipo === 'refeicao' && colaboradorIndex === undefined && data.ticket.totalColaboradores > 0) {
-      return JSON.stringify(data.ticket);
     }
 
     // Create a canvas to generate JPEG from ticket data
@@ -88,10 +80,7 @@ export const generateTicket = async ({ id, tipo, colaboradorIndex }: GenerateTic
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 24px Arial';
         ctx.textAlign = 'center';
-        
-        // Use the formatted type from the backend if available
-        const tipoExibicao = data.ticket.tipoFormatado || tipo.toUpperCase();
-        ctx.fillText('TICKET DE ' + tipoExibicao, canvas.width / 2 + 30, 45);
+        ctx.fillText('TICKET DE ' + tipo.toUpperCase(), canvas.width / 2 + 30, 45);
         
         // Content
         ctx.fillStyle = '#1f2937';
@@ -102,56 +91,34 @@ export const generateTicket = async ({ id, tipo, colaboradorIndex }: GenerateTic
         const y_start = 90;
         const line_height = 25;
         
-        // Format the date
-        const formatarData = (dataStr) => {
-          if (!dataStr) return 'N/A';
-          const data = new Date(dataStr);
-          return data.toLocaleDateString('pt-BR');
-        };
-        
         // Different content based on ticket type
         if (tipo === 'rota') {
           // Simplified route ticket with just matrícula, name, route, period and status
           ctx.fillText(`Matrícula: ${ticketData.matricula || 'N/A'}`, 30, y_start);
           ctx.fillText(`Colaborador: ${ticketData.colaborador_nome}`, 30, y_start + line_height);
           ctx.fillText(`Rota: ${ticketData.rota}`, 30, y_start + line_height * 2);
-          ctx.fillText(`Período: ${formatarData(ticketData.periodo_inicio)} a ${formatarData(ticketData.periodo_fim)}`, 30, y_start + line_height * 3);
-          ctx.fillText(`Data da Solicitação: ${formatarData(data.ticket.dataSolicitacao)}`, 30, y_start + line_height * 4);
-          ctx.fillText(`Status: ${ticketData.status.toUpperCase()}`, 30, y_start + line_height * 5);
+          ctx.fillText(`Período: ${new Date(ticketData.periodo_inicio).toLocaleDateString()} a ${new Date(ticketData.periodo_fim).toLocaleDateString()}`, 30, y_start + line_height * 3);
+          ctx.fillText(`Status: ${ticketData.status.toUpperCase()}`, 30, y_start + line_height * 4);
         } else if (tipo === '12x36') {
           ctx.fillText(`Colaborador: ${ticketData.colaborador_nome}`, 30, y_start);
           ctx.fillText(`Telefone: ${ticketData.telefone}`, 30, y_start + line_height);
           ctx.fillText(`Endereço: ${ticketData.endereco}`, 30, y_start + line_height * 2);
           ctx.fillText(`Rota: ${ticketData.rota}`, 30, y_start + line_height * 3);
-          ctx.fillText(`Data de Início: ${formatarData(ticketData.data_inicio)}`, 30, y_start + line_height * 4);
-          ctx.fillText(`Data da Solicitação: ${formatarData(data.ticket.dataSolicitacao)}`, 30, y_start + line_height * 5);
-          ctx.fillText(`Status: ${ticketData.status.toUpperCase()}`, 30, y_start + line_height * 6);
+          ctx.fillText(`Data de Início: ${new Date(ticketData.data_inicio).toLocaleDateString()}`, 30, y_start + line_height * 4);
+          ctx.fillText(`Status: ${ticketData.status.toUpperCase()}`, 30, y_start + line_height * 5);
         } else if (tipo === 'refeicao') {
-          // Para tickets individuais de refeição, mostrar apenas o colaborador específico
-          if (ticketData.colaborador_atual) {
-            ctx.fillText(`Colaborador: ${ticketData.colaborador_atual.nome}`, 30, y_start);
-            ctx.fillText(`Matrícula: ${ticketData.colaborador_atual.matricula}`, 30, y_start + line_height);
-            ctx.fillText(`Tipo de Refeição: ${ticketData.tipo_refeicao}`, 30, y_start + line_height * 2);
-            ctx.fillText(`Data da Refeição: ${formatarData(ticketData.data_refeicao)}`, 30, y_start + line_height * 3);
-            ctx.fillText(`Data da Solicitação: ${formatarData(data.ticket.dataSolicitacao)}`, 30, y_start + line_height * 4);
-            ctx.fillText(`Status: ${ticketData.status.toUpperCase()}`, 30, y_start + line_height * 5);
-          } else {
-            // Se não tiver colaborador_atual, mostrar todos (comportamento original)
-            const colaboradoresText = ticketData.colaboradores.map(c => `${c.nome} (${c.matricula})`).join(', ');
-            ctx.fillText(`Colaboradores: ${colaboradoresText}`, 30, y_start);
-            ctx.fillText(`Tipo de Refeição: ${ticketData.tipo_refeicao}`, 30, y_start + line_height);
-            ctx.fillText(`Data da Refeição: ${formatarData(ticketData.data_refeicao)}`, 30, y_start + line_height * 2);
-            ctx.fillText(`Data da Solicitação: ${formatarData(data.ticket.dataSolicitacao)}`, 30, y_start + line_height * 3);
-            ctx.fillText(`Status: ${ticketData.status.toUpperCase()}`, 30, y_start + line_height * 4);
-          }
+          ctx.fillText(`Colaborador: ${ticketData.colaboradores.join(', ')}`, 30, y_start);
+          ctx.fillText(`Tipo de Refeição: ${ticketData.tipo_refeicao}`, 30, y_start + line_height);
+          ctx.fillText(`Data da Refeição: ${new Date(ticketData.data_refeicao).toLocaleDateString()}`, 30, y_start + line_height * 2);
+          ctx.fillText(`Status: ${ticketData.status.toUpperCase()}`, 30, y_start + line_height * 3);
         }
         
         // Footer message
         ctx.font = 'italic 14px Arial';
         if (tipo === 'rota' || tipo === '12x36') {
-          ctx.fillText("Apresente este ticket ao motorista responsável pela rota", 30, y_start + line_height * 7);
+          ctx.fillText("Apresente este ticket ao motorista responsável pela rota", 30, y_start + line_height * 6);
         } else {
-          ctx.fillText("Apresente este ticket no refeitório", 30, y_start + line_height * 6);
+          ctx.fillText("Apresente este ticket no refeitório", 30, y_start + line_height * 5);
         }
         
         // Footer with slogan
@@ -176,10 +143,7 @@ export const generateTicket = async ({ id, tipo, colaboradorIndex }: GenerateTic
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 24px Arial';
         ctx.textAlign = 'center';
-        
-        // Use the formatted type from the backend if available
-        const tipoExibicao = data.ticket.tipoFormatado || tipo.toUpperCase();
-        ctx.fillText('TICKET DE ' + tipoExibicao, canvas.width / 2, 45);
+        ctx.fillText('TICKET DE ' + tipo.toUpperCase(), canvas.width / 2, 45);
         
         // Content
         ctx.fillStyle = '#1f2937';
@@ -190,55 +154,33 @@ export const generateTicket = async ({ id, tipo, colaboradorIndex }: GenerateTic
         const y_start = 90;
         const line_height = 25;
         
-        // Format the date
-        const formatarData = (dataStr) => {
-          if (!dataStr) return 'N/A';
-          const data = new Date(dataStr);
-          return data.toLocaleDateString('pt-BR');
-        };
-        
         // Different content based on ticket type
         if (tipo === 'rota') {
           ctx.fillText(`Matrícula: ${ticketData.matricula || 'N/A'}`, 30, y_start);
           ctx.fillText(`Colaborador: ${ticketData.colaborador_nome}`, 30, y_start + line_height);
           ctx.fillText(`Rota: ${ticketData.rota}`, 30, y_start + line_height * 2);
-          ctx.fillText(`Período: ${formatarData(ticketData.periodo_inicio)} a ${formatarData(ticketData.periodo_fim)}`, 30, y_start + line_height * 3);
-          ctx.fillText(`Data da Solicitação: ${formatarData(data.ticket.dataSolicitacao)}`, 30, y_start + line_height * 4);
-          ctx.fillText(`Status: ${ticketData.status.toUpperCase()}`, 30, y_start + line_height * 5);
+          ctx.fillText(`Período: ${new Date(ticketData.periodo_inicio).toLocaleDateString()} a ${new Date(ticketData.periodo_fim).toLocaleDateString()}`, 30, y_start + line_height * 3);
+          ctx.fillText(`Status: ${ticketData.status.toUpperCase()}`, 30, y_start + line_height * 4);
         } else if (tipo === '12x36') {
           ctx.fillText(`Colaborador: ${ticketData.colaborador_nome}`, 30, y_start);
           ctx.fillText(`Telefone: ${ticketData.telefone}`, 30, y_start + line_height);
           ctx.fillText(`Endereço: ${ticketData.endereco}`, 30, y_start + line_height * 2);
           ctx.fillText(`Rota: ${ticketData.rota}`, 30, y_start + line_height * 3);
-          ctx.fillText(`Data de Início: ${formatarData(ticketData.data_inicio)}`, 30, y_start + line_height * 4);
-          ctx.fillText(`Data da Solicitação: ${formatarData(data.ticket.dataSolicitacao)}`, 30, y_start + line_height * 5);
-          ctx.fillText(`Status: ${ticketData.status.toUpperCase()}`, 30, y_start + line_height * 6);
+          ctx.fillText(`Data de Início: ${new Date(ticketData.data_inicio).toLocaleDateString()}`, 30, y_start + line_height * 4);
+          ctx.fillText(`Status: ${ticketData.status.toUpperCase()}`, 30, y_start + line_height * 5);
         } else if (tipo === 'refeicao') {
-          // Para tickets individuais de refeição, mostrar apenas o colaborador específico
-          if (ticketData.colaborador_atual) {
-            ctx.fillText(`Colaborador: ${ticketData.colaborador_atual.nome}`, 30, y_start);
-            ctx.fillText(`Matrícula: ${ticketData.colaborador_atual.matricula}`, 30, y_start + line_height);
-            ctx.fillText(`Tipo de Refeição: ${ticketData.tipo_refeicao}`, 30, y_start + line_height * 2);
-            ctx.fillText(`Data da Refeição: ${formatarData(ticketData.data_refeicao)}`, 30, y_start + line_height * 3);
-            ctx.fillText(`Data da Solicitação: ${formatarData(data.ticket.dataSolicitacao)}`, 30, y_start + line_height * 4);
-            ctx.fillText(`Status: ${ticketData.status.toUpperCase()}`, 30, y_start + line_height * 5);
-          } else {
-            // Se não tiver colaborador_atual, mostrar todos (comportamento original)
-            const colaboradoresText = ticketData.colaboradores.map(c => `${c.nome} (${c.matricula})`).join(', ');
-            ctx.fillText(`Colaboradores: ${colaboradoresText}`, 30, y_start);
-            ctx.fillText(`Tipo de Refeição: ${ticketData.tipo_refeicao}`, 30, y_start + line_height);
-            ctx.fillText(`Data da Refeição: ${formatarData(ticketData.data_refeicao)}`, 30, y_start + line_height * 2);
-            ctx.fillText(`Data da Solicitação: ${formatarData(data.ticket.dataSolicitacao)}`, 30, y_start + line_height * 3);
-            ctx.fillText(`Status: ${ticketData.status.toUpperCase()}`, 30, y_start + line_height * 4);
-          }
+          ctx.fillText(`Colaborador: ${ticketData.colaboradores.join(', ')}`, 30, y_start);
+          ctx.fillText(`Tipo de Refeição: ${ticketData.tipo_refeicao}`, 30, y_start + line_height);
+          ctx.fillText(`Data da Refeição: ${new Date(ticketData.data_refeicao).toLocaleDateString()}`, 30, y_start + line_height * 2);
+          ctx.fillText(`Status: ${ticketData.status.toUpperCase()}`, 30, y_start + line_height * 3);
         }
         
         // Footer message
         ctx.font = 'italic 14px Arial';
         if (tipo === 'rota' || tipo === '12x36') {
-          ctx.fillText("Apresente este ticket ao motorista responsável pela rota", 30, y_start + line_height * 7);
+          ctx.fillText("Apresente este ticket ao motorista responsável pela rota", 30, y_start + line_height * 6);
         } else {
-          ctx.fillText("Apresente este ticket no refeitório", 30, y_start + line_height * 6);
+          ctx.fillText("Apresente este ticket no refeitório", 30, y_start + line_height * 5);
         }
         
         // Return dataURL
@@ -263,56 +205,6 @@ export const downloadTicket = async (params: GenerateTicketParams): Promise<void
   });
   
   try {
-    // Para refeição, primeiro obtemos o número total de colaboradores
-    if (params.tipo === 'refeicao' && params.colaboradorIndex === undefined) {
-      const dataJson = await generateTicket(params);
-      
-      if (!dataJson) {
-        toast({
-          variant: "destructive",
-          title: "Erro",
-          description: "Falha ao gerar ticket"
-        });
-        return;
-      }
-      
-      const data = JSON.parse(dataJson);
-      const totalColaboradores = data.totalColaboradores;
-      
-      // Se tiver mais de um colaborador, gera ticket individual para cada um
-      if (totalColaboradores > 0) {
-        toast({
-          title: "Informação",
-          description: `Gerando ${totalColaboradores} tickets individuais...`
-        });
-        
-        for (let i = 0; i < totalColaboradores; i++) {
-          // Generate and download individual ticket
-          const dataUrl = await generateTicket({ 
-            ...params, 
-            colaboradorIndex: i 
-          });
-          
-          if (!dataUrl) continue;
-          
-          // Create a temporary link to download the image
-          const link = document.createElement('a');
-          link.href = dataUrl;
-          link.download = `ticket-${params.tipo}-${params.id}-colaborador-${i+1}.jpg`;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-        }
-        
-        toast({
-          title: "Sucesso",
-          description: `${totalColaboradores} tickets gerados com sucesso!`
-        });
-        return;
-      }
-    }
-    
-    // For other types or single collaborator, proceed with normal flow
     const dataUrl = await generateTicket(params);
     
     if (!dataUrl) {

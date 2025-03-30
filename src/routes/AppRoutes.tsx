@@ -14,7 +14,6 @@ const NotFound = lazy(() => import('@/pages/NotFound'));
 // Admin pages
 const Admin = lazy(() => import('@/pages/Admin'));
 const Relatorios = lazy(() => import('@/pages/Relatorios'));
-const RelatoriosRefeicao = lazy(() => import('@/pages/RelatoriosRefeicao'));
 const GerenciarComunicados = lazy(() => import('@/pages/GerenciarComunicados'));
 const GerenciarCardapio = lazy(() => import('@/pages/GerenciarCardapio'));
 const GerenciarCartoes = lazy(() => import('@/pages/GerenciarCartoes'));
@@ -61,7 +60,6 @@ const routeGroups = {
   admin: [
     { path: '/admin', component: Admin },
     { path: '/relatorios', component: Relatorios },
-    { path: '/relatorios-refeicao', component: RelatoriosRefeicao },
     { path: '/gerenciar-comunicados', component: GerenciarComunicados },
     { path: '/gerenciar-cardapio', component: GerenciarCardapio },
     { path: '/gerenciar-cartoes', component: GerenciarCartoes },

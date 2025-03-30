@@ -23,7 +23,7 @@ export const navItems: NavItem[] = [
     name: "Minhas Solicitações", 
     href: "/minhas-solicitacoes", 
     icon: <span className="text-amber-600 text-xl">📋</span>,
-    allowedTypes: ["selecao", "colaborador", "comum", "gestor"] as const
+    allowedTypes: ["selecao", "colaborador", "comum"] as const
   },
   { 
     name: "Transporte", 
@@ -142,13 +142,7 @@ export const navItems: NavItem[] = [
     name: "Relatórios", 
     href: "/relatorios", 
     icon: <span className="text-indigo-600 text-xl">📊</span>,
-    allowedTypes: ["admin"] as const  // Removed "gestor" from relatórios
-  },
-  { 
-    name: "Relatórios de Refeição", 
-    href: "/relatorios-refeicao", 
-    icon: <span className="text-pink-600 text-xl">🍲</span>,
-    allowedTypes: ["admin"] as const  // New option for meal reports, admin only
+    allowedTypes: ["admin"] as const
   },
   { 
     name: "Gerenciar Comunicados", 

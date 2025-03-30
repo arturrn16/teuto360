@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -23,14 +22,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon, PlusCircle, Trash2, ArrowLeft } from "lucide-react";
+import { CalendarIcon, PlusCircle, Trash2 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { FormLayout } from "@/components/FormLayout";
 
 interface FormValues {
-  colaboradores: { nome: string; matricula: string }[];
+  colaboradores: { nome: string }[];
   tipoRefeicao: "Almoço" | "Jantar" | "Lanche" | "Ceia";
   dataRefeicao: Date;
 }
@@ -42,7 +40,7 @@ const Refeicao = () => {
   
   const form = useForm<FormValues>({
     defaultValues: {
-      colaboradores: [{ nome: "", matricula: "" }],
+      colaboradores: [{ nome: "" }],
       tipoRefeicao: "Almoço",
       dataRefeicao: new Date(),
     },
@@ -65,25 +63,20 @@ const Refeicao = () => {
       return;
     }
     
-    if (data.colaboradores.some(col => !col.nome.trim() || !col.matricula.trim())) {
-      toast.error("Preencha o nome e a matrícula de todos os colaboradores");
+    if (data.colaboradores.some(col => !col.nome.trim())) {
+      toast.error("Preencha o nome de todos os colaboradores");
       return;
     }
     
     setIsSubmitting(true);
     
     try {
-      // Certifique-se de que a data seja corretamente tratada nos diferentes fusos horários
-      const dataToSubmit = {
+      const { error } = await supabase.from("solicitacoes_refeicao").insert({
         solicitante_id: user.id,
-        colaboradores: data.colaboradores,
+        colaboradores: data.colaboradores.map(c => c.nome),
         tipo_refeicao: data.tipoRefeicao,
         data_refeicao: formatDate(data.dataRefeicao),
-      };
-      
-      const { error } = await supabase
-        .from("solicitacoes_refeicao")
-        .insert(dataToSubmit);
+      });
       
       if (error) {
         console.error("Erro ao enviar solicitação:", error);
@@ -101,26 +94,11 @@ const Refeicao = () => {
     }
   };
   
-  const handleBack = () => {
-    navigate(-1); // Navigate back to the previous page
-  };
-  
   return (
     <FormLayout
       title="Solicitação de Refeição"
       description="Preencha o formulário para solicitar refeições para colaboradores"
     >
-      <div className="mb-4">
-        <Button 
-          variant="ghost" 
-          onClick={handleBack} 
-          className="flex items-center text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Voltar
-        </Button>
-      </div>
-      
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div className="space-y-4">
@@ -130,7 +108,7 @@ const Refeicao = () => {
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => append({ nome: "", matricula: "" })}
+                onClick={() => append({ nome: "" })}
                 className="flex items-center gap-1"
               >
                 <PlusCircle className="h-4 w-4" />
@@ -139,12 +117,12 @@ const Refeicao = () => {
             </div>
             
             {fields.map((field, index) => (
-              <div key={field.id} className="grid grid-cols-1 md:grid-cols-5 gap-2">
+              <div key={field.id} className="flex items-center gap-2">
                 <FormField
                   control={form.control}
                   name={`colaboradores.${index}.nome`}
                   render={({ field }) => (
-                    <FormItem className="col-span-1 md:col-span-3">
+                    <FormItem className="flex-1">
                       <FormControl>
                         <Input 
                           placeholder="Nome do colaborador" 
@@ -156,36 +134,16 @@ const Refeicao = () => {
                     </FormItem>
                   )}
                 />
-                
-                <FormField
-                  control={form.control}
-                  name={`colaboradores.${index}.matricula`}
-                  render={({ field }) => (
-                    <FormItem className="col-span-1 md:col-span-1">
-                      <FormControl>
-                        <Input 
-                          placeholder="Matrícula" 
-                          {...field} 
-                          className="form-field-input"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
                 {fields.length > 1 && (
-                  <div className="flex items-center justify-end col-span-1">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => remove(index)}
-                      className="text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => remove(index)}
+                    className="text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 )}
               </div>
             ))}
@@ -236,7 +194,7 @@ const Refeicao = () => {
                           className="form-date-input"
                         >
                           {field.value ? (
-                            format(field.value, "dd/MM/yyyy", { locale: ptBR })
+                            format(field.value, "dd/MM/yyyy")
                           ) : (
                             <span>Selecione a data</span>
                           )}
@@ -251,8 +209,6 @@ const Refeicao = () => {
                         onSelect={field.onChange}
                         disabled={(date) => date < new Date()}
                         initialFocus
-                        locale={ptBR}
-                        className="p-3 pointer-events-auto"
                       />
                     </PopoverContent>
                   </Popover>

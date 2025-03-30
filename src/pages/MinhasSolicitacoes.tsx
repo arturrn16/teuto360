@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { 
@@ -46,7 +45,7 @@ interface SolicitacaoRefeicao extends BaseSolicitacao {
   tipo: string;
   tipo_refeicao: string;
   data_refeicao: string;
-  colaboradores: { nome: string; matricula: string }[];
+  colaboradores: string[];
 }
 
 interface SolicitacaoTransporte extends BaseSolicitacao {
@@ -100,10 +99,7 @@ const MinhasSolicitacoes = () => {
         let tables = [];
         
         if (user.tipo_usuario === 'gestor') {
-          tables = [
-            { table: 'solicitacoes_refeicao', tipo: 'Refeição' },
-            { table: 'solicitacoes_mudanca_turno', tipo: 'Mudança de Turno' },
-          ];
+          tables = [{ table: 'solicitacoes_refeicao', tipo: 'Refeição' }];
         } 
         else if (user.tipo_usuario === 'selecao') {
           tables = [
@@ -129,7 +125,7 @@ const MinhasSolicitacoes = () => {
             if (table === 'solicitacoes_refeicao') {
               const { data, error } = await (supabase as any)
                 .from(table)
-                .select('id, created_at, status, tipo_refeicao, data_refeicao, colaboradores, motivo_comentario')
+                .select('id, created_at, status, tipo_refeicao, data_refeicao, colaboradores')
                 .eq('solicitante_id', user.id)
                 .order('created_at', { ascending: false });
 
@@ -146,8 +142,7 @@ const MinhasSolicitacoes = () => {
                   tipo: tipo,
                   tipo_refeicao: item.tipo_refeicao,
                   data_refeicao: item.data_refeicao,
-                  colaboradores: item.colaboradores || [],
-                  motivo_comentario: item.motivo_comentario,
+                  colaboradores: item.colaboradores,
                   solicitante_id: user.id,
                   updated_at: item.updated_at || item.created_at,
                 }));
@@ -342,8 +337,6 @@ const MinhasSolicitacoes = () => {
                   nova_rota: item.nova_rota || '',
                   nome_gestor: item.nome_gestor || '',
                   motivo: item.motivo || '',
-                  motivo_rejeicao: item.motivo_rejeicao,
-                  motivo_comentario: item.motivo_comentario,
                   status: item.status || 'pendente',
                   created_at: item.created_at,
                   updated_at: item.updated_at || item.created_at,
@@ -490,21 +483,10 @@ const MinhasSolicitacoes = () => {
             <p className="text-sm text-gray-500">Colaboradores</p>
             <ul className="list-disc list-inside mt-2">
               {solicitacaoSelecionada.colaboradores.map((colaborador, index) => (
-                <li key={index} className="font-medium">
-                  {typeof colaborador === 'string' 
-                    ? colaborador 
-                    : `${colaborador.nome} - Matrícula: ${colaborador.matricula}`}
-                </li>
+                <li key={index} className="font-medium">{colaborador}</li>
               ))}
             </ul>
           </div>
-          
-          {solicitacaoSelecionada.motivo_comentario && (
-            <div className="mt-4 p-3 border border-blue-200 bg-blue-50 rounded-md">
-              <h3 className="text-sm font-medium text-blue-600">Comentário</h3>
-              <p className="text-blue-700">{solicitacaoSelecionada.motivo_comentario}</p>
-            </div>
-          )}
         </>
       );
     } else if (isTransporteSolicitacao(solicitacaoSelecionada)) {

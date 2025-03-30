@@ -1,17 +1,17 @@
+
 export interface BaseSolicitacao {
   id: number;
   solicitante_id: number;
   status: string;
   created_at: string;
   updated_at: string;
-  motivo_comentario?: string;
-  motivo_rejeicao?: string;
 }
 
 export interface SolicitacaoAdesaoCancelamento extends BaseSolicitacao {
   tipo_solicitacao: "Aderir" | "Cancelar";
   tipo_transporte: "Fretado" | "ValeTransporte";
   motivo: string;
+  motivo_rejeicao?: string;
   cep?: string;
   rua?: string;
   bairro?: string;
@@ -80,13 +80,8 @@ export interface SolicitacaoTransporte12x36 extends BaseSolicitacao {
   data_inicio: string;
 }
 
-export interface ColaboradorRefeicao {
-  nome: string;
-  matricula: string;
-}
-
 export interface SolicitacaoRefeicao extends BaseSolicitacao {
-  colaboradores: ColaboradorRefeicao[];
+  colaboradores: string[];
   tipo_refeicao: string;
   data_refeicao: string;
 }

@@ -7,7 +7,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SolicitacaoAdesaoCancelamento } from "@/types/solicitacoes";
 import { Download } from "lucide-react";
-import { AdminActionDialog } from "./AdminActionDialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
 interface SolicitacaoAdesaoCancelamentoViewProps {
   solicitacao: SolicitacaoAdesaoCancelamento;
@@ -19,28 +20,25 @@ export function SolicitacaoAdesaoCancelamentoView({
   onStatusChange 
 }: SolicitacaoAdesaoCancelamentoViewProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [isApproveDialogOpen, setIsApproveDialogOpen] = useState(false);
-  const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
+  const [motivo, setMotivo] = useState("");
 
-  const handleUpdateStatus = async (newStatus: string, comentario: string = "") => {
+  const handleUpdateStatus = async (newStatus: string) => {
     setIsLoading(true);
     try {
-      const updateData: { 
-        status: string; 
-        motivo_rejeicao?: string;
-        motivo_comentario?: string;
-      } = { 
+      // Verificando se há motivo em caso de rejeição
+      if (newStatus === 'rejeitada' && !motivo.trim()) {
+        toast.error("É necessário informar o motivo da rejeição");
+        setIsLoading(false);
+        return;
+      }
+      
+      const updateData: { status: string; motivo_rejeicao?: string } = { 
         status: newStatus 
       };
       
-      // Adicionar motivo apenas se for rejeitada e houver comentário
-      if (newStatus === 'rejeitada' && comentario.trim()) {
-        updateData.motivo_rejeicao = comentario;
-      }
-      
-      // Adicionar comentário se houver
-      if (comentario.trim()) {
-        updateData.motivo_comentario = comentario;
+      // Adicionar motivo apenas se for rejeitada
+      if (newStatus === 'rejeitada') {
+        updateData.motivo_rejeicao = motivo;
       }
       
       const { error } = await supabase
@@ -158,13 +156,6 @@ export function SolicitacaoAdesaoCancelamentoView({
           </div>
         )}
 
-        {solicitacao.motivo_comentario && (
-          <div className="mt-4 p-3 border border-blue-200 bg-blue-50 rounded-md">
-            <h3 className="text-sm font-medium text-blue-600">Comentário</h3>
-            <p className="text-blue-700">{solicitacao.motivo_comentario}</p>
-          </div>
-        )}
-
         {solicitacao.declaracao_url && (
           <div className="pt-2">
             <Button 
@@ -194,45 +185,36 @@ export function SolicitacaoAdesaoCancelamentoView({
       </CardContent>
       
       {solicitacao.status === "pendente" && (
-        <CardFooter className="flex justify-end gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setIsRejectDialogOpen(true)}
-            disabled={isLoading}
-          >
-            Rejeitar
-          </Button>
-          <Button
-            onClick={() => setIsApproveDialogOpen(true)}
-            disabled={isLoading}
-          >
-            Aprovar
-          </Button>
+        <CardFooter className="flex flex-col gap-4">
+          {/* Campo de motivo para rejeição */}
+          <div className="w-full">
+            <Label htmlFor="motivo_rejeicao">Motivo para rejeição (obrigatório caso rejeite)</Label>
+            <Textarea 
+              id="motivo_rejeicao"
+              placeholder="Informe o motivo caso decida rejeitar a solicitação"
+              value={motivo}
+              onChange={(e) => setMotivo(e.target.value)}
+              className="mt-1"
+            />
+          </div>
+          
+          <div className="flex justify-end gap-2 w-full">
+            <Button
+              variant="outline"
+              onClick={() => handleUpdateStatus("rejeitada")}
+              disabled={isLoading}
+            >
+              Rejeitar
+            </Button>
+            <Button
+              onClick={() => handleUpdateStatus("aprovada")}
+              disabled={isLoading}
+            >
+              Aprovar
+            </Button>
+          </div>
         </CardFooter>
       )}
-      
-      <AdminActionDialog 
-        isOpen={isApproveDialogOpen}
-        onClose={() => setIsApproveDialogOpen(false)}
-        onConfirm={(comment) => {
-          setIsApproveDialogOpen(false);
-          handleUpdateStatus("aprovada", comment);
-        }}
-        title="Aprovar Solicitação"
-        action="approve"
-      />
-      
-      <AdminActionDialog 
-        isOpen={isRejectDialogOpen}
-        onClose={() => setIsRejectDialogOpen(false)}
-        onConfirm={(comment) => {
-          setIsRejectDialogOpen(false);
-          handleUpdateStatus("rejeitada", comment);
-        }}
-        title="Rejeitar Solicitação"
-        action="reject"
-        isRejectionReasonRequired={true}
-      />
     </Card>
   );
 }
