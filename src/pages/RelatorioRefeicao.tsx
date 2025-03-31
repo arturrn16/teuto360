@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { SolicitacaoRefeicao, Colaborador } from '@/types/solicitacoes';
@@ -34,18 +35,20 @@ import {
 } from 'recharts';
 
 const exportToExcel = (data: any[], fileName: string) => {
-  let csvContent = "data:text/csv;charset=utf-8,";
+  // Add BOM for UTF-8 character encoding support
+  let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
   
   const headers = ["Nome", "Matrícula", "Setor", "Tipo de Refeição", "Data da Refeição"];
   csvContent += headers.join(",") + "\r\n";
   
   data.forEach(item => {
+    // Explicitly handle undefined/null values by replacing with empty strings
     const row = [
-      `"${item.nome}"`,
-      `"${item.matricula}"`,
-      `"${item.setor || 'Não informado'}"`,
-      `"${item.tipo_refeicao}"`,
-      `"${item.data_refeicao}"`
+      `"${item.nome || ''}"`,
+      `"${item.matricula || ''}"`,
+      `"${item.setor || ''}"`,
+      `"${item.tipo_refeicao || ''}"`,
+      `"${item.data_refeicao || ''}"`
     ];
     csvContent += row.join(",") + "\r\n";
   });
@@ -86,10 +89,11 @@ const RelatorioRefeicao = () => {
         }
 
         const processedData = data.map((item: any) => {
+          // Process colaboradores array to include setor information
           const colaboradoresComSetor = Array.isArray(item.colaboradores) 
             ? item.colaboradores.map((colaborador: Colaborador) => ({
                 ...colaborador,
-                setor: colaborador.setor || (item.usuarios?.setor || 'Não informado')
+                setor: colaborador.setor || (item.usuarios?.setor || '')
               }))
             : [];
 
@@ -102,7 +106,7 @@ const RelatorioRefeicao = () => {
             tipo_refeicao: item.tipo_refeicao,
             data_refeicao: item.data_refeicao,
             colaboradores: colaboradoresComSetor,
-            setor: item.usuarios?.setor || 'Não informado'
+            setor: item.usuarios?.setor || ''
           };
         });
 
@@ -142,21 +146,25 @@ const RelatorioRefeicao = () => {
       if (Array.isArray(solicitacao.colaboradores) && solicitacao.colaboradores.length > 0) {
         solicitacao.colaboradores.forEach(colaborador => {
           dados.push({
-            nome: colaborador.nome || 'Nome não informado',
-            matricula: colaborador.matricula || 'Matrícula não informada',
-            setor: colaborador.setor || 'Não informado',
+            nome: colaborador.nome || '',
+            matricula: colaborador.matricula || '',
+            setor: colaborador.setor || '',
             tipo_refeicao: solicitacao.tipo_refeicao,
             data_refeicao: format(new Date(solicitacao.data_refeicao), 'dd/MM/yyyy')
           });
         });
       } else {
+        // Skip adding empty collaborator records to the export
+        // If needed, uncomment and modify the code below:
+        /*
         dados.push({
-          nome: 'Colaborador não especificado',
-          matricula: 'N/A',
-          setor: solicitacao.setor || 'Não informado',
+          nome: '',
+          matricula: '',
+          setor: solicitacao.setor || '',
           tipo_refeicao: solicitacao.tipo_refeicao,
           data_refeicao: format(new Date(solicitacao.data_refeicao), 'dd/MM/yyyy')
         });
+        */
       }
     });
     
