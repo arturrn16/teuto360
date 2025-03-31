@@ -239,7 +239,6 @@ export type Database = {
           descricao: string
           id: number
           motivo: string
-          motivo_comentario: string | null
           rota: string
           solicitante_id: number | null
           status: string | null
@@ -253,7 +252,6 @@ export type Database = {
           descricao: string
           id?: number
           motivo: string
-          motivo_comentario?: string | null
           rota: string
           solicitante_id?: number | null
           status?: string | null
@@ -267,7 +265,6 @@ export type Database = {
           descricao?: string
           id?: number
           motivo?: string
-          motivo_comentario?: string | null
           rota?: string
           solicitante_id?: number | null
           status?: string | null
@@ -357,7 +354,6 @@ export type Database = {
           endereco_atual: string | null
           endereco_novo: string | null
           id: number
-          motivo_comentario: string | null
           nova_rota: string | null
           rota_atual: string
           solicitante_id: number | null
@@ -379,7 +375,6 @@ export type Database = {
           endereco_atual?: string | null
           endereco_novo?: string | null
           id?: number
-          motivo_comentario?: string | null
           nova_rota?: string | null
           rota_atual: string
           solicitante_id?: number | null
@@ -401,7 +396,6 @@ export type Database = {
           endereco_atual?: string | null
           endereco_novo?: string | null
           id?: number
-          motivo_comentario?: string | null
           nova_rota?: string | null
           rota_atual?: string
           solicitante_id?: number | null
@@ -430,7 +424,6 @@ export type Database = {
           endereco: string
           id: number
           motivo: string
-          motivo_comentario: string | null
           nome_gestor: string
           nova_rota: string
           novo_turno: string
@@ -450,7 +443,6 @@ export type Database = {
           endereco: string
           id?: number
           motivo: string
-          motivo_comentario?: string | null
           nome_gestor: string
           nova_rota: string
           novo_turno: string
@@ -470,7 +462,6 @@ export type Database = {
           endereco?: string
           id?: number
           motivo?: string
-          motivo_comentario?: string | null
           nome_gestor?: string
           nova_rota?: string
           novo_turno?: string
@@ -497,7 +488,6 @@ export type Database = {
           created_at: string | null
           data_refeicao: string
           id: number
-          motivo_comentario: string | null
           solicitante_id: number | null
           status: string | null
           tipo_refeicao: string
@@ -508,7 +498,6 @@ export type Database = {
           created_at?: string | null
           data_refeicao: string
           id?: number
-          motivo_comentario?: string | null
           solicitante_id?: number | null
           status?: string | null
           tipo_refeicao: string
@@ -519,7 +508,6 @@ export type Database = {
           created_at?: string | null
           data_refeicao?: string
           id?: number
-          motivo_comentario?: string | null
           solicitante_id?: number | null
           status?: string | null
           tipo_refeicao?: string

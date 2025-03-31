@@ -82,7 +82,8 @@ export interface SolicitacaoTransporte12x36 extends BaseSolicitacao {
 }
 
 export interface SolicitacaoRefeicao extends BaseSolicitacao {
-  colaboradores: string[];
+  colaboradores: string[] | any[]; // Allow any[] to handle Json[] from database
   tipo_refeicao: string;
   data_refeicao: string;
+  motivo_comentario?: string;
 }
