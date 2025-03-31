@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { SolicitacaoRefeicao, Colaborador } from '@/types/solicitacoes';
 import { format, parseISO, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { CalendarIcon, DownloadIcon, FileTextIcon } from 'lucide-react';
+import { CalendarIcon, FileTextIcon } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -43,13 +43,13 @@ const exportToExcel = (data: any[], fileName: string) => {
   data.forEach(item => {
     // Explicitly handle undefined/null values by replacing with empty strings
     const row = [
-      `"${item.nome || ''}"`,
-      `"${item.matricula || ''}"`,
-      `"${item.setor || ''}"`,
-      `"${item.solicitante_nome || ''}"`,
-      `"${item.solicitante_setor || ''}"`,
-      `"${item.tipo_refeicao || ''}"`,
-      `"${item.data_refeicao || ''}"`
+      `"${String(item.nome || '')}"`,
+      `"${String(item.matricula || '')}"`,
+      `"${String(item.setor || '')}"`,
+      `"${String(item.solicitante_nome || '')}"`,
+      `"${String(item.solicitante_setor || '')}"`,
+      `"${String(item.tipo_refeicao || '')}"`,
+      `"${String(item.data_refeicao || '')}"`
     ];
     csvContent += row.join(",") + "\r\n";
   });
@@ -93,23 +93,24 @@ const RelatorioRefeicao = () => {
           // Process colaboradores array to include setor information
           const colaboradoresComSetor = Array.isArray(item.colaboradores) 
             ? item.colaboradores.map((colaborador: Colaborador) => ({
-                ...colaborador,
-                setor: colaborador.setor || (item.usuarios?.setor || '')
+                nome: String(colaborador.nome || ''),
+                matricula: String(colaborador.matricula || ''),
+                setor: String(colaborador.setor || (item.usuarios?.setor || ''))
               }))
             : [];
 
           return {
-            id: item.id,
-            solicitante_id: item.solicitante_id,
-            solicitante_nome: item.solicitante_nome || (item.usuarios?.nome || ''),
-            solicitante_setor: item.solicitante_setor || (item.usuarios?.setor || ''),
-            status: item.status || 'pendente',
-            created_at: item.created_at,
-            updated_at: item.updated_at || item.created_at,
-            tipo_refeicao: item.tipo_refeicao,
-            data_refeicao: item.data_refeicao,
+            id: String(item.id || ''),
+            solicitante_id: String(item.solicitante_id || ''),
+            solicitante_nome: String(item.solicitante_nome || (item.usuarios?.nome || '')),
+            solicitante_setor: String(item.solicitante_setor || (item.usuarios?.setor || '')),
+            status: String(item.status || 'pendente'),
+            created_at: String(item.created_at || ''),
+            updated_at: String(item.updated_at || item.created_at || ''),
+            tipo_refeicao: String(item.tipo_refeicao || ''),
+            data_refeicao: String(item.data_refeicao || ''),
             colaboradores: colaboradoresComSetor,
-            setor: item.usuarios?.setor || ''
+            setor: String(item.usuarios?.setor || '')
           };
         });
 
@@ -128,16 +129,21 @@ const RelatorioRefeicao = () => {
     if (!dataInicio || !dataFim) return solicitacoes;
 
     return solicitacoes.filter(solicitacao => {
-      const dataRefeicao = parseISO(solicitacao.data_refeicao);
-      const dentroDoIntervalo = isWithinInterval(dataRefeicao, {
-        start: startOfDay(dataInicio),
-        end: endOfDay(dataFim)
-      });
+      try {
+        const dataRefeicao = parseISO(solicitacao.data_refeicao);
+        const dentroDoIntervalo = isWithinInterval(dataRefeicao, {
+          start: startOfDay(dataInicio),
+          end: endOfDay(dataFim)
+        });
 
-      if (filtroStatus === "todas") {
-        return dentroDoIntervalo;
-      } else {
-        return dentroDoIntervalo && solicitacao.status === filtroStatus;
+        if (filtroStatus === "todas") {
+          return dentroDoIntervalo;
+        } else {
+          return dentroDoIntervalo && solicitacao.status === filtroStatus;
+        }
+      } catch (error) {
+        console.error('Erro ao filtrar data:', error, solicitacao.data_refeicao);
+        return false;
       }
     });
   }, [solicitacoes, dataInicio, dataFim, filtroStatus]);
@@ -149,12 +155,12 @@ const RelatorioRefeicao = () => {
       if (Array.isArray(solicitacao.colaboradores) && solicitacao.colaboradores.length > 0) {
         solicitacao.colaboradores.forEach(colaborador => {
           dados.push({
-            nome: colaborador.nome || '',
-            matricula: colaborador.matricula || '',
-            setor: colaborador.setor || '',
-            solicitante_nome: solicitacao.solicitante_nome || '',
-            solicitante_setor: solicitacao.solicitante_setor || '',
-            tipo_refeicao: solicitacao.tipo_refeicao,
+            nome: String(colaborador.nome || ''),
+            matricula: String(colaborador.matricula || ''),
+            setor: String(colaborador.setor || ''),
+            solicitante_nome: String(solicitacao.solicitante_nome || ''),
+            solicitante_setor: String(solicitacao.solicitante_setor || ''),
+            tipo_refeicao: String(solicitacao.tipo_refeicao || ''),
             data_refeicao: format(new Date(solicitacao.data_refeicao), 'dd/MM/yyyy')
           });
         });
@@ -163,9 +169,9 @@ const RelatorioRefeicao = () => {
           nome: '',
           matricula: '',
           setor: '',
-          solicitante_nome: solicitacao.solicitante_nome || '',
-          solicitante_setor: solicitacao.solicitante_setor || '',
-          tipo_refeicao: solicitacao.tipo_refeicao,
+          solicitante_nome: String(solicitacao.solicitante_nome || ''),
+          solicitante_setor: String(solicitacao.solicitante_setor || ''),
+          tipo_refeicao: String(solicitacao.tipo_refeicao || ''),
           data_refeicao: format(new Date(solicitacao.data_refeicao), 'dd/MM/yyyy')
         });
       }
@@ -184,7 +190,7 @@ const RelatorioRefeicao = () => {
     const tiposRefeicao: Record<string, number> = {};
     
     solicitacoesFiltradas.forEach(solicitacao => {
-      const tipo = solicitacao.tipo_refeicao;
+      const tipo = String(solicitacao.tipo_refeicao || 'Não especificado');
       const quantidade = Array.isArray(solicitacao.colaboradores) ? solicitacao.colaboradores.length : 0;
       
       if (tiposRefeicao[tipo]) {
@@ -203,7 +209,7 @@ const RelatorioRefeicao = () => {
     solicitacoesFiltradas.forEach(solicitacao => {
       if (Array.isArray(solicitacao.colaboradores)) {
         solicitacao.colaboradores.forEach(colaborador => {
-          const setor = colaborador.setor || 'Não informado';
+          const setor = String(colaborador.setor || 'Não informado');
           
           if (setores[setor]) {
             setores[setor] += 1;
@@ -226,13 +232,17 @@ const RelatorioRefeicao = () => {
     const dados: Record<string, number> = {};
     
     solicitacoesFiltradas.forEach(solicitacao => {
-      const dataFormatada = format(new Date(solicitacao.data_refeicao), 'dd/MM');
-      const quantidade = Array.isArray(solicitacao.colaboradores) ? solicitacao.colaboradores.length : 0;
-      
-      if (dados[dataFormatada]) {
-        dados[dataFormatada] += quantidade;
-      } else {
-        dados[dataFormatada] = quantidade;
+      try {
+        const dataFormatada = format(new Date(solicitacao.data_refeicao), 'dd/MM');
+        const quantidade = Array.isArray(solicitacao.colaboradores) ? solicitacao.colaboradores.length : 0;
+        
+        if (dados[dataFormatada]) {
+          dados[dataFormatada] += quantidade;
+        } else {
+          dados[dataFormatada] = quantidade;
+        }
+      } catch (error) {
+        console.error('Erro ao formatar data:', error, solicitacao.data_refeicao);
       }
     });
     
@@ -272,20 +282,20 @@ const RelatorioRefeicao = () => {
                 <td className="py-2 px-4">
                   {format(new Date(solicitacao.data_refeicao), 'dd/MM/yyyy')}
                 </td>
-                <td className="py-2 px-4">{solicitacao.tipo_refeicao}</td>
-                <td className="py-2 px-4">{solicitacao.solicitante_nome || ''}</td>
-                <td className="py-2 px-4">{solicitacao.solicitante_setor || ''}</td>
+                <td className="py-2 px-4">{String(solicitacao.tipo_refeicao || '')}</td>
+                <td className="py-2 px-4">{String(solicitacao.solicitante_nome || '')}</td>
+                <td className="py-2 px-4">{String(solicitacao.solicitante_setor || '')}</td>
                 <td className="py-2 px-4">
                   {Array.isArray(solicitacao.colaboradores) ? solicitacao.colaboradores.length : 0} pessoa(s)
                 </td>
                 <td className="py-2 px-4">
                   <span 
                     className={`inline-block px-2 py-1 rounded text-xs font-medium
-                      ${solicitacao.status === 'aprovada' ? 'bg-green-100 text-green-800' : 
-                        solicitacao.status === 'rejeitada' ? 'bg-red-100 text-red-800' : 
+                      ${String(solicitacao.status) === 'aprovada' ? 'bg-green-100 text-green-800' : 
+                        String(solicitacao.status) === 'rejeitada' ? 'bg-red-100 text-red-800' : 
                         'bg-yellow-100 text-yellow-800'}`}
                   >
-                    {solicitacao.status.charAt(0).toUpperCase() + solicitacao.status.slice(1)}
+                    {String(solicitacao.status).charAt(0).toUpperCase() + String(solicitacao.status).slice(1)}
                   </span>
                 </td>
               </tr>
