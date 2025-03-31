@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -32,7 +33,7 @@ const Admin = () => {
         .select('*');
       
       if (enderecoError) throw enderecoError;
-      setSolicitacoesEndereco(enderecoData || []);
+      setSolicitacoesEndereco(enderecoData as SolicitacaoAlteracaoEndereco[] || []);
       
       // Fetch solicitações de mudança de turno
       const { data: turnoData, error: turnoError } = await supabase
@@ -40,7 +41,7 @@ const Admin = () => {
         .select('*');
       
       if (turnoError) throw turnoError;
-      setSolicitacoesTurno(turnoData || []);
+      setSolicitacoesTurno(turnoData as SolicitacaoMudancaTurno[] || []);
       
       // Fetch solicitações de adesão/cancelamento
       const { data: adesaoData, error: adesaoError } = await supabase
@@ -48,7 +49,7 @@ const Admin = () => {
         .select('*');
       
       if (adesaoError) throw adesaoError;
-      setSolicitacoesAdesao(adesaoData || []);
+      setSolicitacoesAdesao(adesaoData as SolicitacaoAdesaoCancelamento[] || []);
 
       // Fetch solicitações de refeição
       const { data: refeicaoData, error: refeicaoError } = await supabase
@@ -63,7 +64,7 @@ const Admin = () => {
         colaboradores: Array.isArray(item.colaboradores) ? item.colaboradores : []
       }));
       
-      setSolicitacoesRefeicao(formattedRefeicaoData || []);
+      setSolicitacoesRefeicao(formattedRefeicaoData as SolicitacaoRefeicao[] || []);
       
       // Fetch solicitações de transporte
       const { data: transporteData, error: transporteError } = await supabase
@@ -71,7 +72,7 @@ const Admin = () => {
         .select('*');
       
       if (transporteError) throw transporteError;
-      setSolicitacoesTransporte(transporteData || []);
+      setSolicitacoesTransporte(transporteData as SolicitacaoTransporteRota[] || []);
       
       // Fetch solicitações de transporte 12x36
       const { data: transporte12x36Data, error: transporte12x36Error } = await supabase
@@ -79,7 +80,7 @@ const Admin = () => {
         .select('*');
       
       if (transporte12x36Error) throw transporte12x36Error;
-      setSolicitacoesTransporte12x36(transporte12x36Data || []);
+      setSolicitacoesTransporte12x36(transporte12x36Data as SolicitacaoTransporte12x36[] || []);
 
       // Fetch solicitações de abono de ponto
       const { data: abonoData, error: abonoError } = await supabase
@@ -87,7 +88,7 @@ const Admin = () => {
         .select('*');
       
       if (abonoError) throw abonoError;
-      setSolicitacoesAbono(abonoData || []);
+      setSolicitacoesAbono(abonoData as SolicitacaoAbonoPonto[] || []);
       
     } catch (error) {
       console.error('Erro ao buscar solicitações:', error);
