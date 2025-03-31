@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -56,7 +55,6 @@ const Refeicao = () => {
   const tipoRefeicaoOptions = ["Almoço", "Jantar", "Lanche", "Ceia"];
   
   const formatDate = (date: Date) => {
-    // Format date in ISO format to ensure correct timezone
     return date.toISOString().split('T')[0];
   };
   
@@ -74,11 +72,13 @@ const Refeicao = () => {
     setIsSubmitting(true);
     
     try {
+      const formattedDate = formatDate(data.dataRefeicao);
+      
       const { error } = await supabase.from("solicitacoes_refeicao").insert({
         solicitante_id: user.id,
         colaboradores: data.colaboradores,
         tipo_refeicao: data.tipoRefeicao,
-        data_refeicao: formatDate(data.dataRefeicao),
+        data_refeicao: formattedDate,
       });
       
       if (error) {

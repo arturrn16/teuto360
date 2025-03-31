@@ -119,9 +119,17 @@ export const generateTicket = async ({ id, tipo, colaboradorIndice }: GenerateTi
             ctx.fillText(`Status: ${ticketData.status.toUpperCase()}`, 30, y_start + line_height * 4);
           } else {
             // Comportamento legado (lista de colaboradores)
-            const colaboradoresText = ticketData.colaboradores
-              .map((c: Colaborador) => `${c.nome} (${c.matricula})`)
-              .join(', ');
+            const colaboradoresText = Array.isArray(ticketData.colaboradores)
+              ? ticketData.colaboradores
+                  .map((c: any) => {
+                    if (typeof c === 'string') return c;
+                    if (c && typeof c === 'object') return `${c.nome || ''} (${c.matricula || ''})`;
+                    return '';
+                  })
+                  .filter(Boolean)
+                  .join(', ')
+              : '';
+            
             ctx.fillText(`Colaboradores: ${colaboradoresText}`, 30, y_start);
             ctx.fillText(`Tipo de Refeição: ${ticketData.tipo_refeicao}`, 30, y_start + line_height);
             ctx.fillText(`Data da Refeição: ${new Date(ticketData.data_refeicao).toLocaleDateString()}`, 30, y_start + line_height * 2);
@@ -195,9 +203,17 @@ export const generateTicket = async ({ id, tipo, colaboradorIndice }: GenerateTi
             ctx.fillText(`Status: ${ticketData.status.toUpperCase()}`, 30, y_start + line_height * 4);
           } else {
             // Comportamento legado (lista de colaboradores)
-            const colaboradoresText = ticketData.colaboradores
-              .map((c: Colaborador) => `${c.nome} (${c.matricula})`)
-              .join(', ');
+            const colaboradoresText = Array.isArray(ticketData.colaboradores)
+              ? ticketData.colaboradores
+                  .map((c: any) => {
+                    if (typeof c === 'string') return c;
+                    if (c && typeof c === 'object') return `${c.nome || ''} (${c.matricula || ''})`;
+                    return '';
+                  })
+                  .filter(Boolean)
+                  .join(', ')
+              : '';
+            
             ctx.fillText(`Colaboradores: ${colaboradoresText}`, 30, y_start);
             ctx.fillText(`Tipo de Refeição: ${ticketData.tipo_refeicao}`, 30, y_start + line_height);
             ctx.fillText(`Data da Refeição: ${new Date(ticketData.data_refeicao).toLocaleDateString()}`, 30, y_start + line_height * 2);
@@ -267,11 +283,13 @@ export const downloadTicket = async (params: GenerateTicketParams): Promise<void
           if (!dataUrl) continue;
           
           const colaborador = solicitacao.colaboradores[i];
+          const nome = typeof colaborador === 'string' ? colaborador : colaborador?.nome || 'colaborador';
+          const matricula = typeof colaborador === 'object' ? colaborador?.matricula || '' : '';
           
           // Create a temporary link to download the image
           const link = document.createElement('a');
           link.href = dataUrl;
-          link.download = `ticket-${params.tipo}-${params.id}-${colaborador.nome}-${colaborador.matricula}.jpg`;
+          link.download = `ticket-${params.tipo}-${params.id}-${nome}-${matricula}.jpg`;
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);

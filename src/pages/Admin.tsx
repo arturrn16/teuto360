@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import React from "react"; // Add explicit React import
 import { useAuth } from "@/context/AuthContext";
@@ -182,7 +181,23 @@ const Admin = () => {
       if (errorRefeicao) {
         console.error("Erro ao buscar solicitações de refeição:", errorRefeicao);
       } else {
-        setSolicitacoesRefeicao(dataRefeicao || []);
+        // Convert Json data to the expected type
+        const typedData = dataRefeicao?.map(item => {
+          // Ensure colaboradores is properly typed as an array of Colaborador objects
+          const colaboradores = Array.isArray(item.colaboradores)
+            ? item.colaboradores.map((col: any) => {
+                if (typeof col === 'string') return col;
+                return typeof col === 'object' ? `${col.nome || ''} (${col.matricula || ''})` : '';
+              })
+            : [];
+          
+          return {
+            ...item,
+            colaboradores
+          };
+        }) || [];
+        
+        setSolicitacoesRefeicao(typedData);
       }
 
       try {
