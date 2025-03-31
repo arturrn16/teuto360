@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { 
@@ -886,7 +885,7 @@ const MinhasSolicitacoes = () => {
                      (solicitacao.tipo === 'Refeição' || 
                       solicitacao.tipo === 'Uso de Rota' || 
                       solicitacao.tipo === 'Transporte Rota' || 
-                      solicitacao.tipo === 'Transporte 12x36') && (
+                      solicitacao.tipo === 'Transporte 12x36') ? (
                       <Button 
                         size="sm" 
                         variant="outline" 
@@ -896,6 +895,8 @@ const MinhasSolicitacoes = () => {
                         <Download size={14} />
                         Ticket
                       </Button>
+                    ) : (
+                      <div className="w-[85px]"></div>
                     )}
                   </div>
                 </div>
