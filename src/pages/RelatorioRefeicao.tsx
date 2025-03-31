@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { SolicitacaoRefeicao, Colaborador } from '@/types/solicitacoes';
@@ -38,7 +37,7 @@ const exportToExcel = (data: any[], fileName: string) => {
   // Add BOM for UTF-8 character encoding support
   let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
   
-  const headers = ["Nome", "Matrícula", "Setor", "Tipo de Refeição", "Data da Refeição"];
+  const headers = ["Nome", "Matrícula", "Setor", "Solicitante", "Área Solicitante", "Tipo de Refeição", "Data da Refeição"];
   csvContent += headers.join(",") + "\r\n";
   
   data.forEach(item => {
@@ -47,6 +46,8 @@ const exportToExcel = (data: any[], fileName: string) => {
       `"${item.nome || ''}"`,
       `"${item.matricula || ''}"`,
       `"${item.setor || ''}"`,
+      `"${item.solicitante_nome || ''}"`,
+      `"${item.solicitante_setor || ''}"`,
       `"${item.tipo_refeicao || ''}"`,
       `"${item.data_refeicao || ''}"`
     ];
@@ -100,6 +101,8 @@ const RelatorioRefeicao = () => {
           return {
             id: item.id,
             solicitante_id: item.solicitante_id,
+            solicitante_nome: item.solicitante_nome || (item.usuarios?.nome || ''),
+            solicitante_setor: item.solicitante_setor || (item.usuarios?.setor || ''),
             status: item.status || 'pendente',
             created_at: item.created_at,
             updated_at: item.updated_at || item.created_at,
@@ -149,22 +152,22 @@ const RelatorioRefeicao = () => {
             nome: colaborador.nome || '',
             matricula: colaborador.matricula || '',
             setor: colaborador.setor || '',
+            solicitante_nome: solicitacao.solicitante_nome || '',
+            solicitante_setor: solicitacao.solicitante_setor || '',
             tipo_refeicao: solicitacao.tipo_refeicao,
             data_refeicao: format(new Date(solicitacao.data_refeicao), 'dd/MM/yyyy')
           });
         });
       } else {
-        // Skip adding empty collaborator records to the export
-        // If needed, uncomment and modify the code below:
-        /*
         dados.push({
           nome: '',
           matricula: '',
-          setor: solicitacao.setor || '',
+          setor: '',
+          solicitante_nome: solicitacao.solicitante_nome || '',
+          solicitante_setor: solicitacao.solicitante_setor || '',
           tipo_refeicao: solicitacao.tipo_refeicao,
           data_refeicao: format(new Date(solicitacao.data_refeicao), 'dd/MM/yyyy')
         });
-        */
       }
     });
     
@@ -247,6 +250,50 @@ const RelatorioRefeicao = () => {
   const handleExportToExcel = () => {
     const fileName = `relatorio-refeicoes-${format(new Date(), 'dd-MM-yyyy')}`;
     exportToExcel(dadosParaExportar, fileName);
+  };
+
+  const renderDetailTable = () => {
+    return (
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse">
+          <thead>
+            <tr className="border-b">
+              <th className="text-left py-2 px-4">Data</th>
+              <th className="text-left py-2 px-4">Tipo</th>
+              <th className="text-left py-2 px-4">Solicitante</th>
+              <th className="text-left py-2 px-4">Área</th>
+              <th className="text-left py-2 px-4">Colaboradores</th>
+              <th className="text-left py-2 px-4">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {solicitacoesFiltradas.map((solicitacao) => (
+              <tr key={solicitacao.id} className="border-b hover:bg-gray-50">
+                <td className="py-2 px-4">
+                  {format(new Date(solicitacao.data_refeicao), 'dd/MM/yyyy')}
+                </td>
+                <td className="py-2 px-4">{solicitacao.tipo_refeicao}</td>
+                <td className="py-2 px-4">{solicitacao.solicitante_nome || ''}</td>
+                <td className="py-2 px-4">{solicitacao.solicitante_setor || ''}</td>
+                <td className="py-2 px-4">
+                  {Array.isArray(solicitacao.colaboradores) ? solicitacao.colaboradores.length : 0} pessoa(s)
+                </td>
+                <td className="py-2 px-4">
+                  <span 
+                    className={`inline-block px-2 py-1 rounded text-xs font-medium
+                      ${solicitacao.status === 'aprovada' ? 'bg-green-100 text-green-800' : 
+                        solicitacao.status === 'rejeitada' ? 'bg-red-100 text-red-800' : 
+                        'bg-yellow-100 text-yellow-800'}`}
+                  >
+                    {solicitacao.status.charAt(0).toUpperCase() + solicitacao.status.slice(1)}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
   };
 
   return (
@@ -470,43 +517,7 @@ const RelatorioRefeicao = () => {
             <p className="text-center py-4">Carregando...</p>
           ) : solicitacoesFiltradas.length === 0 ? (
             <p className="text-center py-4">Nenhuma solicitação encontrada no período selecionado.</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-2 px-4">Data</th>
-                    <th className="text-left py-2 px-4">Tipo</th>
-                    <th className="text-left py-2 px-4">Colaboradores</th>
-                    <th className="text-left py-2 px-4">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {solicitacoesFiltradas.map((solicitacao) => (
-                    <tr key={solicitacao.id} className="border-b hover:bg-gray-50">
-                      <td className="py-2 px-4">
-                        {format(new Date(solicitacao.data_refeicao), 'dd/MM/yyyy')}
-                      </td>
-                      <td className="py-2 px-4">{solicitacao.tipo_refeicao}</td>
-                      <td className="py-2 px-4">
-                        {Array.isArray(solicitacao.colaboradores) ? solicitacao.colaboradores.length : 0} pessoa(s)
-                      </td>
-                      <td className="py-2 px-4">
-                        <span 
-                          className={`inline-block px-2 py-1 rounded text-xs font-medium
-                            ${solicitacao.status === 'aprovada' ? 'bg-green-100 text-green-800' : 
-                              solicitacao.status === 'rejeitada' ? 'bg-red-100 text-red-800' : 
-                              'bg-yellow-100 text-yellow-800'}`}
-                        >
-                          {solicitacao.status.charAt(0).toUpperCase() + solicitacao.status.slice(1)}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+          ) : renderDetailTable()}
         </CardContent>
       </Card>
     </div>

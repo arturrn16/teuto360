@@ -501,6 +501,8 @@ export type Database = {
           data_refeicao: string
           id: number
           solicitante_id: number | null
+          solicitante_nome: string | null
+          solicitante_setor: string | null
           status: string | null
           tipo_refeicao: string
           updated_at: string | null
@@ -511,6 +513,8 @@ export type Database = {
           data_refeicao: string
           id?: number
           solicitante_id?: number | null
+          solicitante_nome?: string | null
+          solicitante_setor?: string | null
           status?: string | null
           tipo_refeicao: string
           updated_at?: string | null
@@ -521,6 +525,8 @@ export type Database = {
           data_refeicao?: string
           id?: number
           solicitante_id?: number | null
+          solicitante_nome?: string | null
+          solicitante_setor?: string | null
           status?: string | null
           tipo_refeicao?: string
           updated_at?: string | null

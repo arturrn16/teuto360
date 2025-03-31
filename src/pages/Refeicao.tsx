@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -79,6 +80,8 @@ const Refeicao = () => {
       
       const { error } = await supabase.from("solicitacoes_refeicao").insert({
         solicitante_id: user.id,
+        solicitante_nome: user.nome,
+        solicitante_setor: user.setor || "",
         colaboradores: colaboradoresJson,
         tipo_refeicao: data.tipoRefeicao,
         data_refeicao: formattedDate,
