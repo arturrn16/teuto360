@@ -76,7 +76,7 @@ const Refeicao = () => {
     try {
       const formattedDate = formatDate(data.dataRefeicao);
       
-      // Make sure every property is of the correct type
+      // Make sure every property is of the correct type and explicitly convert to strings
       const colaboradoresForDb = data.colaboradores.map(col => ({
         nome: String(col.nome || ""),
         matricula: String(col.matricula || ""),
@@ -85,10 +85,10 @@ const Refeicao = () => {
       
       const { error } = await supabase.from("solicitacoes_refeicao").insert({
         solicitante_id: user.id,
-        solicitante_nome: user.nome || "",
-        solicitante_setor: user.setor || "",
+        solicitante_nome: String(user.nome || ""),
+        solicitante_setor: String(user.setor || ""),
         colaboradores: colaboradoresForDb as unknown as Json[],
-        tipo_refeicao: data.tipoRefeicao,
+        tipo_refeicao: String(data.tipoRefeicao),
         data_refeicao: formattedDate,
         status: "pendente"
       });

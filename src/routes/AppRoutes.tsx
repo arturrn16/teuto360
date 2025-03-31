@@ -108,7 +108,7 @@ const routeGroups = {
 };
 
 // Create a memoized AppRoutes component
-export const AppRoutes = memo(() => {
+const AppRoutesComponent = memo(() => {
   const location = useLocation();
 
   // If the route is /, redirect to /login
@@ -207,4 +207,8 @@ export const AppRoutes = memo(() => {
   );
 });
 
-AppRoutes.displayName = 'AppRoutes';
+AppRoutesComponent.displayName = 'AppRoutes';
+
+// Ensure we have a named export and a default export
+export { AppRoutesComponent as AppRoutes };
+export default AppRoutesComponent;
