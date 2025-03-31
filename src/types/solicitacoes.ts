@@ -84,8 +84,8 @@ export interface SolicitacaoTransporte12x36 extends BaseSolicitacao {
 }
 
 export interface SolicitacaoRefeicao extends BaseSolicitacao {
-  colaboradores: string[];
-  matriculas?: string[];
+  colaboradores: string[] | any[];  // Update to accept both string[] and any[]
+  matriculas?: string[] | any[];    // Update to accept both string[] and any[]
   tipo_refeicao: string;
   data_refeicao: string;
   motivo_comentario?: string;
