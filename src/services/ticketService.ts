@@ -283,8 +283,19 @@ export const downloadTicket = async (params: GenerateTicketParams): Promise<void
           if (!dataUrl) continue;
           
           const colaborador = solicitacao.colaboradores[i];
-          const nome = typeof colaborador === 'string' ? colaborador : colaborador?.nome || 'colaborador';
-          const matricula = typeof colaborador === 'object' ? colaborador?.matricula || '' : '';
+          
+          // Verificar o tipo do colaborador e extrair nome e matrícula corretamente
+          let nome = '';
+          let matricula = '';
+          
+          if (typeof colaborador === 'string') {
+            nome = colaborador;
+            matricula = '';
+          } else if (colaborador && typeof colaborador === 'object') {
+            // Verificar se as propriedades existem para evitar erros de tipo
+            nome = 'nome' in colaborador ? String(colaborador.nome) : '';
+            matricula = 'matricula' in colaborador ? String(colaborador.matricula) : '';
+          }
           
           // Create a temporary link to download the image
           const link = document.createElement('a');

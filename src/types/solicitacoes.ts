@@ -1,4 +1,3 @@
-
 export interface BaseSolicitacao {
   id: number;
   solicitante_id: number;
@@ -89,6 +88,7 @@ export interface SolicitacaoTransporte12x36 extends BaseSolicitacao {
 export interface Colaborador {
   nome: string;
   matricula: string;
+  [key: string]: string;
 }
 
 export interface SolicitacaoRefeicao extends BaseSolicitacao {

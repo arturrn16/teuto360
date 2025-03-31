@@ -27,6 +27,7 @@ import { CalendarIcon, PlusCircle, Trash2 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { FormLayout } from "@/components/FormLayout";
 import { Colaborador } from "@/types/solicitacoes";
+import { Json } from "@/integrations/supabase/types";
 
 interface FormValues {
   colaboradores: Colaborador[];
@@ -74,9 +75,11 @@ const Refeicao = () => {
     try {
       const formattedDate = formatDate(data.dataRefeicao);
       
+      const colaboradoresJson = data.colaboradores as unknown as Json[];
+      
       const { error } = await supabase.from("solicitacoes_refeicao").insert({
         solicitante_id: user.id,
-        colaboradores: data.colaboradores,
+        colaboradores: colaboradoresJson,
         tipo_refeicao: data.tipoRefeicao,
         data_refeicao: formattedDate,
       });

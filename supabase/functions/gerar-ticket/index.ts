@@ -94,21 +94,28 @@ const handler = async (req: Request): Promise<Response> => {
       
       // Para solicitações de refeição, retornamos dados específicos do colaborador
       // Verificamos se o índice do colaborador foi fornecido
-      if (tipo === 'refeicao' && colaboradorIndice !== undefined) {
-        if (colaboradorIndice < 0 || colaboradorIndice >= dadosSolicitacao.colaboradores.length) {
-          return new Response(
-            JSON.stringify({ error: "Índice de colaborador inválido" }),
-            { 
-              headers: { ...corsHeaders, "Content-Type": "application/json" },
-              status: 400 
-            }
-          );
+      if (tipo === 'refeicao' && colaboradorIndice !== undefined && 
+          dadosSolicitacao.colaboradores && 
+          dadosSolicitacao.colaboradores.length > colaboradorIndice) {
+        
+        const colaborador = dadosSolicitacao.colaboradores[colaboradorIndice];
+        
+        // Normalize colaborador format (could be string or object)
+        let normalizedColaborador: any = {};
+        
+        if (typeof colaborador === 'string') {
+          normalizedColaborador = { nome: colaborador, matricula: '' };
+        } else if (colaborador && typeof colaborador === 'object') {
+          normalizedColaborador = colaborador;
+          // Ensure nome and matricula exist
+          normalizedColaborador.nome = 'nome' in colaborador ? colaborador.nome : '';
+          normalizedColaborador.matricula = 'matricula' in colaborador ? colaborador.matricula : '';
         }
         
         // Criamos um objeto com os dados do ticket para um colaborador específico
         ticketData = {
           ...dadosSolicitacao,
-          colaborador: dadosSolicitacao.colaboradores[colaboradorIndice]
+          colaborador: normalizedColaborador
         };
       } else {
         // Se nenhum índice foi fornecido, mantemos o comportamento padrão
