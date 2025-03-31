@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon, PlusCircle, Trash2 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -120,7 +120,7 @@ const Refeicao = () => {
             </div>
             
             {fields.map((field, index) => (
-              <div key={field.id} className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <div key={field.id} className="grid grid-cols-1 md:grid-cols-3 gap-2">
                 <FormField
                   control={form.control}
                   name={`colaboradores.${index}.nome`}
@@ -137,23 +137,23 @@ const Refeicao = () => {
                     </FormItem>
                   )}
                 />
-                <div className="flex items-center gap-2">
-                  <FormField
-                    control={form.control}
-                    name={`colaboradores.${index}.matricula`}
-                    render={({ field }) => (
-                      <FormItem className="flex-1">
-                        <FormControl>
-                          <Input 
-                            placeholder="Matrícula do colaborador" 
-                            {...field} 
-                            className="form-field-input"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                <FormField
+                  control={form.control}
+                  name={`colaboradores.${index}.matricula`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input 
+                          placeholder="Matrícula do colaborador" 
+                          {...field} 
+                          className="form-field-input"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="flex items-center">
                   {fields.length > 1 && (
                     <Button
                       type="button"

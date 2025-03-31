@@ -1,5 +1,4 @@
 
-
 export interface BaseSolicitacao {
   id: number;
   solicitante_id: number;
@@ -98,4 +97,3 @@ export interface SolicitacaoRefeicao extends BaseSolicitacao {
   data_refeicao: string;
   motivo_comentario?: string;
 }
-

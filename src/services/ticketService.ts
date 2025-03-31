@@ -1,4 +1,3 @@
-
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { TEUTO_LOGO } from "@/App";
@@ -120,7 +119,10 @@ export const generateTicket = async ({ id, tipo, colaboradorIndice }: GenerateTi
             ctx.fillText(`Status: ${ticketData.status.toUpperCase()}`, 30, y_start + line_height * 4);
           } else {
             // Comportamento legado (lista de colaboradores)
-            ctx.fillText(`Colaboradores: ${ticketData.colaboradores.map((c: Colaborador) => c.nome).join(', ')}`, 30, y_start);
+            const colaboradoresText = ticketData.colaboradores
+              .map((c: Colaborador) => `${c.nome} (${c.matricula})`)
+              .join(', ');
+            ctx.fillText(`Colaboradores: ${colaboradoresText}`, 30, y_start);
             ctx.fillText(`Tipo de Refeição: ${ticketData.tipo_refeicao}`, 30, y_start + line_height);
             ctx.fillText(`Data da Refeição: ${new Date(ticketData.data_refeicao).toLocaleDateString()}`, 30, y_start + line_height * 2);
             ctx.fillText(`Status: ${ticketData.status.toUpperCase()}`, 30, y_start + line_height * 3);
@@ -193,7 +195,10 @@ export const generateTicket = async ({ id, tipo, colaboradorIndice }: GenerateTi
             ctx.fillText(`Status: ${ticketData.status.toUpperCase()}`, 30, y_start + line_height * 4);
           } else {
             // Comportamento legado (lista de colaboradores)
-            ctx.fillText(`Colaboradores: ${ticketData.colaboradores.map((c: Colaborador) => c.nome).join(', ')}`, 30, y_start);
+            const colaboradoresText = ticketData.colaboradores
+              .map((c: Colaborador) => `${c.nome} (${c.matricula})`)
+              .join(', ');
+            ctx.fillText(`Colaboradores: ${colaboradoresText}`, 30, y_start);
             ctx.fillText(`Tipo de Refeição: ${ticketData.tipo_refeicao}`, 30, y_start + line_height);
             ctx.fillText(`Data da Refeição: ${new Date(ticketData.data_refeicao).toLocaleDateString()}`, 30, y_start + line_height * 2);
             ctx.fillText(`Status: ${ticketData.status.toUpperCase()}`, 30, y_start + line_height * 3);
