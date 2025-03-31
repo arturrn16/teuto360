@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { 
@@ -737,4 +738,176 @@ const MinhasSolicitacoes = () => {
     
     return (
       <Dialog open={detalhesAberto} onOpenChange={setDetalhesAberto}>
-        <DialogContent className="max
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Detalhes da Solicitação</DialogTitle>
+            <DialogDescription>
+              {solicitacaoSelecionada.tipo} - {formatDateTime(solicitacaoSelecionada.created_at)}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="mt-4">
+            <div className="flex items-center justify-between">
+              <Badge 
+                className={
+                  solicitacaoSelecionada.status === 'aprovada' ? 'bg-green-100 text-green-800 border-green-200' :
+                  solicitacaoSelecionada.status === 'rejeitada' ? 'bg-red-100 text-red-800 border-red-200' :
+                  'bg-yellow-100 text-yellow-800 border-yellow-200'
+                }
+              >
+                {solicitacaoSelecionada.status === 'aprovada' ? 'Aprovada' : 
+                 solicitacaoSelecionada.status === 'rejeitada' ? 'Rejeitada' : 'Pendente'}
+              </Badge>
+              
+              {solicitacaoSelecionada.status === 'aprovada' && 
+                (solicitacaoSelecionada.tipo === 'Refeição' || 
+                 solicitacaoSelecionada.tipo === 'Uso de Rota' || 
+                 solicitacaoSelecionada.tipo === 'Transporte Rota' || 
+                 solicitacaoSelecionada.tipo === 'Transporte 12x36') && (
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  className="flex items-center gap-2"
+                  onClick={() => handleDownloadTicket(solicitacaoSelecionada)}
+                >
+                  <Download size={16} />
+                  Baixar Ticket
+                </Button>
+              )}
+            </div>
+            
+            {detalhesConteudo}
+          </div>
+          
+          <DialogFooter className="mt-6">
+            <DialogClose asChild>
+              <Button variant="outline">Fechar</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  };
+
+  return (
+    <div className="container mx-auto px-4 py-8 max-w-7xl">
+      <h1 className="text-2xl font-bold mb-6 text-gray-800">Minhas Solicitações</h1>
+      
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
+        <div className="flex flex-col sm:flex-row gap-2">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">Status:</span>
+            <Select value={filtroStatus} onValueChange={setFiltroStatus}>
+              <SelectTrigger className="w-36">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todas">Todas</SelectItem>
+                <SelectItem value="pendente">Pendentes</SelectItem>
+                <SelectItem value="aprovada">Aprovadas</SelectItem>
+                <SelectItem value="rejeitada">Rejeitadas</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {tiposSolicitacao.length > 1 && (
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium">Tipo:</span>
+              <Select value={filtroTipo} onValueChange={setFiltroTipo}>
+                <SelectTrigger className="w-48">
+                  <SelectValue placeholder="Tipo de Solicitação" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todos os tipos</SelectItem>
+                  {tiposSolicitacao.map((tipo) => (
+                    <SelectItem key={tipo} value={tipo}>
+                      {tipo}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+        </div>
+      </div>
+      
+      {filteredSolicitacoes.length === 0 ? (
+        <div className="text-center py-10">
+          <FileText className="h-12 w-12 mx-auto text-gray-400" />
+          <h3 className="mt-4 text-lg font-medium text-gray-900">Nenhuma solicitação encontrada</h3>
+          <p className="mt-1 text-sm text-gray-500">
+            Você ainda não possui solicitações{filtroStatus !== "todas" || filtroTipo !== "todos" ? " com os filtros selecionados" : ""}.
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredSolicitacoes.map((solicitacao) => (
+            <Card 
+              key={`${solicitacao.id}-${solicitacao.tipo}`} 
+              className="h-full border hover:border-gray-300 transition-colors duration-200"
+            >
+              <CardContent className="p-4">
+                <div className="flex flex-col h-full">
+                  <div className="flex justify-between items-start mb-3">
+                    <Badge 
+                      className={
+                        solicitacao.status === 'aprovada' ? 'bg-green-100 text-green-800 border-green-200' :
+                        solicitacao.status === 'rejeitada' ? 'bg-red-100 text-red-800 border-red-200' :
+                        'bg-yellow-100 text-yellow-800 border-yellow-200'
+                      }
+                    >
+                      {solicitacao.status === 'aprovada' ? 'Aprovada' : 
+                       solicitacao.status === 'rejeitada' ? 'Rejeitada' : 'Pendente'}
+                    </Badge>
+                    <Badge variant="outline" className="ml-2 text-xs">
+                      {solicitacao.tipo}
+                    </Badge>
+                  </div>
+                  
+                  <h3 className="text-lg font-medium text-gray-900 mt-1 mb-2">
+                    {getSolicitacaoDescricao(solicitacao)}
+                  </h3>
+                  
+                  <p className="text-sm text-gray-500 mt-1">
+                    {formatDateTime(solicitacao.created_at)}
+                  </p>
+                  
+                  <div className="flex mt-auto pt-4 gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1"
+                      onClick={() => abrirDetalhes(solicitacao)}
+                    >
+                      Detalhes
+                    </Button>
+                    
+                    {solicitacao.status === 'aprovada' && 
+                     (solicitacao.tipo === 'Refeição' || 
+                      solicitacao.tipo === 'Uso de Rota' || 
+                      solicitacao.tipo === 'Transporte Rota' || 
+                      solicitacao.tipo === 'Transporte 12x36') && (
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="flex items-center gap-1"
+                        onClick={() => handleDownloadTicket(solicitacao)}
+                      >
+                        <Download size={14} />
+                        Ticket
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+      
+      {renderDetalhes()}
+    </div>
+  );
+};
+
+export default MinhasSolicitacoes;
