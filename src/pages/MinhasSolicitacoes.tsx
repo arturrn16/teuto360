@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { 
@@ -62,7 +61,13 @@ interface SolicitacaoTransporte extends BaseSolicitacao {
 type SolicitacaoAbonoPontoWithTipo = SolicitacaoAbonoPonto & { tipo: string };
 type SolicitacaoAdesaoCancelamentoWithTipo = SolicitacaoAdesaoCancelamento & { tipo: string };
 type SolicitacaoAlteracaoEnderecoWithTipo = SolicitacaoAlteracaoEndereco & { tipo: string };
-type SolicitacaoMudancaTurnoWithTipo = SolicitacaoMudancaTurno & { tipo: string };
+type SolicitacaoMudancaTurnoWithTipo = SolicitacaoMudancaTurno & { 
+  tipo: string; 
+  colaborador_nome?: string;
+  matricula?: string;
+  cargo?: string;
+  setor?: string;
+};
 
 type Solicitacao = 
   | SolicitacaoRefeicao 
@@ -102,7 +107,7 @@ const MinhasSolicitacoes = () => {
         if (user.tipo_usuario === 'gestor') {
           tables = [
             { table: 'solicitacoes_refeicao', tipo: 'Refeição' },
-            { table: 'solicitacoes_mudanca_turno', tipo: 'Mudança de Turno' } // Added for gestor users
+            { table: 'solicitacoes_mudanca_turno', tipo: 'Mudança de Turno' } // For gestor users
           ];
         } 
         else if (user.tipo_usuario === 'selecao') {
@@ -345,6 +350,10 @@ const MinhasSolicitacoes = () => {
                   created_at: item.created_at,
                   updated_at: item.updated_at || item.created_at,
                   data_alteracao: item.created_at || '',
+                  colaborador_nome: item.colaborador_nome || '',
+                  matricula: item.matricula || '',
+                  cargo: item.cargo || '',
+                  setor: item.setor || '',
                   tipo: tipo
                 }));
                 allSolicitacoes = [...allSolicitacoes, ...solicitacoesWithType];
@@ -657,6 +666,30 @@ const MinhasSolicitacoes = () => {
       detalhesConteudo = (
         <>
           <div className="grid grid-cols-2 gap-4 my-4">
+            {solicitacaoSelecionada.colaborador_nome && (
+              <div className="col-span-2">
+                <p className="text-sm text-gray-500">Nome do Colaborador</p>
+                <p className="font-medium">{solicitacaoSelecionada.colaborador_nome}</p>
+              </div>
+            )}
+            {solicitacaoSelecionada.matricula && (
+              <div>
+                <p className="text-sm text-gray-500">Matrícula</p>
+                <p className="font-medium">{solicitacaoSelecionada.matricula}</p>
+              </div>
+            )}
+            {solicitacaoSelecionada.cargo && (
+              <div>
+                <p className="text-sm text-gray-500">Cargo</p>
+                <p className="font-medium">{solicitacaoSelecionada.cargo}</p>
+              </div>
+            )}
+            {solicitacaoSelecionada.setor && (
+              <div>
+                <p className="text-sm text-gray-500">Setor</p>
+                <p className="font-medium">{solicitacaoSelecionada.setor}</p>
+              </div>
+            )}
             <div>
               <p className="text-sm text-gray-500">Telefone</p>
               <p className="font-medium">{solicitacaoSelecionada.telefone}</p>
@@ -704,187 +737,4 @@ const MinhasSolicitacoes = () => {
     
     return (
       <Dialog open={detalhesAberto} onOpenChange={setDetalhesAberto}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="flex items-center justify-between">
-              <span className="text-xl">Detalhes da Solicitação</span>
-              <Badge 
-                variant={
-                  solicitacaoSelecionada.status === 'aprovada' 
-                    ? 'success' 
-                    : solicitacaoSelecionada.status === 'rejeitada' 
-                      ? 'destructive' 
-                      : 'secondary'
-                }
-                className="rounded-full px-4 py-1 text-sm font-medium"
-              >
-                {solicitacaoSelecionada.status === 'aprovada' 
-                  ? 'Aprovado' 
-                  : solicitacaoSelecionada.status === 'rejeitada' 
-                    ? 'Rejeitado' 
-                    : 'Pendente'}
-              </Badge>
-            </DialogTitle>
-            <DialogDescription>
-              <div className="flex items-center justify-between text-lg font-semibold mb-2">
-                <span>{solicitacaoSelecionada.tipo}</span>
-                <span>#{solicitacaoSelecionada.id}</span>
-              </div>
-              <div className="text-sm text-gray-500">
-                Solicitado em {formatDateTime(solicitacaoSelecionada.created_at)}
-              </div>
-            </DialogDescription>
-          </DialogHeader>
-          
-          {detalhesConteudo}
-          
-          <DialogFooter className="flex flex-row justify-between sm:justify-between">
-            {solicitacaoSelecionada.status === 'aprovada' && 
-              (isRefeicaoSolicitacao(solicitacaoSelecionada) || 
-              (isTransporteSolicitacao(solicitacaoSelecionada) &&
-               (solicitacaoSelecionada.tipo === 'Transporte Rota' || 
-                solicitacaoSelecionada.tipo === 'Transporte 12x36' || 
-                solicitacaoSelecionada.tipo === 'Uso de Rota'))) && (
-              <Button 
-                onClick={() => handleDownloadTicket(solicitacaoSelecionada)}
-                variant="outline"
-                className="flex items-center gap-2"
-              >
-                <Download size={16} />
-                Baixar Ticket
-              </Button>
-            )}
-            <DialogClose asChild>
-              <Button variant="outline" className="flex items-center gap-2">
-                <X size={16} />
-                Fechar
-              </Button>
-            </DialogClose>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    );
-  };
-
-  return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold mb-4 md:mb-0">Minhas Solicitações</h1>
-        
-        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-          <Select value={filtroStatus} onValueChange={setFiltroStatus}>
-            <SelectTrigger className="w-full sm:w-[180px]">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="todas">Todos os status</SelectItem>
-              <SelectItem value="pendente">Pendentes</SelectItem>
-              <SelectItem value="aprovada">Aprovadas</SelectItem>
-              <SelectItem value="rejeitada">Rejeitadas</SelectItem>
-            </SelectContent>
-          </Select>
-          
-          {tiposSolicitacao.length > 1 && (
-            <Select value={filtroTipo} onValueChange={setFiltroTipo}>
-              <SelectTrigger className="w-full sm:w-[180px]">
-                <SelectValue placeholder="Tipo" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="todos">Todos os tipos</SelectItem>
-                {tiposSolicitacao.map(tipo => (
-                  <SelectItem key={tipo} value={tipo}>{tipo}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-        </div>
-      </div>
-
-      {filteredSolicitacoes.length === 0 ? (
-        <div className="text-center py-8">
-          <FileText size={48} className="mx-auto text-gray-400 mb-4" />
-          <h3 className="text-xl font-medium text-gray-700">Nenhuma solicitação encontrada</h3>
-          <p className="text-gray-500 mt-2">
-            {filtroStatus !== "todas" || filtroTipo !== "todos" 
-              ? "Tente mudar os filtros para ver mais solicitações." 
-              : "Você ainda não enviou nenhuma solicitação."}
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredSolicitacoes.map((solicitacao) => (
-            <Card key={`${solicitacao.tipo}-${solicitacao.id}`} className="overflow-hidden">
-              <CardContent className="p-0">
-                <div className="p-4">
-                  <div className="flex justify-between items-start mb-3">
-                    <div>
-                      <Badge 
-                        variant={
-                          solicitacao.status === 'aprovada' 
-                            ? 'success' 
-                            : solicitacao.status === 'rejeitada' 
-                              ? 'destructive' 
-                              : 'secondary'
-                        }
-                        className="mb-2"
-                      >
-                        {solicitacao.status === 'aprovada' 
-                          ? 'Aprovado' 
-                          : solicitacao.status === 'rejeitada' 
-                            ? 'Rejeitado' 
-                            : 'Pendente'}
-                      </Badge>
-                      <h3 className="font-medium text-lg">{solicitacao.tipo}</h3>
-                    </div>
-                    <span className="text-gray-500 text-sm">#{solicitacao.id}</span>
-                  </div>
-                  
-                  <p className="text-gray-600 text-sm mb-4">
-                    {getSolicitacaoDescricao(solicitacao)}
-                  </p>
-                  
-                  <div className="text-gray-500 text-sm">
-                    Solicitado em {formatDate(solicitacao.created_at)}
-                  </div>
-                </div>
-                
-                <div className="border-t mt-2 p-4 flex justify-between">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => abrirDetalhes(solicitacao)}
-                    className="flex items-center gap-1"
-                  >
-                    <FileText size={16} />
-                    Detalhes
-                  </Button>
-                  
-                  {solicitacao.status === 'aprovada' && 
-                    (isRefeicaoSolicitacao(solicitacao) || 
-                    (isTransporteSolicitacao(solicitacao) &&
-                     (solicitacao.tipo === 'Transporte Rota' || 
-                      solicitacao.tipo === 'Transporte 12x36' || 
-                      solicitacao.tipo === 'Uso de Rota'))) && (
-                    <Button 
-                      onClick={() => handleDownloadTicket(solicitacao)}
-                      variant="outline" 
-                      size="sm"
-                      className="flex items-center gap-1"
-                    >
-                      <Ticket size={16} />
-                      Ticket
-                    </Button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
-      
-      {renderDetalhes()}
-    </div>
-  );
-};
-
-export default MinhasSolicitacoes;
+        <DialogContent className="max
