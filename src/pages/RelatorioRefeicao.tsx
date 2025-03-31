@@ -34,14 +34,12 @@ import {
 } from 'recharts';
 
 const exportToExcel = (data: any[], fileName: string) => {
-  // Add BOM for UTF-8 character encoding support
   let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
   
   const headers = ["Nome", "Matrícula", "Setor", "Solicitante", "Área Solicitante", "Tipo de Refeição", "Data da Refeição"];
   csvContent += headers.join(",") + "\r\n";
   
   data.forEach(item => {
-    // Explicitly handle undefined/null values by replacing with empty strings
     const row = [
       `"${String(item.nome || '')}"`,
       `"${String(item.matricula || '')}"`,
@@ -90,7 +88,6 @@ const RelatorioRefeicao = () => {
         }
 
         const processedData = data.map((item: any) => {
-          // Process colaboradores array to include setor information
           const colaboradoresComSetor = Array.isArray(item.colaboradores) 
             ? item.colaboradores.map((colaborador: Colaborador) => ({
                 nome: String(colaborador.nome || ''),
@@ -100,8 +97,8 @@ const RelatorioRefeicao = () => {
             : [];
 
           return {
-            id: String(item.id || ''),
-            solicitante_id: String(item.solicitante_id || ''),
+            id: Number(item.id),
+            solicitante_id: Number(item.solicitante_id || 0),
             solicitante_nome: String(item.solicitante_nome || (item.usuarios?.nome || '')),
             solicitante_setor: String(item.solicitante_setor || (item.usuarios?.setor || '')),
             status: String(item.status || 'pendente'),
@@ -130,6 +127,8 @@ const RelatorioRefeicao = () => {
 
     return solicitacoes.filter(solicitacao => {
       try {
+        if (!solicitacao.data_refeicao) return false;
+        
         const dataRefeicao = parseISO(solicitacao.data_refeicao);
         const dentroDoIntervalo = isWithinInterval(dataRefeicao, {
           start: startOfDay(dataInicio),
@@ -161,7 +160,7 @@ const RelatorioRefeicao = () => {
             solicitante_nome: String(solicitacao.solicitante_nome || ''),
             solicitante_setor: String(solicitacao.solicitante_setor || ''),
             tipo_refeicao: String(solicitacao.tipo_refeicao || ''),
-            data_refeicao: format(new Date(solicitacao.data_refeicao), 'dd/MM/yyyy')
+            data_refeicao: solicitacao.data_refeicao ? format(new Date(solicitacao.data_refeicao), 'dd/MM/yyyy') : ''
           });
         });
       } else {
@@ -172,7 +171,7 @@ const RelatorioRefeicao = () => {
           solicitante_nome: String(solicitacao.solicitante_nome || ''),
           solicitante_setor: String(solicitacao.solicitante_setor || ''),
           tipo_refeicao: String(solicitacao.tipo_refeicao || ''),
-          data_refeicao: format(new Date(solicitacao.data_refeicao), 'dd/MM/yyyy')
+          data_refeicao: solicitacao.data_refeicao ? format(new Date(solicitacao.data_refeicao), 'dd/MM/yyyy') : ''
         });
       }
     });
@@ -233,6 +232,8 @@ const RelatorioRefeicao = () => {
     
     solicitacoesFiltradas.forEach(solicitacao => {
       try {
+        if (!solicitacao.data_refeicao) return;
+        
         const dataFormatada = format(new Date(solicitacao.data_refeicao), 'dd/MM');
         const quantidade = Array.isArray(solicitacao.colaboradores) ? solicitacao.colaboradores.length : 0;
         
@@ -280,7 +281,7 @@ const RelatorioRefeicao = () => {
             {solicitacoesFiltradas.map((solicitacao) => (
               <tr key={solicitacao.id} className="border-b hover:bg-gray-50">
                 <td className="py-2 px-4">
-                  {format(new Date(solicitacao.data_refeicao), 'dd/MM/yyyy')}
+                  {solicitacao.data_refeicao ? format(new Date(solicitacao.data_refeicao), 'dd/MM/yyyy') : 'Data não disponível'}
                 </td>
                 <td className="py-2 px-4">{String(solicitacao.tipo_refeicao || '')}</td>
                 <td className="py-2 px-4">{String(solicitacao.solicitante_nome || '')}</td>
