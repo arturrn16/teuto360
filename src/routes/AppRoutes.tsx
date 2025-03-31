@@ -5,36 +5,36 @@ import { Layout } from '@/components/Layout';
 import { PageLoader } from '@/components/ui/loader-spinner';
 import { ProtectedRoute } from '@/context/AuthContext';
 
-// Lazy load all the pages with prefetching hint
-const Index = lazy(() => import('@/pages/Index'));
-const Login = lazy(() => import('@/pages/Login'));
-const Dashboard = lazy(() => import('@/pages/Dashboard'));
-const NotFound = lazy(() => import('@/pages/NotFound'));
+// Import pages with lower precedence to optimize loading
+const Index = lazy(() => import('@/pages/Index').then(module => ({ default: module.default })));
+const Login = lazy(() => import('@/pages/Login').then(module => ({ default: module.default })));
+const Dashboard = lazy(() => import('@/pages/Dashboard').then(module => ({ default: module.default })));
+const NotFound = lazy(() => import('@/pages/NotFound').then(module => ({ default: module.default })));
 
 // Admin pages
-const Admin = lazy(() => import('@/pages/Admin'));
-const Relatorios = lazy(() => import('@/pages/Relatorios'));
-const GerenciarComunicados = lazy(() => import('@/pages/GerenciarComunicados'));
-const GerenciarCardapio = lazy(() => import('@/pages/GerenciarCardapio'));
-const GerenciarCartoes = lazy(() => import('@/pages/GerenciarCartoes'));
-const GerenciarUsuarios = lazy(() => import('@/pages/GerenciarUsuarios'));
+const Admin = lazy(() => import('@/pages/Admin').then(module => ({ default: module.default })));
+const Relatorios = lazy(() => import('@/pages/Relatorios').then(module => ({ default: module.default })));
+const GerenciarComunicados = lazy(() => import('@/pages/GerenciarComunicados').then(module => ({ default: module.default })));
+const GerenciarCardapio = lazy(() => import('@/pages/GerenciarCardapio').then(module => ({ default: module.default })));
+const GerenciarCartoes = lazy(() => import('@/pages/GerenciarCartoes').then(module => ({ default: module.default })));
+const GerenciarUsuarios = lazy(() => import('@/pages/GerenciarUsuarios').then(module => ({ default: module.default })));
 
 // Regular pages
-const TransporteRota = lazy(() => import('@/pages/TransporteRota'));
-const Transporte12x36 = lazy(() => import('@/pages/Transporte12x36'));
-const Refeicao = lazy(() => import('@/pages/Refeicao'));
-const Comunicados = lazy(() => import('@/pages/Comunicados'));
-const MinhasSolicitacoes = lazy(() => import('@/pages/MinhasSolicitacoes'));
-const MapaRotas = lazy(() => import('@/pages/MapaRotas'));
-const AdesaoCancelamento = lazy(() => import('@/pages/AdesaoCancelamento'));
-const MudancaTurno = lazy(() => import('@/pages/MudancaTurno'));
-const AlteracaoEndereco = lazy(() => import('@/pages/AlteracaoEndereco'));
-const AbonoPonto = lazy(() => import('@/pages/AbonoPonto'));
-const Avaliacao = lazy(() => import('@/pages/Avaliacao'));
-const Plantao = lazy(() => import('@/pages/Plantao'));
-const OfertaCaronas = lazy(() => import('@/pages/OfertaCaronas'));
-const ConsultaCartao = lazy(() => import('@/pages/ConsultaCartao'));
-const CardapioSemana = lazy(() => import('@/pages/CardapioSemana'));
+const TransporteRota = lazy(() => import('@/pages/TransporteRota').then(module => ({ default: module.default })));
+const Transporte12x36 = lazy(() => import('@/pages/Transporte12x36').then(module => ({ default: module.default })));
+const Refeicao = lazy(() => import('@/pages/Refeicao').then(module => ({ default: module.default })));
+const Comunicados = lazy(() => import('@/pages/Comunicados').then(module => ({ default: module.default })));
+const MinhasSolicitacoes = lazy(() => import('@/pages/MinhasSolicitacoes').then(module => ({ default: module.default })));
+const MapaRotas = lazy(() => import('@/pages/MapaRotas').then(module => ({ default: module.default })));
+const AdesaoCancelamento = lazy(() => import('@/pages/AdesaoCancelamento').then(module => ({ default: module.default })));
+const MudancaTurno = lazy(() => import('@/pages/MudancaTurno').then(module => ({ default: module.default })));
+const AlteracaoEndereco = lazy(() => import('@/pages/AlteracaoEndereco').then(module => ({ default: module.default })));
+const AbonoPonto = lazy(() => import('@/pages/AbonoPonto').then(module => ({ default: module.default })));
+const Avaliacao = lazy(() => import('@/pages/Avaliacao').then(module => ({ default: module.default })));
+const Plantao = lazy(() => import('@/pages/Plantao').then(module => ({ default: module.default })));
+const OfertaCaronas = lazy(() => import('@/pages/OfertaCaronas').then(module => ({ default: module.default })));
+const ConsultaCartao = lazy(() => import('@/pages/ConsultaCartao').then(module => ({ default: module.default })));
+const CardapioSemana = lazy(() => import('@/pages/CardapioSemana').then(module => ({ default: module.default })));
 
 // Create a protected route wrapper to simplify route definitions
 const ProtectedPage = memo(({ 
