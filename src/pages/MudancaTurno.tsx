@@ -1,18 +1,12 @@
 
-import { useState, useEffect } from "react";
+// Import necessary components and hooks
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
-import { supabase, queryCustomTable } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -31,10 +25,10 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { FormLayout } from "@/components/FormLayout";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { goianiaTurnosOptions } from "@/data/routes";
 
 interface FormValues {
+  matricula: string;
+  nome: string;
   telefone: string;
   cep: string;
   endereco: string;
@@ -45,10 +39,6 @@ interface FormValues {
   novaRota: string;
   nomeGestor: string;
   motivo: string;
-  matricula: string; // Adicionado para permitir edição
-  colaboradorNome: string; // Adicionado para permitir edição
-  cargo: string; // Adicionado para permitir edição
-  setor: string; // Adicionado para permitir edição
 }
 
 const MudancaTurno = () => {
@@ -56,17 +46,24 @@ const MudancaTurno = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingCep, setIsLoadingCep] = useState(false);
-  const isMobile = useIsMobile();
   
-  // Check if the current user is a "gestor" type user
-  const isGestorUser = user?.tipo_usuario === 'gestor';
+  // Define turno options
+  const turnoOptions = ["Primeiro", "Segundo", "Terceiro", "ADM"];
+  
+  // Define routes per turno
+  const rotasPerTurno = {
+    "Primeiro": ["P-01", "P-02", "P-03", "P-04", "P-05", "P-06", "P-07", "P-08", "P-09", "P-10", "P-11", "P-12", "P-13", "P-14", "P-15"],
+    "Segundo": ["S-01", "S-02", "S-03", "S-04", "S-05", "S-06", "S-07", "S-08", "S-09", "S-10", "S-11", "S-12"],
+    "Terceiro": ["T-01", "T-02", "T-03", "T-04", "T-05", "T-06", "T-07", "T-08"],
+    "ADM": ["ADM-01", "ADM-02", "ADM-03", "ADM-04", "ADM-05", "ADM-06", "ADM-07", "ADM-08"],
+  };
+  
+  const [rotaOptions, setRotaOptions] = useState<string[]>([]);
   
   const form = useForm<FormValues>({
     defaultValues: {
       matricula: user?.matricula || "",
-      colaboradorNome: user?.nome || "",
-      cargo: user?.cargo || "",
-      setor: user?.setor || "",
+      nome: user?.nome || "",
       telefone: "",
       cep: "",
       endereco: "",
@@ -80,41 +77,20 @@ const MudancaTurno = () => {
     },
   });
   
-  const turnoAtual = form.watch("turnoAtual");
-  const novoTurno = form.watch("novoTurno");
+  const watchNovoTurno = form.watch("novoTurno");
   
-  const turnoOptionsAnapoles = [
-    "Administrativo", 
-    "1° Turno", 
-    "2° Turno", 
-    "3° Turno", 
-    "Faculdade"
-  ];
-  
-  const getRotaOptions = () => {
-    if (goianiaTurnosOptions.includes(novoTurno)) {
-      return [novoTurno];
-    } else if (novoTurno === "Administrativo") {
-      return Array.from({ length: 8 }, (_, i) => `ADM-${String(i + 1).padStart(2, '0')}`);
-    } else if (novoTurno === "1° Turno") {
-      return Array.from({ length: 15 }, (_, i) => `P-${String(i + 1).padStart(2, '0')}`);
-    } else if (novoTurno === "2° Turno") {
-      return Array.from({ length: 12 }, (_, i) => `S-${String(i + 1).padStart(2, '0')}`);
-    } else if (novoTurno === "3° Turno") {
-      return Array.from({ length: 8 }, (_, i) => `T-${String(i + 1).padStart(2, '0')}`);
-    } else if (novoTurno === "Faculdade") {
-      return ["FACULDADE"];
+  // Update rota options when new turno is selected
+  const handleTurnoChange = (turno: string) => {
+    form.setValue("novoTurno", turno);
+    form.setValue("novaRota", ""); // Reset rota value
+    
+    // Update available rotas based on selected turno
+    if (turno in rotasPerTurno) {
+      setRotaOptions(rotasPerTurno[turno as keyof typeof rotasPerTurno]);
+    } else {
+      setRotaOptions([]);
     }
-    return [];
   };
-  
-  const rotaOptions = getRotaOptions();
-  
-  useEffect(() => {
-    if (goianiaTurnosOptions.includes(novoTurno)) {
-      form.setValue("novaRota", novoTurno);
-    }
-  }, [novoTurno, form]);
   
   const buscarCep = async (cep: string) => {
     if (cep.length !== 8) return;
@@ -151,10 +127,8 @@ const MudancaTurno = () => {
     try {
       const { error } = await supabase.from('solicitacoes_mudanca_turno').insert({
         solicitante_id: user.id,
-        matricula: data.matricula,
-        colaborador_nome: data.colaboradorNome,
-        cargo: data.cargo,
-        setor: data.setor,
+        matricula: data.matricula, // Added matricula field
+        nome: data.nome, // Added nome field
         telefone: data.telefone,
         cep: data.cep,
         endereco: data.endereco,
@@ -162,10 +136,11 @@ const MudancaTurno = () => {
         cidade: data.cidade,
         turno_atual: data.turnoAtual,
         novo_turno: data.novoTurno,
-        turno_novo: data.novoTurno,
+        turno_novo: data.novoTurno, // Using both field names for compatibility
         nova_rota: data.novaRota,
         nome_gestor: data.nomeGestor,
         motivo: data.motivo,
+        data_alteracao: new Date().toISOString(),
         status: 'pendente'
       });
       
@@ -185,218 +160,11 @@ const MudancaTurno = () => {
     }
   };
   
-  // Obter todas as opções de turnos disponíveis
-  const getAllTurnoOptions = () => {
-    return [...turnoOptionsAnapoles, ...goianiaTurnosOptions];
-  };
-  
-  const renderFormContent = () => {
-    if (isMobile) {
-      return (
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <div className="mb-4">
-            <label className="form-field-label">Matrícula</label>
-            <input 
-              type="text" 
-              className={`form-field-input ${isGestorUser ? "" : "bg-gray-100"}`}
-              value={form.watch("matricula")}
-              onChange={(e) => form.setValue("matricula", e.target.value)}
-              disabled={!isGestorUser}
-            />
-            
-            <label className="form-field-label">Nome</label>
-            <input 
-              type="text" 
-              className={`form-field-input ${isGestorUser ? "" : "bg-gray-100"}`}
-              value={form.watch("colaboradorNome")}
-              onChange={(e) => form.setValue("colaboradorNome", e.target.value)}
-              disabled={!isGestorUser}
-            />
-            
-            <label className="form-field-label">Cargo</label>
-            <input 
-              type="text" 
-              className={`form-field-input ${isGestorUser ? "" : "bg-gray-100"}`}
-              value={form.watch("cargo")}
-              onChange={(e) => form.setValue("cargo", e.target.value)}
-              disabled={!isGestorUser}
-            />
-            
-            <label className="form-field-label">Setor</label>
-            <input 
-              type="text" 
-              className={`form-field-input ${isGestorUser ? "" : "bg-gray-100"}`}
-              value={form.watch("setor")}
-              onChange={(e) => form.setValue("setor", e.target.value)}
-              disabled={!isGestorUser}
-            />
-          </div>
-          
-          <div>
-            <label className="form-field-label">Telefone</label>
-            <input 
-              type="text" 
-              className="form-field-input" 
-              placeholder="DDD + número (apenas números)"
-              {...form.register("telefone", { 
-                required: "Telefone é obrigatório",
-                pattern: {
-                  value: /^\d{10,11}$/,
-                  message: "Telefone inválido. Use apenas números (DDD + número)"
-                }
-              })}
-            />
-            {form.formState.errors.telefone && (
-              <p className="text-red-500 mt-1">{form.formState.errors.telefone.message}</p>
-            )}
-            
-            <label className="form-field-label">CEP</label>
-            <div className="flex gap-2">
-              <input 
-                type="text" 
-                className="form-field-input flex-1" 
-                placeholder="Apenas números"
-                {...form.register("cep", { 
-                  required: "CEP é obrigatório",
-                  pattern: {
-                    value: /^\d{8}$/,
-                    message: "CEP inválido. Use apenas números"
-                  }
-                })}
-                onChange={(e) => {
-                  form.setValue("cep", e.target.value);
-                  if (e.target.value.length === 8) {
-                    buscarCep(e.target.value);
-                  }
-                }}
-              />
-              <button 
-                type="button" 
-                className="bg-gray-200 px-3 rounded"
-                onClick={() => buscarCep(form.getValues("cep"))}
-                disabled={form.getValues("cep").length !== 8 || isLoadingCep}
-              >
-                {isLoadingCep ? "..." : "Buscar"}
-              </button>
-            </div>
-            {form.formState.errors.cep && (
-              <p className="text-red-500 mt-1">{form.formState.errors.cep.message}</p>
-            )}
-            
-            <label className="form-field-label">Endereço</label>
-            <input 
-              type="text" 
-              className="form-field-input" 
-              {...form.register("endereco", { required: "Endereço é obrigatório" })}
-            />
-            {form.formState.errors.endereco && (
-              <p className="text-red-500 mt-1">{form.formState.errors.endereco.message}</p>
-            )}
-            
-            <label className="form-field-label">Bairro</label>
-            <input 
-              type="text" 
-              className="form-field-input" 
-              {...form.register("bairro", { required: "Bairro é obrigatório" })}
-            />
-            {form.formState.errors.bairro && (
-              <p className="text-red-500 mt-1">{form.formState.errors.bairro.message}</p>
-            )}
-            
-            <label className="form-field-label">Cidade</label>
-            <input 
-              type="text" 
-              className="form-field-input" 
-              {...form.register("cidade", { required: "Cidade é obrigatória" })}
-            />
-            {form.formState.errors.cidade && (
-              <p className="text-red-500 mt-1">{form.formState.errors.cidade.message}</p>
-            )}
-            
-            <label className="form-field-label">Turno Atual</label>
-            <select 
-              className="form-select-input"
-              value={turnoAtual}
-              onChange={(e) => form.setValue("turnoAtual", e.target.value)}
-            >
-              <option value="" disabled>Selecione o turno atual</option>
-              {getAllTurnoOptions().map((option) => (
-                <option key={option} value={option}>{option}</option>
-              ))}
-            </select>
-            {form.formState.errors.turnoAtual && (
-              <p className="text-red-500 mt-1">{form.formState.errors.turnoAtual.message}</p>
-            )}
-            
-            <label className="form-field-label">Novo Turno</label>
-            <select 
-              className="form-select-input"
-              value={novoTurno}
-              onChange={(e) => {
-                form.setValue("novoTurno", e.target.value);
-                if (goianiaTurnosOptions.includes(e.target.value)) {
-                  form.setValue("novaRota", e.target.value);
-                } else {
-                  form.setValue("novaRota", "");
-                }
-              }}
-            >
-              <option value="" disabled>Selecione o novo turno</option>
-              {getAllTurnoOptions().map((option) => (
-                <option key={option} value={option}>{option}</option>
-              ))}
-            </select>
-            {form.formState.errors.novoTurno && (
-              <p className="text-red-500 mt-1">{form.formState.errors.novoTurno.message}</p>
-            )}
-            
-            <label className="form-field-label">Nova Rota</label>
-            <select 
-              className="form-select-input"
-              value={form.watch("novaRota")}
-              onChange={(e) => form.setValue("novaRota", e.target.value)}
-              disabled={!novoTurno || goianiaTurnosOptions.includes(novoTurno)}
-            >
-              <option value="" disabled>Selecione a nova rota</option>
-              {rotaOptions.map((option) => (
-                <option key={option} value={option}>{option}</option>
-              ))}
-            </select>
-            {form.formState.errors.novaRota && (
-              <p className="text-red-500 mt-1">{form.formState.errors.novaRota.message}</p>
-            )}
-            
-            <label className="form-field-label">Nome do gestor que aprovou a alteração</label>
-            <input 
-              type="text" 
-              className="form-field-input" 
-              placeholder="Nome completo do gestor"
-              {...form.register("nomeGestor", { required: "Nome do gestor é obrigatório" })}
-            />
-            {form.formState.errors.nomeGestor && (
-              <p className="text-red-500 mt-1">{form.formState.errors.nomeGestor.message}</p>
-            )}
-            
-            <label className="form-field-label">Motivo da alteração</label>
-            <textarea 
-              className="form-field-input"
-              rows={5}
-              placeholder="Descreva o motivo da alteração de turno"
-              {...form.register("motivo", { required: "Motivo é obrigatório" })}
-            />
-            {form.formState.errors.motivo && (
-              <p className="text-red-500 mt-1">{form.formState.errors.motivo.message}</p>
-            )}
-          </div>
-          
-          <Button type="submit" className="w-full py-4 text-lg rounded-xl" disabled={isSubmitting}>
-            {isSubmitting ? "Enviando..." : "Enviar Solicitação"}
-          </Button>
-        </form>
-      );
-    }
-    
-    return (
+  return (
+    <FormLayout
+      title="Mudança de Turno"
+      description="Preencha o formulário para solicitar a mudança de turno de um colaborador."
+    >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -408,7 +176,7 @@ const MudancaTurno = () => {
                 <FormItem>
                   <FormLabel className="form-field-label">Matrícula</FormLabel>
                   <FormControl>
-                    <Input {...field} readOnly={!isGestorUser} className={isGestorUser ? "form-field-input" : "form-field-input bg-gray-100"} />
+                    <Input {...field} className="form-field-input" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -417,43 +185,13 @@ const MudancaTurno = () => {
             
             <FormField
               control={form.control}
-              name="colaboradorNome"
+              name="nome"
               rules={{ required: "Nome é obrigatório" }}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="form-field-label">Nome</FormLabel>
                   <FormControl>
-                    <Input {...field} readOnly={!isGestorUser} className={isGestorUser ? "form-field-input" : "form-field-input bg-gray-100"} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <FormField
-              control={form.control}
-              name="cargo"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="form-field-label">Cargo</FormLabel>
-                  <FormControl>
-                    <Input {...field} readOnly={!isGestorUser} className={isGestorUser ? "form-field-input" : "form-field-input bg-gray-100"} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="setor"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="form-field-label">Setor</FormLabel>
-                  <FormControl>
-                    <Input {...field} readOnly={!isGestorUser} className={isGestorUser ? "form-field-input" : "form-field-input bg-gray-100"} />
+                    <Input {...field} className="form-field-input" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -478,7 +216,7 @@ const MudancaTurno = () => {
                   <Input 
                     placeholder="DDD + número (apenas números)" 
                     {...field} 
-                    className="form-field-input" 
+                    className="form-field-input"
                   />
                 </FormControl>
                 <FormMessage />
@@ -504,7 +242,7 @@ const MudancaTurno = () => {
                     <Input 
                       placeholder="Apenas números" 
                       {...field} 
-                      className="form-field-input" 
+                      className="form-field-input"
                       onChange={(e) => {
                         field.onChange(e);
                         if (e.target.value.length === 8) {
@@ -592,8 +330,8 @@ const MudancaTurno = () => {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {getAllTurnoOptions().map((turno) => (
-                        <SelectItem key={turno} value={turno}>{turno}</SelectItem>
+                      {turnoOptions.map((option) => (
+                        <SelectItem key={option} value={option}>{option}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -610,14 +348,7 @@ const MudancaTurno = () => {
                 <FormItem>
                   <FormLabel className="form-field-label">Novo Turno</FormLabel>
                   <Select 
-                    onValueChange={(value) => {
-                      field.onChange(value);
-                      if (goianiaTurnosOptions.includes(value)) {
-                        form.setValue("novaRota", value);
-                      } else {
-                        form.setValue("novaRota", "");
-                      }
-                    }}
+                    onValueChange={(value) => handleTurnoChange(value)}
                     defaultValue={field.value}
                   >
                     <FormControl>
@@ -626,8 +357,8 @@ const MudancaTurno = () => {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {getAllTurnoOptions().map((turno) => (
-                        <SelectItem key={turno} value={turno}>{turno}</SelectItem>
+                      {turnoOptions.map((option) => (
+                        <SelectItem key={option} value={option}>{option}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -647,7 +378,7 @@ const MudancaTurno = () => {
                 <Select 
                   onValueChange={field.onChange}
                   defaultValue={field.value}
-                  disabled={!novoTurno || goianiaTurnosOptions.includes(novoTurno)}
+                  disabled={!watchNovoTurno}
                 >
                   <FormControl>
                     <SelectTrigger className="form-select-input">
@@ -655,11 +386,16 @@ const MudancaTurno = () => {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {rotaOptions.map((rota) => (
-                      <SelectItem key={rota} value={rota}>{rota}</SelectItem>
+                    {rotaOptions.map((option) => (
+                      <SelectItem key={option} value={option}>{option}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+                {!watchNovoTurno && (
+                  <p className="text-sm text-muted-foreground">
+                    Selecione um novo turno primeiro
+                  </p>
+                )}
                 <FormMessage />
               </FormItem>
             )}
@@ -671,9 +407,9 @@ const MudancaTurno = () => {
             rules={{ required: "Nome do gestor é obrigatório" }}
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="form-field-label">Nome do gestor que aprovou a alteração</FormLabel>
+                <FormLabel className="form-field-label">Nome do Gestor</FormLabel>
                 <FormControl>
-                  <Input placeholder="Nome completo do gestor" {...field} className="form-field-input" />
+                  <Input {...field} className="form-field-input" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -686,10 +422,10 @@ const MudancaTurno = () => {
             rules={{ required: "Motivo é obrigatório" }}
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="form-field-label">Motivo da alteração</FormLabel>
+                <FormLabel className="form-field-label">Motivo da Mudança</FormLabel>
                 <FormControl>
                   <Textarea 
-                    placeholder="Descreva o motivo da alteração de turno"
+                    placeholder="Descreva o motivo da mudança de turno"
                     rows={4}
                     {...field} 
                     className="form-field-input"
@@ -705,24 +441,7 @@ const MudancaTurno = () => {
           </Button>
         </form>
       </Form>
-    );
-  };
-  
-  return (
-    <div className="container max-w-3xl py-10">
-      <Card>
-        <CardHeader>
-          <CardTitle>Mudança de Turno</CardTitle>
-          <CardDescription>
-            Todas as solicitações realizadas neste canal serão validadas com o gestor 
-            antes de aprovarmos, portanto só preencha se já tiver a devida autorização.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {renderFormContent()}
-        </CardContent>
-      </Card>
-    </div>
+    </FormLayout>
   );
 };
 

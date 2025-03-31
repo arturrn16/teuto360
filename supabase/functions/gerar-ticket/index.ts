@@ -16,7 +16,7 @@ const handler = async (req: Request): Promise<Response> => {
     const supabase = createClient(supabaseUrl, supabaseKey);
     
     // Extrair parâmetros da requisição
-    const { id, tipo } = await req.json();
+    const { id, tipo, colaboradorIndex } = await req.json();
     
     if (!id || !tipo) {
       return new Response(
@@ -29,6 +29,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
     
     let dadosSolicitacao;
+    let colaboradorInfo = null;
     
     // Buscar dados da solicitação de acordo com o tipo
     if (tipo === 'rota') {
@@ -88,6 +89,27 @@ const handler = async (req: Request): Promise<Response> => {
       }
       
       dadosSolicitacao = data;
+      
+      // If colaboradorIndex is provided, extract information for that specific collaborator
+      if (colaboradorIndex !== undefined && 
+          dadosSolicitacao.colaboradores && 
+          dadosSolicitacao.colaboradores.length > colaboradorIndex) {
+        
+        // Get the collaborator name from the array
+        const nomeColaborador = dadosSolicitacao.colaboradores[colaboradorIndex];
+        let matriculaColaborador = '';
+        
+        // Get matricula if available
+        if (dadosSolicitacao.matriculas && 
+            dadosSolicitacao.matriculas.length > colaboradorIndex) {
+          matriculaColaborador = dadosSolicitacao.matriculas[colaboradorIndex];
+        }
+        
+        colaboradorInfo = {
+          nome: nomeColaborador,
+          matricula: matriculaColaborador
+        };
+      }
     } else {
       return new Response(
         JSON.stringify({ error: "Tipo de solicitação inválido" }),
@@ -105,7 +127,8 @@ const handler = async (req: Request): Promise<Response> => {
         ticket: {
           id: dadosSolicitacao.id,
           tipo,
-          dados: dadosSolicitacao
+          dados: dadosSolicitacao,
+          colaboradorInfo
         }
       }),
       { 

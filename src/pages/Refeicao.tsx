@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -21,14 +22,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon, PlusCircle, Trash2 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { FormLayout } from "@/components/FormLayout";
 
+interface ColaboradorInput {
+  nome: string;
+  matricula: string;
+}
+
 interface FormValues {
-  colaboradores: { nome: string }[];
+  colaboradores: ColaboradorInput[];
   tipoRefeicao: "Almoço" | "Jantar" | "Lanche" | "Ceia";
   dataRefeicao: Date;
 }
@@ -40,7 +47,7 @@ const Refeicao = () => {
   
   const form = useForm<FormValues>({
     defaultValues: {
-      colaboradores: [{ nome: "" }],
+      colaboradores: [{ nome: "", matricula: "" }],
       tipoRefeicao: "Almoço",
       dataRefeicao: new Date(),
     },
@@ -53,7 +60,13 @@ const Refeicao = () => {
   
   const tipoRefeicaoOptions = ["Almoço", "Jantar", "Lanche", "Ceia"];
   
-  const formatDate = (date: Date) => {
+  // Format date for display (fix timezone issues)
+  const formatDateDisplay = (date: Date) => {
+    return format(date, "dd/MM/yyyy", { locale: ptBR });
+  };
+  
+  // Format date for database (fix timezone issues)
+  const formatDateForDatabase = (date: Date) => {
     return format(date, "yyyy-MM-dd");
   };
   
@@ -63,19 +76,25 @@ const Refeicao = () => {
       return;
     }
     
-    if (data.colaboradores.some(col => !col.nome.trim())) {
-      toast.error("Preencha o nome de todos os colaboradores");
+    // Validate all collaborator inputs
+    if (data.colaboradores.some(col => !col.nome.trim() || !col.matricula.trim())) {
+      toast.error("Preencha o nome e a matrícula de todos os colaboradores");
       return;
     }
     
     setIsSubmitting(true);
     
     try {
+      // Extract names and matriculas into separate arrays
+      const nomes = data.colaboradores.map(c => c.nome);
+      const matriculas = data.colaboradores.map(c => c.matricula);
+      
       const { error } = await supabase.from("solicitacoes_refeicao").insert({
         solicitante_id: user.id,
-        colaboradores: data.colaboradores.map(c => c.nome),
+        colaboradores: nomes,
+        matriculas: matriculas,
         tipo_refeicao: data.tipoRefeicao,
-        data_refeicao: formatDate(data.dataRefeicao),
+        data_refeicao: formatDateForDatabase(data.dataRefeicao),
       });
       
       if (error) {
@@ -108,7 +127,7 @@ const Refeicao = () => {
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => append({ nome: "" })}
+                onClick={() => append({ nome: "", matricula: "" })}
                 className="flex items-center gap-1"
               >
                 <PlusCircle className="h-4 w-4" />
@@ -117,34 +136,63 @@ const Refeicao = () => {
             </div>
             
             {fields.map((field, index) => (
-              <div key={field.id} className="flex items-center gap-2">
-                <FormField
-                  control={form.control}
-                  name={`colaboradores.${index}.nome`}
-                  render={({ field }) => (
-                    <FormItem className="flex-1">
-                      <FormControl>
-                        <Input 
-                          placeholder="Nome do colaborador" 
-                          {...field} 
-                          className="form-field-input"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <div key={field.id} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name={`colaboradores.${index}.nome`}
+                    rules={{ required: "Nome é obrigatório" }}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs">Nome do colaborador</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="Nome completo" 
+                            {...field} 
+                            className="form-field-input"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name={`colaboradores.${index}.matricula`}
+                    rules={{ required: "Matrícula é obrigatória" }}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs">Matrícula</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="Matrícula" 
+                            {...field} 
+                            className="form-field-input"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
                 {fields.length > 1 && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => remove(index)}
-                    className="text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <div className="flex justify-end">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => remove(index)}
+                      className="text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      Remover
+                    </Button>
+                  </div>
                 )}
+                
+                {index < fields.length - 1 && <hr className="my-4" />}
               </div>
             ))}
           </div>
@@ -194,7 +242,7 @@ const Refeicao = () => {
                           className="form-date-input"
                         >
                           {field.value ? (
-                            format(field.value, "dd/MM/yyyy")
+                            formatDateDisplay(field.value)
                           ) : (
                             <span>Selecione a data</span>
                           )}
@@ -209,6 +257,7 @@ const Refeicao = () => {
                         onSelect={field.onChange}
                         disabled={(date) => date < new Date()}
                         initialFocus
+                        locale={ptBR}
                       />
                     </PopoverContent>
                   </Popover>

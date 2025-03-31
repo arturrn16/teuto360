@@ -56,12 +56,6 @@ export const navItems: NavItem[] = [
         allowedTypes: ["comum"] as const 
       },
       { 
-        name: "Adesão/Cancelamento", 
-        href: "/adesao-cancelamento", 
-        icon: <></>,
-        allowedTypes: ["comum"] as const 
-      },
-      { 
         name: "Abono de Ponto", 
         href: "/abono-ponto", 
         icon: <></>,
