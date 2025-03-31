@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -31,6 +31,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { FormLayout } from "@/components/FormLayout";
 import { Upload, X, Check, ChevronDown } from "lucide-react";
+import { getAvailableFormRoutes, getAvailableTurnos } from "@/data/routes";
 
 interface FormValues {
   telefone: string;
@@ -39,6 +40,7 @@ interface FormValues {
   bairro: string;
   cidade: string;
   complemento: string;
+  turno: string;
   rotaAtual: string;
   alterarRota: "sim" | "nao";
   novaRota?: string;
@@ -53,6 +55,9 @@ const AlteracaoEndereco = () => {
   const [fileUploading, setFileUploading] = useState(false);
   const [showRotaDropdown, setShowRotaDropdown] = useState(false);
   const [showNovaRotaDropdown, setShowNovaRotaDropdown] = useState(false);
+  const [turnosOptions, setTurnosOptions] = useState<string[]>([]);
+  const [rotasOptions, setRotasOptions] = useState<string[]>([]);
+  const [novasRotasOptions, setNovasRotasOptions] = useState<string[]>([]);
   
   const form = useForm<FormValues>({
     defaultValues: {
@@ -62,19 +67,42 @@ const AlteracaoEndereco = () => {
       bairro: "",
       cidade: "",
       complemento: "",
+      turno: "",
       rotaAtual: "",
       alterarRota: "nao",
     },
   });
   
   const alterarRota = form.watch("alterarRota");
+  const selectedTurno = form.watch("turno");
+  const cidade = form.watch("cidade");
   
-  const rotaOptions = [
-    "ADM-01", "ADM-02", "ADM-03", "ADM-04", "ADM-05", "ADM-06", "ADM-07", "ADM-08",
-    "P-01", "P-02", "P-03", "P-04", "P-05", "P-06", "P-07", "P-08", "P-09", "P-10", "P-11", "P-12", "P-13", "P-14", "P-15",
-    "S-01", "S-02", "S-03", "S-04", "S-05", "S-06", "S-07", "S-08", "S-09", "S-10", "S-11", "S-12",
-    "T-01", "T-02", "T-03", "T-04", "T-05", "T-06", "T-07", "T-08"
-  ];
+  useEffect(() => {
+    // Load available turnos
+    const turnos = getAvailableTurnos();
+    setTurnosOptions(turnos);
+  }, []);
+  
+  useEffect(() => {
+    // When turno changes, update available routes
+    if (selectedTurno && cidade) {
+      const routes = getAvailableFormRoutes(selectedTurno, cidade);
+      setRotasOptions(routes);
+      setNovasRotasOptions(routes);
+      
+      // Clear selected route if it's not in the new routes list
+      const currentRoute = form.getValues("rotaAtual");
+      if (currentRoute && !routes.includes(currentRoute)) {
+        form.setValue("rotaAtual", "");
+      }
+      
+      // Clear selected new route if it's not in the new routes list
+      const currentNewRoute = form.getValues("novaRota");
+      if (currentNewRoute && !routes.includes(currentNewRoute)) {
+        form.setValue("novaRota", "");
+      }
+    }
+  }, [selectedTurno, cidade, form]);
   
   const buscarCep = async (cep: string) => {
     if (cep.length !== 8) return;
@@ -178,6 +206,7 @@ const AlteracaoEndereco = () => {
         bairro: data.bairro,
         cidade: data.cidade,
         complemento: data.complemento,
+        turno: data.turno,
         rota_atual: data.rotaAtual,
         alterar_rota: data.alterarRota === "sim",
         nova_rota: data.alterarRota === "sim" ? data.novaRota : null,
@@ -427,6 +456,44 @@ const AlteracaoEndereco = () => {
           
           <FormField
             control={form.control}
+            name="turno"
+            rules={{ required: "Turno é obrigatório" }}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="form-field-label">Turno</FormLabel>
+                {window.innerWidth < 640 ? (
+                  <MobileDropdownSelector
+                    options={turnosOptions}
+                    value={field.value}
+                    onChange={(value) => form.setValue("turno", value)}
+                    placeholder="Selecione o turno"
+                    isOpen={false}
+                    setIsOpen={() => {}}
+                  />
+                ) : (
+                  <Select 
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="form-select-input">
+                        <SelectValue placeholder="Selecione o turno" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {turnosOptions.map((turno) => (
+                        <SelectItem key={turno} value={turno}>{turno}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
             name="rotaAtual"
             rules={{ required: "Rota atual é obrigatória" }}
             render={({ field }) => (
@@ -434,7 +501,7 @@ const AlteracaoEndereco = () => {
                 <FormLabel className="form-field-label">Rota Atual</FormLabel>
                 {window.innerWidth < 640 ? (
                   <MobileDropdownSelector
-                    options={rotaOptions}
+                    options={rotasOptions}
                     value={field.value}
                     onChange={(value) => form.setValue("rotaAtual", value)}
                     placeholder="Selecione sua rota atual"
@@ -452,7 +519,7 @@ const AlteracaoEndereco = () => {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {rotaOptions.map((rota) => (
+                      {rotasOptions.map((rota) => (
                         <SelectItem key={rota} value={rota}>{rota}</SelectItem>
                       ))}
                     </SelectContent>
@@ -505,7 +572,7 @@ const AlteracaoEndereco = () => {
                   <FormLabel className="form-field-label">Nova Rota</FormLabel>
                   {window.innerWidth < 640 ? (
                     <MobileDropdownSelector
-                      options={rotaOptions}
+                      options={novasRotasOptions}
                       value={field.value || ""}
                       onChange={(value) => form.setValue("novaRota", value)}
                       placeholder="Selecione a nova rota"
@@ -523,7 +590,7 @@ const AlteracaoEndereco = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {rotaOptions.map((rota) => (
+                        {novasRotasOptions.map((rota) => (
                           <SelectItem key={rota} value={rota}>{rota}</SelectItem>
                         ))}
                       </SelectContent>
@@ -535,7 +602,7 @@ const AlteracaoEndereco = () => {
             />
           )}
           
-          {/* Comprovante de Endereço (File Upload) - Moved to the end of the form */}
+          {/* Comprovante de Endereço (File Upload) */}
           <FormItem>
             <FormLabel className="form-field-label">Comprovante de Endereço</FormLabel>
             <div className="border border-input rounded-md p-2">
