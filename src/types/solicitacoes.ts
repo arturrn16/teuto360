@@ -8,8 +8,8 @@ export interface BaseSolicitacao {
 }
 
 export interface SolicitacaoAdesaoCancelamento extends BaseSolicitacao {
-  tipo_solicitacao: string; // Changed from "Aderir" | "Cancelar" to string
-  tipo_transporte: string; // Changed from enum to string
+  tipo_solicitacao: "Aderir" | "Cancelar";
+  tipo_transporte: "Fretado" | "ValeTransporte";
   motivo: string;
   motivo_rejeicao?: string;
   cep?: string;
@@ -36,16 +36,13 @@ export interface SolicitacaoAlteracaoEndereco extends BaseSolicitacao {
   bairro: string;
   cidade: string;
   complemento?: string;
-  // telefone_whatsapp is optional now to match what's coming from the database
-  telefone_whatsapp?: string; 
+  telefone_whatsapp: string;
   rota_atual: string;
   alterar_rota: boolean;
   nova_rota?: string;
   endereco_atual: string;
   endereco_novo: string;
   data_alteracao: string;
-  turno?: string; // Keep the turno field
-  comprovante_url?: string; // Added this field which exists in the database
 }
 
 export interface SolicitacaoMudancaTurno extends BaseSolicitacao {
@@ -84,8 +81,7 @@ export interface SolicitacaoTransporte12x36 extends BaseSolicitacao {
 }
 
 export interface SolicitacaoRefeicao extends BaseSolicitacao {
-  colaboradores: string[] | any[]; // Allow any[] to handle Json[] from database
+  colaboradores: string[];
   tipo_refeicao: string;
   data_refeicao: string;
-  motivo_comentario?: string;
 }
