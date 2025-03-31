@@ -294,6 +294,7 @@ export type Database = {
           declaracao_url: string | null
           id: number
           motivo: string
+          motivo_comentario: string | null
           rua: string | null
           solicitante_id: number | null
           status: string | null
@@ -310,6 +311,7 @@ export type Database = {
           declaracao_url?: string | null
           id?: number
           motivo: string
+          motivo_comentario?: string | null
           rua?: string | null
           solicitante_id?: number | null
           status?: string | null
@@ -326,6 +328,7 @@ export type Database = {
           declaracao_url?: string | null
           id?: number
           motivo?: string
+          motivo_comentario?: string | null
           rua?: string | null
           solicitante_id?: number | null
           status?: string | null
@@ -490,7 +493,7 @@ export type Database = {
       }
       solicitacoes_refeicao: {
         Row: {
-          colaboradores: Json[]
+          colaboradores: string[]
           created_at: string | null
           data_refeicao: string
           id: number
@@ -501,7 +504,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
-          colaboradores?: Json[]
+          colaboradores: string[]
           created_at?: string | null
           data_refeicao: string
           id?: number
@@ -512,7 +515,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
-          colaboradores?: Json[]
+          colaboradores?: string[]
           created_at?: string | null
           data_refeicao?: string
           id?: number
