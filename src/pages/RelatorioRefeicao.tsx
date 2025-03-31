@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { SolicitacaoRefeicao, Colaborador } from '@/types/solicitacoes';
@@ -34,16 +33,12 @@ import {
   Cell
 } from 'recharts';
 
-// Funções utilitárias para exportação para Excel
 const exportToExcel = (data: any[], fileName: string) => {
-  // Cria um array com os cabeçalhos
   let csvContent = "data:text/csv;charset=utf-8,";
   
-  // Adiciona cabeçalhos
   const headers = ["Nome", "Matrícula", "Setor", "Tipo de Refeição", "Data da Refeição"];
   csvContent += headers.join(",") + "\r\n";
   
-  // Adiciona as linhas de dados
   data.forEach(item => {
     const row = [
       `"${item.nome}"`,
@@ -55,7 +50,6 @@ const exportToExcel = (data: any[], fileName: string) => {
     csvContent += row.join(",") + "\r\n";
   });
   
-  // Cria um link para download e clica nele
   const encodedUri = encodeURI(csvContent);
   const link = document.createElement("a");
   link.setAttribute("href", encodedUri);
@@ -65,7 +59,6 @@ const exportToExcel = (data: any[], fileName: string) => {
   document.body.removeChild(link);
 };
 
-// Cores para o gráfico
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 
 const RelatorioRefeicao = () => {
@@ -78,7 +71,6 @@ const RelatorioRefeicao = () => {
   const [filtroStatus, setFiltroStatus] = useState<string>("todas");
   const [activePopover, setActivePopover] = useState<string | null>(null);
 
-  // Busca todas as solicitações de refeição
   useEffect(() => {
     const fetchSolicitacoes = async () => {
       setLoading(true);
@@ -93,9 +85,7 @@ const RelatorioRefeicao = () => {
           return;
         }
 
-        // Processa os dados para incluir informações de setor
         const processedData = data.map((item: any) => {
-          // Adiciona o setor do solicitante aos colaboradores quando possível
           const colaboradoresComSetor = Array.isArray(item.colaboradores) 
             ? item.colaboradores.map((colaborador: Colaborador) => ({
                 ...colaborador,
@@ -127,7 +117,6 @@ const RelatorioRefeicao = () => {
     fetchSolicitacoes();
   }, []);
 
-  // Filtra as solicitações com base nas datas selecionadas e status
   const solicitacoesFiltradas = useMemo(() => {
     if (!dataInicio || !dataFim) return solicitacoes;
 
@@ -146,39 +135,46 @@ const RelatorioRefeicao = () => {
     });
   }, [solicitacoes, dataInicio, dataFim, filtroStatus]);
 
-  // Cria dados para exportação
   const dadosParaExportar = useMemo(() => {
     const dados: any[] = [];
     
     solicitacoesFiltradas.forEach(solicitacao => {
-      solicitacao.colaboradores.forEach(colaborador => {
+      if (Array.isArray(solicitacao.colaboradores) && solicitacao.colaboradores.length > 0) {
+        solicitacao.colaboradores.forEach(colaborador => {
+          dados.push({
+            nome: colaborador.nome || 'Nome não informado',
+            matricula: colaborador.matricula || 'Matrícula não informada',
+            setor: colaborador.setor || 'Não informado',
+            tipo_refeicao: solicitacao.tipo_refeicao,
+            data_refeicao: format(new Date(solicitacao.data_refeicao), 'dd/MM/yyyy')
+          });
+        });
+      } else {
         dados.push({
-          nome: colaborador.nome,
-          matricula: colaborador.matricula,
-          setor: colaborador.setor || 'Não informado',
+          nome: 'Colaborador não especificado',
+          matricula: 'N/A',
+          setor: solicitacao.setor || 'Não informado',
           tipo_refeicao: solicitacao.tipo_refeicao,
           data_refeicao: format(new Date(solicitacao.data_refeicao), 'dd/MM/yyyy')
         });
-      });
+      }
     });
     
     return dados;
   }, [solicitacoesFiltradas]);
 
-  // Calcula o número total de refeições
   const totalRefeicoes = useMemo(() => {
     return solicitacoesFiltradas.reduce((total, solicitacao) => {
-      return total + solicitacao.colaboradores.length;
+      return total + (Array.isArray(solicitacao.colaboradores) ? solicitacao.colaboradores.length : 0);
     }, 0);
   }, [solicitacoesFiltradas]);
 
-  // Agrupa por tipo de refeição para o gráfico
   const dadosPorTipoRefeicao = useMemo(() => {
     const tiposRefeicao: Record<string, number> = {};
     
     solicitacoesFiltradas.forEach(solicitacao => {
       const tipo = solicitacao.tipo_refeicao;
-      const quantidade = solicitacao.colaboradores.length;
+      const quantidade = Array.isArray(solicitacao.colaboradores) ? solicitacao.colaboradores.length : 0;
       
       if (tiposRefeicao[tipo]) {
         tiposRefeicao[tipo] += quantidade;
@@ -190,29 +186,29 @@ const RelatorioRefeicao = () => {
     return Object.entries(tiposRefeicao).map(([name, value]) => ({ name, value }));
   }, [solicitacoesFiltradas]);
 
-  // Agrupa por setor para o gráfico
   const dadosPorSetor = useMemo(() => {
     const setores: Record<string, number> = {};
     
     solicitacoesFiltradas.forEach(solicitacao => {
-      solicitacao.colaboradores.forEach(colaborador => {
-        const setor = colaborador.setor || 'Não informado';
-        
-        if (setores[setor]) {
-          setores[setor] += 1;
-        } else {
-          setores[setor] = 1;
-        }
-      });
+      if (Array.isArray(solicitacao.colaboradores)) {
+        solicitacao.colaboradores.forEach(colaborador => {
+          const setor = colaborador.setor || 'Não informado';
+          
+          if (setores[setor]) {
+            setores[setor] += 1;
+          } else {
+            setores[setor] = 1;
+          }
+        });
+      }
     });
     
     return Object.entries(setores)
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value)
-      .slice(0, 6); // Limita a 6 setores para melhor visualização
+      .slice(0, 6);
   }, [solicitacoesFiltradas]);
 
-  // Agrupa por data para o gráfico de barras
   const dadosPorData = useMemo(() => {
     if (!dataInicio || !dataFim) return [];
     
@@ -220,7 +216,7 @@ const RelatorioRefeicao = () => {
     
     solicitacoesFiltradas.forEach(solicitacao => {
       const dataFormatada = format(new Date(solicitacao.data_refeicao), 'dd/MM');
-      const quantidade = solicitacao.colaboradores.length;
+      const quantidade = Array.isArray(solicitacao.colaboradores) ? solicitacao.colaboradores.length : 0;
       
       if (dados[dataFormatada]) {
         dados[dataFormatada] += quantidade;
@@ -237,7 +233,7 @@ const RelatorioRefeicao = () => {
         if (mesA !== mesB) return mesA - mesB;
         return diaA - diaB;
       })
-      .slice(0, 10); // Limita a 10 dias para melhor visualização
+      .slice(0, 10);
   }, [solicitacoesFiltradas, dataInicio, dataFim]);
 
   const handleExportToExcel = () => {
@@ -249,7 +245,6 @@ const RelatorioRefeicao = () => {
     <div className="container mx-auto py-6">
       <h1 className="text-2xl font-bold mb-6">Relatório de Refeições</h1>
       
-      {/* Filtros */}
       <Card className="mb-6">
         <CardHeader>
           <CardTitle>Filtros</CardTitle>
@@ -347,7 +342,6 @@ const RelatorioRefeicao = () => {
         </CardContent>
       </Card>
       
-      {/* Resumo */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
         <Card>
           <CardHeader className="pb-2">
@@ -405,7 +399,6 @@ const RelatorioRefeicao = () => {
         </Card>
       </div>
       
-      {/* Gráficos */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <Card>
           <CardHeader>
@@ -460,7 +453,6 @@ const RelatorioRefeicao = () => {
         </Card>
       </div>
       
-      {/* Tabela de resultados */}
       <Card>
         <CardHeader>
           <CardTitle>Detalhamento de Refeições</CardTitle>
@@ -489,7 +481,7 @@ const RelatorioRefeicao = () => {
                       </td>
                       <td className="py-2 px-4">{solicitacao.tipo_refeicao}</td>
                       <td className="py-2 px-4">
-                        {solicitacao.colaboradores.length} pessoa(s)
+                        {Array.isArray(solicitacao.colaboradores) ? solicitacao.colaboradores.length : 0} pessoa(s)
                       </td>
                       <td className="py-2 px-4">
                         <span 
