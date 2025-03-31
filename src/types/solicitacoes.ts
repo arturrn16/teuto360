@@ -38,7 +38,6 @@ export interface SolicitacaoAlteracaoEndereco extends BaseSolicitacao {
   complemento?: string;
   telefone_whatsapp: string;
   rota_atual: string;
-  turno?: string;
   alterar_rota: boolean;
   nova_rota?: string;
   endereco_atual: string;
@@ -52,8 +51,6 @@ export interface SolicitacaoMudancaTurno extends BaseSolicitacao {
   endereco: string;
   bairro: string;
   cidade: string;
-  matricula?: string;
-  nome?: string;
   turno_atual: string;
   novo_turno: string;
   turno_novo: string;
@@ -84,9 +81,7 @@ export interface SolicitacaoTransporte12x36 extends BaseSolicitacao {
 }
 
 export interface SolicitacaoRefeicao extends BaseSolicitacao {
-  colaboradores: string[] | any[];  // Update to accept both string[] and any[]
-  matriculas?: string[] | any[];    // Update to accept both string[] and any[]
+  colaboradores: string[];
   tipo_refeicao: string;
   data_refeicao: string;
-  motivo_comentario?: string;
 }

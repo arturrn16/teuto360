@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -38,7 +39,6 @@ interface FormValues {
   bairro: string;
   cidade: string;
   complemento: string;
-  turno: string;
   rotaAtual: string;
   alterarRota: "sim" | "nao";
   novaRota?: string;
@@ -53,14 +53,6 @@ const AlteracaoEndereco = () => {
   const [fileUploading, setFileUploading] = useState(false);
   const [showRotaDropdown, setShowRotaDropdown] = useState(false);
   const [showNovaRotaDropdown, setShowNovaRotaDropdown] = useState(false);
-  const [turnoOptions] = useState(["Primeiro", "Segundo", "Terceiro", "ADM"]);
-  const [allRotas] = useState({
-    "Primeiro": ["P-01", "P-02", "P-03", "P-04", "P-05", "P-06", "P-07", "P-08", "P-09", "P-10", "P-11", "P-12", "P-13", "P-14", "P-15"],
-    "Segundo": ["S-01", "S-02", "S-03", "S-04", "S-05", "S-06", "S-07", "S-08", "S-09", "S-10", "S-11", "S-12"],
-    "Terceiro": ["T-01", "T-02", "T-03", "T-04", "T-05", "T-06", "T-07", "T-08"],
-    "ADM": ["ADM-01", "ADM-02", "ADM-03", "ADM-04", "ADM-05", "ADM-06", "ADM-07", "ADM-08"],
-  });
-  const [rotaOptions, setRotaOptions] = useState<string[]>([]);
   
   const form = useForm<FormValues>({
     defaultValues: {
@@ -70,22 +62,19 @@ const AlteracaoEndereco = () => {
       bairro: "",
       cidade: "",
       complemento: "",
-      turno: "",
       rotaAtual: "",
       alterarRota: "nao",
     },
   });
   
-  const turno = form.watch("turno");
   const alterarRota = form.watch("alterarRota");
   
-  useEffect(() => {
-    if (turno) {
-      setRotaOptions(allRotas[turno as keyof typeof allRotas] || []);
-      form.setValue("rotaAtual", "");
-      form.setValue("novaRota", "");
-    }
-  }, [turno, form, allRotas]);
+  const rotaOptions = [
+    "ADM-01", "ADM-02", "ADM-03", "ADM-04", "ADM-05", "ADM-06", "ADM-07", "ADM-08",
+    "P-01", "P-02", "P-03", "P-04", "P-05", "P-06", "P-07", "P-08", "P-09", "P-10", "P-11", "P-12", "P-13", "P-14", "P-15",
+    "S-01", "S-02", "S-03", "S-04", "S-05", "S-06", "S-07", "S-08", "S-09", "S-10", "S-11", "S-12",
+    "T-01", "T-02", "T-03", "T-04", "T-05", "T-06", "T-07", "T-08"
+  ];
   
   const buscarCep = async (cep: string) => {
     if (cep.length !== 8) return;
@@ -189,7 +178,6 @@ const AlteracaoEndereco = () => {
         bairro: data.bairro,
         cidade: data.cidade,
         complemento: data.complemento,
-        turno: data.turno,
         rota_atual: data.rotaAtual,
         alterar_rota: data.alterarRota === "sim",
         nova_rota: data.alterarRota === "sim" ? data.novaRota : null,
@@ -324,33 +312,6 @@ const AlteracaoEndereco = () => {
                     className="form-field-input"
                   />
                 </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="turno"
-            rules={{ required: "Turno é obrigatório" }}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="form-field-label">Turno</FormLabel>
-                <Select 
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger className="form-select-input">
-                      <SelectValue placeholder="Selecione o turno" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {turnoOptions.map((option) => (
-                      <SelectItem key={option} value={option}>{option}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
                 <FormMessage />
               </FormItem>
             )}
@@ -574,6 +535,7 @@ const AlteracaoEndereco = () => {
             />
           )}
           
+          {/* Comprovante de Endereço (File Upload) - Moved to the end of the form */}
           <FormItem>
             <FormLabel className="form-field-label">Comprovante de Endereço</FormLabel>
             <div className="border border-input rounded-md p-2">

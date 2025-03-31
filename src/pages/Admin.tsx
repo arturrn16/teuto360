@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import React from "react"; // Add explicit React import
 import { useAuth } from "@/context/AuthContext";
@@ -181,23 +182,7 @@ const Admin = () => {
       if (errorRefeicao) {
         console.error("Erro ao buscar solicitações de refeição:", errorRefeicao);
       } else {
-        // Transform the data to ensure compatibility with the SolicitacaoRefeicao type
-        if (dataRefeicao) {
-          const transformedData = dataRefeicao.map(item => ({
-            ...item,
-            // Ensure colaboradores is always a string array
-            colaboradores: Array.isArray(item.colaboradores) 
-              ? item.colaboradores.map(c => String(c)) 
-              : [],
-            // Ensure matriculas is always a string array if it exists
-            matriculas: item.matriculas && Array.isArray(item.matriculas) 
-              ? item.matriculas.map(m => String(m)) 
-              : undefined
-          }));
-          setSolicitacoesRefeicao(transformedData as SolicitacaoRefeicao[]);
-        } else {
-          setSolicitacoesRefeicao([]);
-        }
+        setSolicitacoesRefeicao(dataRefeicao || []);
       }
 
       try {
