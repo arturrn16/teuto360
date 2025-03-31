@@ -43,6 +43,7 @@ export interface SolicitacaoAlteracaoEndereco extends BaseSolicitacao {
   endereco_atual: string;
   endereco_novo: string;
   data_alteracao: string;
+  turno?: string; // Added turno field
 }
 
 export interface SolicitacaoMudancaTurno extends BaseSolicitacao {
