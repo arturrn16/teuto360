@@ -1,7 +1,6 @@
 
 import { useAuth } from "@/context/AuthContext";
 import { useClock } from "@/hooks/use-clock";
-import { UserType } from "@/components/sidebar/navigationConfig";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { 
   commonUserCards, 
@@ -14,8 +13,6 @@ import {
 const Dashboard = () => {
   const { user } = useAuth();
   const { getGreeting, formattedDate, formattedTime } = useClock();
-
-  console.log("Dashboard - User type:", user?.tipo_usuario);
 
   // Filtro de cards baseado no tipo de usuário
   const getCardsForUserType = (): CardConfig[] => {
