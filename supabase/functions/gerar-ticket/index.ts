@@ -16,7 +16,7 @@ const handler = async (req: Request): Promise<Response> => {
     const supabase = createClient(supabaseUrl, supabaseKey);
     
     // Extrair parâmetros da requisição
-    const { id, tipo } = await req.json();
+    const { id, tipo, colaboradorIndice } = await req.json();
     
     if (!id || !tipo) {
       return new Response(
@@ -29,6 +29,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
     
     let dadosSolicitacao;
+    let ticketData;
     
     // Buscar dados da solicitação de acordo com o tipo
     if (tipo === 'rota') {
@@ -50,6 +51,7 @@ const handler = async (req: Request): Promise<Response> => {
       }
       
       dadosSolicitacao = data;
+      ticketData = dadosSolicitacao;
     } else if (tipo === '12x36') {
       const { data, error } = await supabase
         .from('solicitacoes_transporte_12x36')
@@ -69,6 +71,7 @@ const handler = async (req: Request): Promise<Response> => {
       }
       
       dadosSolicitacao = data;
+      ticketData = dadosSolicitacao;
     } else if (tipo === 'refeicao') {
       const { data, error } = await supabase
         .from('solicitacoes_refeicao')
@@ -88,6 +91,29 @@ const handler = async (req: Request): Promise<Response> => {
       }
       
       dadosSolicitacao = data;
+      
+      // Para solicitações de refeição, retornamos dados específicos do colaborador
+      // Verificamos se o índice do colaborador foi fornecido
+      if (tipo === 'refeicao' && colaboradorIndice !== undefined) {
+        if (colaboradorIndice < 0 || colaboradorIndice >= dadosSolicitacao.colaboradores.length) {
+          return new Response(
+            JSON.stringify({ error: "Índice de colaborador inválido" }),
+            { 
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+              status: 400 
+            }
+          );
+        }
+        
+        // Criamos um objeto com os dados do ticket para um colaborador específico
+        ticketData = {
+          ...dadosSolicitacao,
+          colaborador: dadosSolicitacao.colaboradores[colaboradorIndice]
+        };
+      } else {
+        // Se nenhum índice foi fornecido, mantemos o comportamento padrão
+        ticketData = dadosSolicitacao;
+      }
     } else {
       return new Response(
         JSON.stringify({ error: "Tipo de solicitação inválido" }),
@@ -105,7 +131,7 @@ const handler = async (req: Request): Promise<Response> => {
         ticket: {
           id: dadosSolicitacao.id,
           tipo,
-          dados: dadosSolicitacao
+          dados: ticketData
         }
       }),
       { 

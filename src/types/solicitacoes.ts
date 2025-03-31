@@ -1,4 +1,5 @@
 
+
 export interface BaseSolicitacao {
   id: number;
   solicitante_id: number;
@@ -86,9 +87,15 @@ export interface SolicitacaoTransporte12x36 extends BaseSolicitacao {
   motivo_comentario?: string;
 }
 
+export interface Colaborador {
+  nome: string;
+  matricula: string;
+}
+
 export interface SolicitacaoRefeicao extends BaseSolicitacao {
-  colaboradores: string[];
+  colaboradores: Colaborador[];
   tipo_refeicao: string;
   data_refeicao: string;
   motivo_comentario?: string;
 }
+
