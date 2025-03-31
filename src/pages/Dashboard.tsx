@@ -1,4 +1,3 @@
-
 import { useAuth } from "@/context/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui-components/Card";
 import { cn } from "@/lib/utils";
@@ -197,14 +196,6 @@ const Dashboard = () => {
       to: "/comunicados",
       color: "from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20",
       textColor: "text-amber-600 dark:text-amber-400"
-    },
-    {
-      title: "Cardápio da Semana",
-      description: "Confira o cardápio do refeitório para a semana",
-      icon: <CalendarDays className="h-8 w-8 text-green-500" />,
-      to: "/cardapio-semana",
-      color: "from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20",
-      textColor: "text-green-600 dark:text-green-400"
     }
   ];
 

@@ -1,10 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
-import { supabase, queryCustomTable } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -45,10 +44,10 @@ interface FormValues {
   novaRota: string;
   nomeGestor: string;
   motivo: string;
-  matricula: string; // Adicionado para permitir edição
-  colaboradorNome: string; // Adicionado para permitir edição
-  cargo: string; // Adicionado para permitir edição
-  setor: string; // Adicionado para permitir edição
+  matricula: string;
+  colaboradorNome: string;
+  cargo: string;
+  setor: string;
 }
 
 const MudancaTurno = () => {
@@ -58,7 +57,6 @@ const MudancaTurno = () => {
   const [isLoadingCep, setIsLoadingCep] = useState(false);
   const isMobile = useIsMobile();
   
-  // Check if the current user is a "gestor" type user
   const isGestorUser = user?.tipo_usuario === 'gestor';
   
   const form = useForm<FormValues>({
@@ -149,7 +147,7 @@ const MudancaTurno = () => {
     setIsSubmitting(true);
     
     try {
-      const { error } = await supabase.from('solicitacoes_mudanca_turno').insert({
+      const formData = {
         solicitante_id: user.id,
         matricula: data.matricula,
         colaborador_nome: data.colaboradorNome,
@@ -162,16 +160,21 @@ const MudancaTurno = () => {
         cidade: data.cidade,
         turno_atual: data.turnoAtual,
         novo_turno: data.novoTurno,
-        turno_novo: data.novoTurno,
         nova_rota: data.novaRota,
         nome_gestor: data.nomeGestor,
         motivo: data.motivo,
         status: 'pendente'
-      });
+      };
+      
+      console.log("Submitting form data:", formData);
+      
+      const { error } = await supabase
+        .from('solicitacoes_mudanca_turno')
+        .insert(formData);
       
       if (error) {
         console.error("Erro ao enviar solicitação:", error);
-        toast.error("Erro ao enviar solicitação");
+        toast.error(`Erro ao enviar solicitação: ${error.message}`);
         return;
       }
       
@@ -185,7 +188,6 @@ const MudancaTurno = () => {
     }
   };
   
-  // Obter todas as opções de turnos disponíveis
   const getAllTurnoOptions = () => {
     return [...turnoOptionsAnapoles, ...goianiaTurnosOptions];
   };

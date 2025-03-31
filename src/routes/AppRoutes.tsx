@@ -83,7 +83,8 @@ const routeGroups = {
     { path: '/comunicados', component: Comunicados },
   ],
   
-  selecaoComum: [
+  // Updated to remove selecao from cardapio-semana access
+  comum: [
     { path: '/cardapio-semana', component: CardapioSemana },
   ],
   
@@ -169,12 +170,12 @@ export const AppRoutes = memo(() => {
           />
         ))}
         
-        {/* Selecao, Comum Routes */}
-        {routeGroups.selecaoComum.map(({ path, component }) => (
+        {/* Comum Routes */}
+        {routeGroups.comum.map(({ path, component }) => (
           <Route
             key={path}
             path={path}
-            element={<ProtectedPage component={component} allowedTypes={["selecao", "comum"] as const} />}
+            element={<ProtectedPage component={component} allowedTypes={["comum"] as const} />}
           />
         ))}
         
