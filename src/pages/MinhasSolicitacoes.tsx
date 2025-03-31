@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { 
@@ -99,7 +100,10 @@ const MinhasSolicitacoes = () => {
         let tables = [];
         
         if (user.tipo_usuario === 'gestor') {
-          tables = [{ table: 'solicitacoes_refeicao', tipo: 'Refeição' }];
+          tables = [
+            { table: 'solicitacoes_refeicao', tipo: 'Refeição' },
+            { table: 'solicitacoes_mudanca_turno', tipo: 'Mudança de Turno' } // Added for gestor users
+          ];
         } 
         else if (user.tipo_usuario === 'selecao') {
           tables = [

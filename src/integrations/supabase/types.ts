@@ -417,16 +417,20 @@ export type Database = {
       solicitacoes_mudanca_turno: {
         Row: {
           bairro: string
+          cargo: string | null
           cep: string
           cidade: string
+          colaborador_nome: string | null
           created_at: string | null
           data_alteracao: string | null
           endereco: string
           id: number
+          matricula: string | null
           motivo: string
           nome_gestor: string
           nova_rota: string
           novo_turno: string
+          setor: string | null
           solicitante_id: number | null
           status: string | null
           telefone: string
@@ -436,16 +440,20 @@ export type Database = {
         }
         Insert: {
           bairro: string
+          cargo?: string | null
           cep: string
           cidade: string
+          colaborador_nome?: string | null
           created_at?: string | null
           data_alteracao?: string | null
           endereco: string
           id?: number
+          matricula?: string | null
           motivo: string
           nome_gestor: string
           nova_rota: string
           novo_turno: string
+          setor?: string | null
           solicitante_id?: number | null
           status?: string | null
           telefone: string
@@ -455,16 +463,20 @@ export type Database = {
         }
         Update: {
           bairro?: string
+          cargo?: string | null
           cep?: string
           cidade?: string
+          colaborador_nome?: string | null
           created_at?: string | null
           data_alteracao?: string | null
           endereco?: string
           id?: number
+          matricula?: string | null
           motivo?: string
           nome_gestor?: string
           nova_rota?: string
           novo_turno?: string
+          setor?: string | null
           solicitante_id?: number | null
           status?: string | null
           telefone?: string
