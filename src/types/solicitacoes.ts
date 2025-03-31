@@ -93,7 +93,8 @@ export interface SolicitacaoTransporte12x36 extends BaseSolicitacao {
 export interface Colaborador {
   nome: string;
   matricula: string;
-  [key: string]: string;
+  setor?: string;
+  [key: string]: string | undefined;
 }
 
 export interface SolicitacaoRefeicao extends BaseSolicitacao {

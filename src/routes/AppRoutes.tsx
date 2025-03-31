@@ -14,6 +14,7 @@ const NotFound = lazy(() => import('@/pages/NotFound').then(module => ({ default
 // Admin pages
 const Admin = lazy(() => import('@/pages/Admin').then(module => ({ default: module.default })));
 const Relatorios = lazy(() => import('@/pages/Relatorios').then(module => ({ default: module.default })));
+const RelatorioRefeicao = lazy(() => import('@/pages/RelatorioRefeicao').then(module => ({ default: module.default })));
 const GerenciarComunicados = lazy(() => import('@/pages/GerenciarComunicados').then(module => ({ default: module.default })));
 const GerenciarCardapio = lazy(() => import('@/pages/GerenciarCardapio').then(module => ({ default: module.default })));
 const GerenciarCartoes = lazy(() => import('@/pages/GerenciarCartoes').then(module => ({ default: module.default })));
@@ -60,6 +61,7 @@ const routeGroups = {
   admin: [
     { path: '/admin', component: Admin },
     { path: '/relatorios', component: Relatorios },
+    { path: '/relatorio-refeicao', component: RelatorioRefeicao },
     { path: '/gerenciar-comunicados', component: GerenciarComunicados },
     { path: '/gerenciar-cardapio', component: GerenciarCardapio },
     { path: '/gerenciar-cartoes', component: GerenciarCartoes },

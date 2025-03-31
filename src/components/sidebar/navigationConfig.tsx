@@ -146,6 +146,12 @@ export const navItems: NavItem[] = [
     allowedTypes: ["admin"] as const
   },
   { 
+    name: "Relatório Refeição", 
+    href: "/relatorio-refeicao", 
+    icon: <span className="text-purple-600 text-xl">🍲</span>,
+    allowedTypes: ["admin"] as const
+  },
+  { 
     name: "Gerenciar Comunicados", 
     href: "/gerenciar-comunicados", 
     icon: <span className="text-blue-600 text-xl">📢</span>,
