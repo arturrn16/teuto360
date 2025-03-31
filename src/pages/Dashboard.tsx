@@ -123,6 +123,14 @@ const Dashboard = () => {
   // Definimos os cards específicos para o tipo de usuário "gestor"
   const gestorCards = [
     {
+      title: "Minhas Solicitações",
+      description: "Visualize todas as suas solicitações",
+      icon: <FileText className="h-8 w-8 text-violet-500" />,
+      to: "/minhas-solicitacoes",
+      color: "from-violet-50 to-violet-100 dark:from-violet-900/20 dark:to-violet-800/20",
+      textColor: "text-violet-600 dark:text-violet-400"
+    },
+    {
       title: "Transporte 12x36",
       description: "Solicite transporte para turnos 12x36",
       icon: <Map className="h-8 w-8 text-indigo-500" />,
@@ -153,6 +161,50 @@ const Dashboard = () => {
       to: "/comunicados",
       color: "from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20",
       textColor: "text-amber-600 dark:text-amber-400"
+    }
+  ];
+
+  // Cards específicos para o tipo de usuário "selecao"
+  const selecaoCards = [
+    {
+      title: "Minhas Solicitações",
+      description: "Visualize todas as suas solicitações",
+      icon: <FileText className="h-8 w-8 text-violet-500" />,
+      to: "/minhas-solicitacoes",
+      color: "from-violet-50 to-violet-100 dark:from-violet-900/20 dark:to-violet-800/20",
+      textColor: "text-violet-600 dark:text-violet-400"
+    },
+    {
+      title: "Transporte Rota",
+      description: "Solicite transporte para rotas regulares",
+      icon: <MapPinned className="h-8 w-8 text-violet-500" />,
+      to: "/transporte-rota",
+      color: "from-violet-50 to-violet-100 dark:from-violet-900/20 dark:to-violet-800/20",
+      textColor: "text-violet-600 dark:text-violet-400"
+    },
+    {
+      title: "Transporte 12x36",
+      description: "Solicite transporte para turnos 12x36",
+      icon: <Map className="h-8 w-8 text-indigo-500" />,
+      to: "/transporte-12x36",
+      color: "from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20",
+      textColor: "text-indigo-600 dark:text-indigo-400"
+    },
+    {
+      title: "Comunicados",
+      description: "Visualize os comunicados importantes",
+      icon: <FileText className="h-8 w-8 text-amber-500" />,
+      to: "/comunicados",
+      color: "from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20",
+      textColor: "text-amber-600 dark:text-amber-400"
+    },
+    {
+      title: "Cardápio da Semana",
+      description: "Confira o cardápio do refeitório para a semana",
+      icon: <CalendarDays className="h-8 w-8 text-green-500" />,
+      to: "/cardapio-semana",
+      color: "from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20",
+      textColor: "text-green-600 dark:text-green-400"
     }
   ];
 
@@ -386,6 +438,10 @@ const Dashboard = () => {
       return gestorCards;
     }
     
+    if (user.tipo_usuario === 'selecao') {
+      return selecaoCards;
+    }
+    
     if (user.tipo_usuario === 'comum') {
       return commonUserCards;
     }
@@ -393,13 +449,8 @@ const Dashboard = () => {
     return []; // Para outros tipos de usuário
   };
 
-  // Para usuários do tipo gestor, mostramos apenas os cards específicos
-  // Para usuários comuns, mostramos os cards de usuário comum
-  const filteredCards = user?.tipo_usuario === 'gestor' 
-    ? gestorCards 
-    : (user?.tipo_usuario === 'comum' 
-        ? commonUserCards 
-        : getCardsForUserType());
+  // Determine the filtered cards based on user type
+  const filteredCards = getCardsForUserType();
 
   // Determine the greeting based on time of day
   const getGreeting = () => {
