@@ -8,10 +8,10 @@ import { AuthProvider } from "@/context/AuthContext";
 import { Suspense, lazy } from "react";
 import { PageLoader } from "./components/ui/loader-spinner";
 
-// Import pages using lazy loading with proper type checking
+// Import pages using lazy loading with clean imports
 const Login = lazy(() => import("./pages/Login"));
 const NotFound = lazy(() => import("./pages/NotFound"));
-const AppRoutes = lazy(() => import("./routes/AppRoutes").then(module => ({ default: module.default })));
+const AppRoutes = lazy(() => import("./routes/AppRoutes"));
 
 // App Assets
 export const TEUTO_LOGO = "/lovable-uploads/34cd00a7-eda2-4ab2-b582-8951d814b31c.png";

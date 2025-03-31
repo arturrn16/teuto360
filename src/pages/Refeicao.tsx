@@ -76,15 +76,21 @@ const Refeicao = () => {
     try {
       const formattedDate = formatDate(data.dataRefeicao);
       
-      const colaboradoresJson = data.colaboradores as unknown as Json[];
+      // Make sure every property is of the correct type
+      const colaboradoresForDb = data.colaboradores.map(col => ({
+        nome: String(col.nome || ""),
+        matricula: String(col.matricula || ""),
+        setor: String(col.setor || "")
+      }));
       
       const { error } = await supabase.from("solicitacoes_refeicao").insert({
         solicitante_id: user.id,
-        solicitante_nome: user.nome,
+        solicitante_nome: user.nome || "",
         solicitante_setor: user.setor || "",
-        colaboradores: colaboradoresJson,
+        colaboradores: colaboradoresForDb as unknown as Json[],
         tipo_refeicao: data.tipoRefeicao,
         data_refeicao: formattedDate,
+        status: "pendente"
       });
       
       if (error) {
